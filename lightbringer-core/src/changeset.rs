@@ -1,27 +1,7 @@
 use std::collections::HashMap;
 use std::str::FromStr;
 
-#[derive(Debug)]
-pub struct ParseVersionError(String);
-
-#[derive(Debug, PartialEq)]
-pub enum Version {
-  Patch,
-  Minor,
-  Major,
-}
-
-impl FromStr for Version {
-  type Err = ParseVersionError;
-  fn from_str(value: &str) -> Result<Self, Self::Err> {
-    match value.to_lowercase().as_str() {
-      "patch" => Ok(Version::Patch),
-      "minor" => Ok(Version::Minor),
-      "major" => Ok(Version::Major),
-      _ => Err(ParseVersionError(value.to_string())),
-    }
-  }
-}
+use crate::version::Version;
 
 #[derive(Debug)]
 pub enum ChangesetParseError {
@@ -103,6 +83,21 @@ impl FromStr for Changeset {
       packages,
       message: lines.collect::<Vec<&str>>().join("\n"),
     })
+  }
+}
+
+impl ToString for Changeset {
+  fn to_string(&self) -> String {
+    let mut output = vec![];
+
+    output.extend(b"---\n");
+    for (package, version) in self.packages.iter() {
+      output.extend(format!("\"{}\": {}\n", package, version.to_string()).as_bytes())
+    }
+    output.extend(b"---\n");
+    output.extend(self.message.as_bytes());
+
+    String::from_utf8(output).unwrap()
   }
 }
 
