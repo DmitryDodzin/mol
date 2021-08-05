@@ -9,7 +9,7 @@ pub enum ChangesetParseError {
   InvalidPackageVerionSyntax,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Changeset {
   pub packages: HashMap<String, Version>,
   pub message: String,

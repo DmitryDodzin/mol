@@ -3,7 +3,7 @@ use std::str::FromStr;
 #[derive(Debug)]
 pub struct ParseVersionError(String);
 
-#[derive(Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Version {
   Patch,
   Minor,
