@@ -1,13 +1,15 @@
 use std::collections::HashMap;
 use std::str::FromStr;
 
-#[derive(Debug, PartialEq)]
-pub enum Version {
-  Patch,
-  Minor,
-  Major,
+use crate::version::Version;
+
+#[derive(Debug)]
+pub enum ChangesetParseError {
+  NoPackageVersionsFound,
+  InvalidPackageVerionSyntax,
 }
 
+#[derive(Debug)]
 pub struct Changeset {
   pub packages: HashMap<String, Version>,
   pub message: String,
@@ -17,12 +19,85 @@ impl Changeset {
   pub fn parse(value: &str) -> Result<Self, <Self as FromStr>::Err> {
     Changeset::from_str(value)
   }
+
+  fn find_changeset_start(
+    lines: &mut dyn Iterator<Item = &str>,
+  ) -> Result<(), ChangesetParseError> {
+    for line in lines {
+      match line {
+        "" => {}
+        "---" => return Ok(()),
+        _ => return Err(ChangesetParseError::NoPackageVersionsFound),
+      }
+    }
+
+    Err(ChangesetParseError::NoPackageVersionsFound)
+  }
+
+  fn parse_package_name(value: &str) -> &str {
+    if value.starts_with("\"") {
+      let mut chars = value.chars();
+      chars.next();
+      chars.next_back();
+      chars.as_str()
+    } else {
+      value
+    }
+  }
 }
 
 impl FromStr for Changeset {
-  type Err = String;
-  fn from_str(_: &str) -> Result<Self, Self::Err> {
-    todo!()
+  type Err = ChangesetParseError;
+  fn from_str(value: &str) -> Result<Self, Self::Err> {
+    let mut packages = HashMap::new();
+    let mut lines = value.split("\n");
+
+    Changeset::find_changeset_start(&mut lines)?;
+
+    for line in &mut lines {
+      match line {
+        "---" => break,
+        value => {
+          let change_value: Vec<&str> = value.split(":").map(|val| val.trim()).collect();
+
+          match change_value.len() {
+            2 => {
+              let (package, version) = (
+                Changeset::parse_package_name(change_value[0]),
+                Version::from_str(change_value[1]),
+              );
+
+              if version.is_err() {
+                return Err(ChangesetParseError::InvalidPackageVerionSyntax);
+              }
+
+              packages.insert(package.to_string(), version.unwrap());
+            }
+            _ => return Err(ChangesetParseError::InvalidPackageVerionSyntax),
+          }
+        }
+      }
+    }
+
+    Ok(Changeset {
+      packages,
+      message: lines.collect::<Vec<&str>>().join("\n"),
+    })
+  }
+}
+
+impl ToString for Changeset {
+  fn to_string(&self) -> String {
+    let mut output = vec![];
+
+    output.extend(b"---\n");
+    for (package, version) in self.packages.iter() {
+      output.extend(format!("\"{}\": {}\n", package, version.to_string()).as_bytes())
+    }
+    output.extend(b"---\n");
+    output.extend(self.message.as_bytes());
+
+    String::from_utf8(output).unwrap()
   }
 }
 
@@ -35,12 +110,12 @@ mod tests {
   fn from_str() {
     let changeset = Changeset::from_str(
       "
-      ---
-        \"lightbinger\": minor
-      ---
+---
+\"lightbinger\": minor
+---
 
-      Do cool stuff
-    ",
+Do cool stuff
+      ",
     );
 
     assert!(changeset.is_ok());
@@ -56,9 +131,33 @@ mod tests {
     assert_eq!(
       changeset.message,
       "
-
-      Do cool stuff
+Do cool stuff
       "
+    );
+  }
+
+  #[test]
+  fn from_str_multiple() {
+    let changeset = Changeset::from_str(
+      "
+---
+\"lightbinger\": minor
+\"lightbinger-core\": major
+---
+
+Do cool stuff
+      ",
+    )
+    .unwrap();
+
+    assert_eq!(
+      changeset.packages,
+      vec![
+        ("lightbinger".to_string(), Version::Minor),
+        ("lightbinger-core".to_string(), Version::Major)
+      ]
+      .into_iter()
+      .collect()
     );
   }
 }
