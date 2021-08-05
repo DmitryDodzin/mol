@@ -1,0 +1,8 @@
+[workspace]
+members = [
+  "lightbringer",
+  "lightbringer-core"
+]
+
+[profile.release]
+opt-level = "s"
