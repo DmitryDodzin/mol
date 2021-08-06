@@ -44,7 +44,6 @@ impl Command for Add {
       Changeset::default()
     } else {
       let mut packages = HashMap::new();
-
       let package = select_package(context.get_packages())?;
       let version = select_version()?;
 
