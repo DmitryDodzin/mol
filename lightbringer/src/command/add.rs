@@ -4,8 +4,7 @@ use clap::Clap;
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 
-use lightbringer_core::changeset::Changeset;
-use lightbringer_core::version::Version;
+use lightbringer_core::{changeset::Changeset, version::Version, Lightbringer};
 
 use super::Command;
 
@@ -28,7 +27,7 @@ fn select_version() -> Result<Version, failure::Error> {
   Ok(versions[version_selection])
 }
 
-fn select_package(packages: Vec<&str>) -> Result<String, failure::Error> {
+fn select_package(packages: Vec<String>) -> Result<String, failure::Error> {
   let package_selection = Select::with_theme(&ColorfulTheme::default())
     .with_prompt("package")
     .items(&packages)
@@ -36,17 +35,17 @@ fn select_package(packages: Vec<&str>) -> Result<String, failure::Error> {
     .interact_on_opt(&Term::buffered_stderr())?
     .unwrap();
 
-  Ok(packages[package_selection].to_string())
+  Ok(packages[package_selection].clone())
 }
 
 impl Command for Add {
-  fn run(&self) -> Result<(), failure::Error> {
+  fn run(&self, context: &Lightbringer) -> Result<(), failure::Error> {
     let changset = if self.empty {
       Changeset::default()
     } else {
       let mut packages = HashMap::new();
 
-      let package = select_package(vec!["lightbinger", "lightbinger-core"])?;
+      let package = select_package(context.get_packages())?;
       let version = select_version()?;
 
       packages.insert(package, version);
