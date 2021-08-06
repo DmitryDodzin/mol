@@ -1,12 +1,24 @@
 use clap::Clap;
 use lightbringer_core::Lightbringer;
 
+mod cli;
 mod command;
 
-use command::Opts;
+use command::Command;
 
-fn main() {
-  let opts: Opts = Opts::parse();
+fn main() -> Result<(), failure::Error> {
+  let opts: cli::Opts = cli::Opts::parse();
 
-  println!("Hello, {:?} {:?}!", Lightbringer, opts);
+  let context = Lightbringer;
+
+  match opts.cmd {
+    cli::Command::Add(add_command) => {
+      add_command.run(&context)?;
+    }
+    _ => {
+      println!("{:?}", opts);
+    }
+  }
+
+  Ok(())
 }
