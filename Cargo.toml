@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "lightbringer",
+  "lightbringer-cargo",
   "lightbringer-core"
 ]
 
