@@ -46,16 +46,13 @@ impl CrateEditor {
           _ => return Err(ExplorerError),
         },
         "package" => {
-          if let Some(name) = value["name"].as_str() {
-            if let Some(version) = value["version"].as_str() {
-              return Ok(PackageType::Package {
-                name: name.to_string(),
-                version: version.to_string(),
-              });
-            }
-          }
-
-          return Err(ExplorerError);
+          return match (value["name"].as_str(), value["version"].as_str()) {
+            (Some(name), Some(version)) => Ok(PackageType::Package {
+              name: name.to_string(),
+              version: version.to_string(),
+            }),
+            _ => Err(ExplorerError),
+          };
         }
         _ => {}
       }

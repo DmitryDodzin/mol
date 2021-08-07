@@ -1,4 +1,7 @@
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::Write;
+use std::path::PathBuf;
 use std::str::FromStr;
 
 use crate::version::Version;
@@ -18,6 +21,14 @@ pub struct Changeset {
 impl Changeset {
   pub fn parse(value: &str) -> Result<Self, <Self as FromStr>::Err> {
     Changeset::from_str(value)
+  }
+
+  pub fn save(self, output: PathBuf) -> std::io::Result<()> {
+    let mut file = File::create(output)?;
+
+    file.write_all(self.to_string().as_bytes())?;
+
+    Ok(())
   }
 
   fn find_changeset_start(
