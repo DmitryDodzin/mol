@@ -58,7 +58,20 @@ impl Add {
 impl Command for Add {
   fn run(&self, context: &Lightbringer) -> Result<(), failure::Error> {
     let changset = if self.empty {
-      Changeset::default()
+      if let (Some(package), Some(version)) = (
+        self.package.as_ref(),
+        self
+          .version
+          .as_ref()
+          .map_or(None, |version| Version::from_str(&version).ok()),
+      ) {
+        Changeset {
+          packages: vec![(package.clone(), version)].into_iter().collect(),
+          message: "".to_owned(),
+        }
+      } else {
+        Changeset::default()
+      }
     } else {
       let mut packages = HashMap::new();
       let package = self.select_package(context.get_packages())?;

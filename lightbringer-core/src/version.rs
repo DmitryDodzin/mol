@@ -8,7 +8,11 @@ pub struct ParseVersionError(String);
 impl Display for ParseVersionError {
   // add code here
   fn fmt(&self, fmt: &mut Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-    write!(fmt, "{}", self.0)
+    write!(
+      fmt,
+      "\"{}\" isn't a version, should be patch/minor/major",
+      self.0
+    )
   }
 }
 
