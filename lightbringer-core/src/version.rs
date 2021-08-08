@@ -1,7 +1,18 @@
+use std::error::Error;
+use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct ParseVersionError(String);
+
+impl Display for ParseVersionError {
+  // add code here
+  fn fmt(&self, fmt: &mut Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+    write!(fmt, "{}", self.0)
+  }
+}
+
+impl Error for ParseVersionError {}
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Version {

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::str::FromStr;
 
 use clap::Clap;
 use dialoguer::console::Term;
@@ -13,29 +14,45 @@ pub struct Add {
   /// Generate empty changeset
   #[clap(long)]
   pub empty: bool,
+  #[clap(short, long)]
+  pub package: Option<String>,
+  #[clap(short, long)]
+  pub version: Option<String>,
+  #[clap(short, long)]
+  pub message: Option<String>,
 }
 
-fn select_version() -> Result<Version, failure::Error> {
-  let versions = vec![Version::Patch, Version::Minor, Version::Major];
-  let version_selection = Select::with_theme(&ColorfulTheme::default())
-    .with_prompt("version")
-    .items(&versions)
-    .default(0)
-    .interact_on_opt(&Term::buffered_stderr())?
-    .unwrap();
+impl Add {
+  fn select_version(&self) -> Result<Version, failure::Error> {
+    if let Some(version) = &self.version {
+      return Version::from_str(version).map_err(|err| err.into());
+    }
 
-  Ok(versions[version_selection])
-}
+    let versions = vec![Version::Patch, Version::Minor, Version::Major];
+    let version_selection = Select::with_theme(&ColorfulTheme::default())
+      .with_prompt("version")
+      .items(&versions)
+      .default(0)
+      .interact_on_opt(&Term::buffered_stderr())?
+      .unwrap();
 
-fn select_package(packages: Vec<String>) -> Result<String, failure::Error> {
-  let package_selection = Select::with_theme(&ColorfulTheme::default())
-    .with_prompt("package")
-    .items(&packages)
-    .default(0)
-    .interact_on_opt(&Term::buffered_stderr())?
-    .unwrap();
+    Ok(versions[version_selection])
+  }
 
-  Ok(packages[package_selection].clone())
+  fn select_package(&self, packages: Vec<String>) -> Result<String, failure::Error> {
+    if self.package.is_some() {
+      return Ok(self.package.clone().unwrap());
+    }
+
+    let package_selection = Select::with_theme(&ColorfulTheme::default())
+      .with_prompt("package")
+      .items(&packages)
+      .default(0)
+      .interact_on_opt(&Term::buffered_stderr())?
+      .unwrap();
+
+    Ok(packages[package_selection].clone())
+  }
 }
 
 impl Command for Add {
@@ -44,14 +61,19 @@ impl Command for Add {
       Changeset::default()
     } else {
       let mut packages = HashMap::new();
-      let package = select_package(context.get_packages())?;
-      let version = select_version()?;
+      let package = self.select_package(context.get_packages())?;
+      let version = self.select_version()?;
 
       packages.insert(package, version);
 
-      let message = Input::<String>::with_theme(&ColorfulTheme::default())
-        .allow_empty(true)
-        .interact_on(&Term::buffered_stderr())?;
+      let message = if self.message.is_some() {
+        self.message.clone().unwrap()
+      } else {
+        Input::<String>::with_theme(&ColorfulTheme::default())
+          .with_prompt("message")
+          .allow_empty(true)
+          .interact_on(&Term::buffered_stderr())?
+      };
 
       Changeset { packages, message }
     };
