@@ -7,4 +7,5 @@ edition = "2018"
 
 [dependencies]
 lightbringer-core = { path = '../lightbringer-core' }
+globset = "0.4"
 toml_edit = "0.2"
