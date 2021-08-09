@@ -1,22 +1,5 @@
-use std::error::Error;
-use std::fmt::{Display, Formatter};
+use crate::error::VersionParseError;
 use std::str::FromStr;
-
-#[derive(Debug)]
-pub struct ParseVersionError(String);
-
-impl Display for ParseVersionError {
-  // add code here
-  fn fmt(&self, fmt: &mut Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-    write!(
-      fmt,
-      "\"{}\" isn't a version, should be patch/minor/major",
-      self.0
-    )
-  }
-}
-
-impl Error for ParseVersionError {}
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 pub enum Version {
@@ -26,13 +9,13 @@ pub enum Version {
 }
 
 impl FromStr for Version {
-  type Err = ParseVersionError;
+  type Err = VersionParseError;
   fn from_str(value: &str) -> Result<Self, Self::Err> {
     match value.to_lowercase().as_str() {
       "patch" => Ok(Version::Patch),
       "minor" => Ok(Version::Minor),
       "major" => Ok(Version::Major),
-      _ => Err(ParseVersionError(value.to_string())),
+      _ => Err(VersionParseError::from(value.to_string())),
     }
   }
 }

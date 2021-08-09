@@ -1,5 +1,6 @@
 use clap::Clap;
-use lightbringer_core::Lightbringer;
+
+use lightbringer_core::prelude::Lightbringer;
 
 #[cfg(feature = "cargo")]
 use lightbringer_cargo::CargoExplorer;

@@ -5,7 +5,7 @@ use clap::Clap;
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 
-use lightbringer_core::{changeset::Changeset, version::Version, Lightbringer};
+use lightbringer_core::prelude::{Changeset, Lightbringer, Version};
 
 use super::Command;
 

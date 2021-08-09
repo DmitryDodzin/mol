@@ -1,6 +1,6 @@
 use std::fs::read_dir;
 
-use lightbringer_core::explorer::{Explorer, ExplorerError};
+use lightbringer_core::prelude::{Explorer, ExplorerError};
 
 mod editor;
 

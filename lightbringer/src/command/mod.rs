@@ -1,5 +1,6 @@
 use clap::Clap;
-use lightbringer_core::Lightbringer;
+
+use lightbringer_core::prelude::Lightbringer;
 
 pub trait Command {
   fn run(&self, context: &Lightbringer) -> Result<(), failure::Error>;

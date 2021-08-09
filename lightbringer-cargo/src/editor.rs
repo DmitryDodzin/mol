@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use globset::Glob;
 use toml_edit::{Document, Item, Value};
 
-use lightbringer_core::explorer::ExplorerError;
+use lightbringer_core::prelude::ExplorerError;
 
 #[derive(Debug)]
 pub enum PackageType {

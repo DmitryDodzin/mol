@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::fmt::{Display, Formatter};
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
@@ -7,24 +6,8 @@ use std::str::FromStr;
 
 use itertools::Itertools;
 
+use crate::error::ChangesetParseError;
 use crate::version::Version;
-
-#[derive(Debug)]
-pub enum ChangesetParseError {
-  HeaderNotFound,
-  HeaderParsing,
-}
-
-impl Display for ChangesetParseError {
-  fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-    match self {
-      ChangesetParseError::HeaderNotFound => write!(fmt, "Header Not Found"),
-      ChangesetParseError::HeaderParsing => write!(fmt, "Header Parsing Error"),
-    }
-  }
-}
-
-impl std::error::Error for ChangesetParseError {}
 
 #[derive(Debug, Default)]
 pub struct Changeset {
