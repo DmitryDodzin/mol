@@ -46,3 +46,43 @@ impl ToString for Version {
     }
   }
 }
+
+#[cfg(test)]
+mod tests {
+
+  use super::*;
+
+  #[test]
+  fn from_str() {
+    let strings = vec!["patch", "minor", "minor", "major"];
+
+    let versions: Vec<Version> = strings
+      .iter()
+      .filter_map(|item| Version::from_str(item).ok())
+      .collect();
+
+    assert_eq!(
+      versions,
+      vec![
+        Version::Patch,
+        Version::Minor,
+        Version::Minor,
+        Version::Major
+      ]
+    );
+  }
+
+  #[test]
+  fn to_str() {
+    let versions = vec![
+      Version::Patch,
+      Version::Minor,
+      Version::Minor,
+      Version::Major,
+    ];
+
+    let strings: Vec<String> = versions.iter().map(|item| item.to_string()).collect();
+
+    assert_eq!(strings, vec!["patch", "minor", "minor", "major"]);
+  }
+}
