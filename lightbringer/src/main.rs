@@ -1,4 +1,5 @@
 use clap::Clap;
+use lightbringer_cargo::CargoExplorer;
 use lightbringer_core::Lightbringer;
 
 mod cli;
@@ -9,7 +10,7 @@ use command::Command;
 fn main() -> Result<(), failure::Error> {
   let opts: cli::Opts = cli::Opts::parse();
 
-  let context = Lightbringer;
+  let context = Lightbringer::from(CargoExplorer);
 
   match opts.cmd {
     cli::Command::Add(add_command) => {

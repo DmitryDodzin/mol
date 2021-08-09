@@ -1,14 +1,15 @@
 [package]
-name = "lightbringer"
+name = "lightbringer-cargo"
 version = "0.1.0"
-authors = ["Dmitry Dodzin <d.dodzin@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-lightbringer-cargo = { path = '../lightbringer-cargo' }
 lightbringer-core = { path = '../lightbringer-core' }
-clap = "3.0.0-beta.2"
-dialoguer = "0.8"
-failure = "0.1"
+globset = "0.4"
+toml_edit = "0.2"
+
+[dev-dependencies.cargo-husky]
+version = "1"
+features = ["run-cargo-fmt", "run-cargo-clippy"]
