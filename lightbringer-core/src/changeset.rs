@@ -1,16 +1,30 @@
 use std::collections::HashMap;
+use std::fmt::{Display, Formatter};
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
 
+use itertools::Itertools;
+
 use crate::version::Version;
 
 #[derive(Debug)]
 pub enum ChangesetParseError {
-  NoPackageVersionsFound,
-  InvalidPackageVerionSyntax,
+  HeaderNotFound,
+  HeaderParsing,
 }
+
+impl Display for ChangesetParseError {
+  fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+    match self {
+      ChangesetParseError::HeaderNotFound => write!(fmt, "Header Not Found"),
+      ChangesetParseError::HeaderParsing => write!(fmt, "Header Parsing Error"),
+    }
+  }
+}
+
+impl std::error::Error for ChangesetParseError {}
 
 #[derive(Debug, Default)]
 pub struct Changeset {
@@ -38,11 +52,11 @@ impl Changeset {
       match line {
         "" => {}
         "---" => return Ok(()),
-        _ => return Err(ChangesetParseError::NoPackageVersionsFound),
+        _ => return Err(ChangesetParseError::HeaderNotFound),
       }
     }
 
-    Err(ChangesetParseError::NoPackageVersionsFound)
+    Err(ChangesetParseError::HeaderNotFound)
   }
 
   fn parse_package_name(value: &str) -> &str {
@@ -79,12 +93,12 @@ impl FromStr for Changeset {
               );
 
               if version.is_err() {
-                return Err(ChangesetParseError::InvalidPackageVerionSyntax);
+                return Err(ChangesetParseError::HeaderParsing);
               }
 
               packages.insert(package.to_string(), version.unwrap());
             }
-            _ => return Err(ChangesetParseError::InvalidPackageVerionSyntax),
+            _ => return Err(ChangesetParseError::HeaderParsing),
           }
         }
       }
@@ -102,7 +116,7 @@ impl ToString for Changeset {
     let mut output = vec![];
 
     output.extend(b"---\n");
-    for (package, version) in self.packages.iter() {
+    for (package, version) in self.packages.iter().sorted() {
       output.extend(format!("\"{}\": {}\n", package, version.to_string()).as_bytes())
     }
     output.extend(b"---\n");
@@ -170,5 +184,45 @@ Do cool stuff
       .into_iter()
       .collect()
     );
+  }
+
+  #[test]
+  fn to_str() {
+    let changeset = Changeset {
+      packages: vec![("lightbinger".to_owned(), Version::Minor)]
+        .into_iter()
+        .collect(),
+      message: "Do cool stuff".to_string(),
+    };
+
+    assert_eq!(
+      changeset.to_string(),
+      "---
+\"lightbinger\": minor
+---
+Do cool stuff"
+    )
+  }
+
+  #[test]
+  fn to_str_multiple() {
+    let changeset = Changeset {
+      packages: vec![
+        ("lightbinger".to_owned(), Version::Minor),
+        ("lightbinger-core".to_owned(), Version::Major),
+      ]
+      .into_iter()
+      .collect(),
+      message: "Do cool stuff".to_string(),
+    };
+
+    assert_eq!(
+      changeset.to_string(),
+      "---
+\"lightbinger\": minor
+\"lightbinger-core\": major
+---
+Do cool stuff"
+    )
   }
 }

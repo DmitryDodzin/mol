@@ -9,3 +9,7 @@ edition = "2018"
 lightbringer-core = { path = '../lightbringer-core' }
 globset = "0.4"
 toml_edit = "0.2"
+
+[dev-dependencies.cargo-husky]
+version = "1"
+features = ["run-cargo-fmt", "run-cargo-clippy"]

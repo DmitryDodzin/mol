@@ -18,7 +18,7 @@ impl Display for ParseVersionError {
 
 impl Error for ParseVersionError {}
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 pub enum Version {
   Patch,
   Minor,
