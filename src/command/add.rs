@@ -63,7 +63,7 @@ impl Command for Add {
         self
           .version
           .as_ref()
-          .map_or(None, |version| Version::from_str(&version).ok()),
+          .and_then(|version| Version::from_str(version).ok()),
       ) {
         Changeset {
           packages: vec![(package.clone(), version)].into_iter().collect(),

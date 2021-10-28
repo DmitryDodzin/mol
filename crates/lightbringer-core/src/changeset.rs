@@ -43,7 +43,7 @@ impl Changeset {
   }
 
   fn parse_package_name(value: &str) -> &str {
-    if value.starts_with("\"") {
+    if value.starts_with('\"') {
       let mut chars = value.chars();
       chars.next();
       chars.next_back();
@@ -58,7 +58,7 @@ impl FromStr for Changeset {
   type Err = ChangesetParseError;
   fn from_str(value: &str) -> Result<Self, Self::Err> {
     let mut packages = HashMap::new();
-    let mut lines = value.split("\n");
+    let mut lines = value.split('\n');
 
     Changeset::find_changeset_start(&mut lines)?;
 
@@ -66,7 +66,7 @@ impl FromStr for Changeset {
       match line {
         "---" => break,
         value => {
-          let change_value: Vec<&str> = value.split(":").map(|val| val.trim()).collect();
+          let change_value: Vec<&str> = value.split(':').map(|val| val.trim()).collect();
 
           match change_value.len() {
             2 => {

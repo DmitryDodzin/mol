@@ -17,6 +17,6 @@ impl<'a, T: 'a + Explorer> From<T> for Lightbringer<'a> {
 
 impl<'a> Lightbringer<'a> {
   pub fn get_packages(&self) -> Vec<String> {
-    self.explorer.list_packages().unwrap_or(vec![])
+    self.explorer.list_packages().unwrap_or_else(|_| vec![])
   }
 }
