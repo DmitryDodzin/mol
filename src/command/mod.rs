@@ -2,7 +2,7 @@ use clap::Clap;
 
 use lightbringer_core::prelude::Lightbringer;
 
-pub trait Command {
+pub trait CommandTarget {
   fn run(&self, context: &Lightbringer) -> Result<(), failure::Error>;
 }
 

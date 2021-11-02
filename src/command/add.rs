@@ -5,9 +5,9 @@ use clap::Clap;
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 
-use lightbringer_core::prelude::{Changeset, Lightbringer, Version};
+use lightbringer_core::prelude::*;
 
-use super::Command;
+use super::CommandTarget;
 
 #[derive(Clap, Debug)]
 pub struct Add {
@@ -39,23 +39,25 @@ impl Add {
     Ok(versions[version_selection])
   }
 
-  fn select_package(&self, packages: Vec<String>) -> Result<String, failure::Error> {
+  fn select_package(&self, packages: Vec<Package>) -> Result<String, failure::Error> {
     if self.package.is_some() {
       return Ok(self.package.clone().unwrap());
     }
 
+    let package_names: Vec<&str> = packages.iter().map(|package| package.name()).collect();
+
     let package_selection = Select::with_theme(&ColorfulTheme::default())
       .with_prompt("package")
-      .items(&packages)
+      .items(&package_names)
       .default(0)
       .interact_on_opt(&Term::buffered_stderr())?
       .unwrap();
 
-    Ok(packages[package_selection].clone())
+    Ok(package_names[package_selection].to_owned())
   }
 }
 
-impl Command for Add {
+impl CommandTarget for Add {
   fn run(&self, context: &Lightbringer) -> Result<(), failure::Error> {
     let changset = if self.empty {
       if let (Some(package), Some(version)) = (
