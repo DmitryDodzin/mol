@@ -1,9 +1,7 @@
 use clap::Clap;
 
-use lightbringer_core::prelude::Lightbringer;
-
 pub trait CommandTarget {
-  fn run(&self, context: &Lightbringer) -> Result<(), failure::Error>;
+  fn run(&self) -> Result<(), failure::Error>;
 }
 
 mod add;

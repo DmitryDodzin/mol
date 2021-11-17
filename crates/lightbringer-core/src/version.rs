@@ -9,7 +9,7 @@ pub trait Versioned: FromStr + Ord + ToString {
 
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Version<T> {
-  pub version: T,
+  version: T,
 }
 
 impl<T> Version<T> {
