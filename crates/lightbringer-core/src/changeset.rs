@@ -10,24 +10,12 @@ use crate::error::ChangesetParseError;
 use crate::version::Version;
 
 #[derive(Debug, Default)]
-pub struct Changeset {
-  pub packages: HashMap<String, Version>,
+pub struct Changeset<T> {
+  pub packages: HashMap<String, Version<T>>,
   pub message: String,
 }
 
-impl Changeset {
-  pub fn parse(value: &str) -> Result<Self, <Self as FromStr>::Err> {
-    Changeset::from_str(value)
-  }
-
-  pub fn save(self, output: PathBuf) -> std::io::Result<()> {
-    let mut file = File::create(output)?;
-
-    file.write_all(self.to_string().as_bytes())?;
-
-    Ok(())
-  }
-
+impl<T> Changeset<T> {
   fn find_changeset_start(
     lines: &mut dyn Iterator<Item = &str>,
   ) -> Result<(), ChangesetParseError> {
@@ -54,13 +42,30 @@ impl Changeset {
   }
 }
 
-impl FromStr for Changeset {
+impl<T: FromStr + ToString + Ord> Changeset<T> {
+  pub fn parse(value: &str) -> Result<Self, <Self as FromStr>::Err> {
+    Changeset::from_str(value)
+  }
+
+  pub fn save(self, output: PathBuf) -> std::io::Result<()> {
+    let mut file = File::create(output)?;
+
+    file.write_all(self.to_string().as_bytes())?;
+
+    Ok(())
+  }
+}
+
+impl<T> FromStr for Changeset<T>
+where
+  T: FromStr,
+{
   type Err = ChangesetParseError;
   fn from_str(value: &str) -> Result<Self, Self::Err> {
     let mut packages = HashMap::new();
     let mut lines = value.split('\n');
 
-    Changeset::find_changeset_start(&mut lines)?;
+    Self::find_changeset_start(&mut lines)?;
 
     for line in &mut lines {
       match line {
@@ -71,15 +76,15 @@ impl FromStr for Changeset {
           match change_value.len() {
             2 => {
               let (package, version) = (
-                Changeset::parse_package_name(change_value[0]),
+                Self::parse_package_name(change_value[0]),
                 Version::from_str(change_value[1]),
               );
 
-              if version.is_err() {
+              if let Ok(version) = version {
+                packages.insert(package.to_string(), version);
+              } else {
                 return Err(ChangesetParseError::HeaderParsing);
               }
-
-              packages.insert(package.to_string(), version.unwrap());
             }
             _ => return Err(ChangesetParseError::HeaderParsing),
           }
@@ -87,14 +92,14 @@ impl FromStr for Changeset {
       }
     }
 
-    Ok(Changeset {
+    Ok(Self {
       packages,
       message: lines.collect::<Vec<&str>>().join("\n"),
     })
   }
 }
 
-impl ToString for Changeset {
+impl<T: ToString + Ord> ToString for Changeset<T> {
   fn to_string(&self) -> String {
     let mut output = vec![];
 
@@ -113,10 +118,11 @@ impl ToString for Changeset {
 mod tests {
 
   use super::*;
+  use crate::semantic::Semantic;
 
   #[test]
   fn from_str() {
-    let changeset = Changeset::from_str(
+    let changeset = Changeset::<Semantic>::from_str(
       "
 ---
 \"lightbinger\": minor
@@ -132,7 +138,7 @@ Do cool stuff
 
     assert_eq!(
       changeset.packages,
-      vec![("lightbinger".to_string(), Version::Minor)]
+      vec![("lightbinger".to_string(), Version::new(Semantic::minor()))]
         .into_iter()
         .collect()
     );
@@ -146,7 +152,7 @@ Do cool stuff
 
   #[test]
   fn from_str_multiple() {
-    let changeset = Changeset::from_str(
+    let changeset = Changeset::<Semantic>::from_str(
       "
 ---
 \"lightbinger\": minor
@@ -154,15 +160,18 @@ Do cool stuff
 ---
 
 Do cool stuff
-      ",
+        ",
     )
     .unwrap();
 
     assert_eq!(
       changeset.packages,
       vec![
-        ("lightbinger".to_string(), Version::Minor),
-        ("lightbinger-core".to_string(), Version::Major)
+        ("lightbinger".to_string(), Version::new(Semantic::minor())),
+        (
+          "lightbinger-core".to_string(),
+          Version::new(Semantic::major())
+        )
       ]
       .into_iter()
       .collect()
@@ -171,8 +180,8 @@ Do cool stuff
 
   #[test]
   fn to_str() {
-    let changeset = Changeset {
-      packages: vec![("lightbinger".to_owned(), Version::Minor)]
+    let changeset: Changeset<Semantic> = Changeset {
+      packages: vec![("lightbinger".to_owned(), Version::new(Semantic::minor()))]
         .into_iter()
         .collect(),
       message: "Do cool stuff".to_string(),
@@ -189,10 +198,13 @@ Do cool stuff"
 
   #[test]
   fn to_str_multiple() {
-    let changeset = Changeset {
+    let changeset: Changeset<Semantic> = Changeset {
       packages: vec![
-        ("lightbinger".to_owned(), Version::Minor),
-        ("lightbinger-core".to_owned(), Version::Major),
+        ("lightbinger".to_owned(), Version::new(Semantic::minor())),
+        (
+          "lightbinger-core".to_owned(),
+          Version::new(Semantic::major()),
+        ),
       ]
       .into_iter()
       .collect(),
