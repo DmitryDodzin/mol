@@ -1,14 +1,26 @@
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use async_recursion::async_recursion;
+use dashmap::DashSet;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use tokio::fs;
 use toml_edit::Document;
 
 #[async_recursion]
-async fn check_dir(globs: GlobSet, entry: fs::DirEntry) -> std::io::Result<Vec<(PathBuf, String)>> {
+async fn check_dir(
+  exists: Arc<DashSet<PathBuf>>,
+  globs: GlobSet,
+  entry: fs::DirEntry,
+) -> std::io::Result<Vec<(PathBuf, String)>> {
   let mut result = Vec::new();
   let entry_path = entry.path();
+
+  if exists.contains(&entry_path) {
+    return Ok(result);
+  } else {
+    exists.insert(entry_path.clone());
+  }
 
   if entry_path.starts_with("target") || entry_path.starts_with(".git") {
     return Ok(result);
@@ -16,7 +28,12 @@ async fn check_dir(globs: GlobSet, entry: fs::DirEntry) -> std::io::Result<Vec<(
 
   if let Ok(file_type) = entry.file_type().await {
     if file_type.is_dir() {
-      return check_read_dir(globs, fs::read_dir(&entry_path).await?).await;
+      return check_read_dir(exists, globs, fs::read_dir(&entry_path).await?).await;
+    }
+
+    if file_type.is_symlink() {
+      let entry_path = fs::read_link(&entry_path).await?;
+      return check_read_dir(exists, globs, fs::read_dir(&entry_path).await?).await;
     }
 
     if globs.is_match(entry.path()) && file_type.is_file() && entry.file_name() == "Cargo.toml" {
@@ -29,6 +46,7 @@ async fn check_dir(globs: GlobSet, entry: fs::DirEntry) -> std::io::Result<Vec<(
 
 #[async_recursion]
 async fn check_read_dir(
+  exists: Arc<DashSet<PathBuf>>,
   globs: GlobSet,
   mut current_dir: fs::ReadDir,
 ) -> std::io::Result<Vec<(PathBuf, String)>> {
@@ -36,7 +54,7 @@ async fn check_read_dir(
 
   while let Some(entry) = current_dir.next_entry().await? {
     let globs = globs.clone();
-    handles.push(tokio::spawn(check_dir(globs, entry)));
+    handles.push(tokio::spawn(check_dir(exists.clone(), globs, entry)));
   }
 
   let mut result = Vec::new();
@@ -92,8 +110,11 @@ async fn read_package<T: AsRef<Path> + Into<PathBuf>>(
       builder.add(glob.clone());
     }
 
+    let exists = Arc::new(DashSet::new());
+
     result.extend(
       check_read_dir(
+        exists,
         builder.build().expect("Globs did not set together"),
         fs::read_dir(crate_path.parent().unwrap_or(&crate_path)).await?,
       )
