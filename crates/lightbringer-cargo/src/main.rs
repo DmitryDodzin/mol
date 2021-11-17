@@ -6,34 +6,56 @@ use tokio::fs;
 use toml_edit::Document;
 
 #[async_recursion]
-async fn check_dir(globs: &GlobSet, mut current_dir: fs::ReadDir) -> std::io::Result<()> {
-  while let Some(entry) = current_dir.next_entry().await? {
-    let entry_path = entry.path();
+async fn check_dir(globs: GlobSet, entry: fs::DirEntry) -> std::io::Result<Vec<(PathBuf, String)>> {
+  let mut result = Vec::new();
+  let entry_path = entry.path();
 
-    println!("entring: {:?}", entry_path);
+  if entry_path.starts_with("target") || entry_path.starts_with(".git") {
+    return Ok(result);
+  }
 
-    if entry_path.starts_with("target") {
-      continue;
+  if let Ok(file_type) = entry.file_type().await {
+    if file_type.is_dir() {
+      return check_read_dir(globs, fs::read_dir(&entry_path).await?).await;
     }
 
-    if let Ok(file_type) = entry.file_type().await {
-      if file_type.is_dir() {
-        check_dir(globs, fs::read_dir(&entry_path).await?).await?;
-        continue;
-      }
-
-      if globs.is_match(entry.path()) {
-        if file_type.is_file() && entry.file_name() == "Cargo.toml" {
-          read_package(&entry_path).await?;
-        }
-      }
+    if globs.is_match(entry.path()) && file_type.is_file() && entry.file_name() == "Cargo.toml" {
+      result.extend(read_package(&entry_path).await?);
     }
   }
 
-  Ok(())
+  Ok(result)
 }
 
-async fn read_package<T: AsRef<Path> + Into<PathBuf>>(crate_path: T) -> std::io::Result<()> {
+#[async_recursion]
+async fn check_read_dir(
+  globs: GlobSet,
+  mut current_dir: fs::ReadDir,
+) -> std::io::Result<Vec<(PathBuf, String)>> {
+  let mut handles = Vec::new();
+
+  while let Some(entry) = current_dir.next_entry().await? {
+    let globs = globs.clone();
+    handles.push(tokio::spawn(check_dir(globs, entry)));
+  }
+
+  let mut result = Vec::new();
+
+  for task in futures::future::join_all(handles)
+    .await
+    .into_iter()
+    .flatten()
+  {
+    result.extend(task?);
+  }
+
+  Ok(result)
+}
+
+async fn read_package<T: AsRef<Path> + Into<PathBuf>>(
+  crate_path: T,
+) -> std::io::Result<Vec<(PathBuf, String)>> {
+  let mut result = Vec::new();
   let crate_path = crate_path.into();
 
   let cargo = fs::read_to_string(&crate_path)
@@ -46,6 +68,11 @@ async fn read_package<T: AsRef<Path> + Into<PathBuf>>(crate_path: T) -> std::io:
   } else {
     None
   };
+
+  if let Some(package_name) = package_name {
+    result.push((crate_path.clone(), package_name.to_owned()));
+  }
+
   let workspace = if cargo.contains_key("workspace") {
     cargo["workspace"]["members"].as_array().map(|val| {
       val
@@ -65,19 +92,23 @@ async fn read_package<T: AsRef<Path> + Into<PathBuf>>(crate_path: T) -> std::io:
       builder.add(glob.clone());
     }
 
-    check_dir(
-      &builder.build().expect("Globs did not set together"),
-      fs::read_dir(crate_path.parent().unwrap_or_else(|| &crate_path)).await?,
-    )
-    .await?;
+    result.extend(
+      check_read_dir(
+        builder.build().expect("Globs did not set together"),
+        fs::read_dir(crate_path.parent().unwrap_or(&crate_path)).await?,
+      )
+      .await?,
+    );
   }
 
-  println!("{:?}", package_name);
-
-  Ok(())
+  Ok(result)
 }
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-  read_package("Cargo.toml").await
+  let packages = read_package("Cargo.toml").await?;
+
+  println!("{:#?}", packages);
+
+  Ok(())
 }
