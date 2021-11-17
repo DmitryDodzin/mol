@@ -51,6 +51,7 @@ impl Versioned for Semantic {
       .map(|val| val.parse::<i32>().ok())
       .flatten()
       .ok_or(VersionBumpError)?;
+    // TODO: Allow dev builds and not
     let patch = current
       .next()
       .map(|val| val.parse::<i32>().ok())
@@ -140,15 +141,27 @@ mod tests {
     assert_eq!(strings, vec!["patch", "minor", "minor", "major"]);
   }
 
+  // TODO: this
+  // #[test]
+  // fn canary_apply() {
+  //   let version = Version::new(Semantic::major());
+
+  //   let bumped = version.apply("0.0.1-alpha.0");
+
+  //   assert!(bumped.is_ok());
+
+  //   assert_eq!(bumped.unwrap(), "0.0.2".to_owned())
+  // }
+
   #[test]
-  fn patch_apply() {
-    let version = Version::new(Semantic::patch());
+  fn major_apply() {
+    let version = Version::new(Semantic::major());
 
     let bumped = version.apply("0.0.1");
 
     assert!(bumped.is_ok());
 
-    assert_eq!(bumped.unwrap(), "0.0.2".to_owned())
+    assert_eq!(bumped.unwrap(), "1.0.1".to_owned())
   }
 
   #[test]
@@ -163,13 +176,13 @@ mod tests {
   }
 
   #[test]
-  fn major_apply() {
-    let version = Version::new(Semantic::major());
+  fn patch_apply() {
+    let version = Version::new(Semantic::patch());
 
     let bumped = version.apply("0.0.1");
 
     assert!(bumped.is_ok());
 
-    assert_eq!(bumped.unwrap(), "1.0.1".to_owned())
+    assert_eq!(bumped.unwrap(), "0.0.2".to_owned())
   }
 }
