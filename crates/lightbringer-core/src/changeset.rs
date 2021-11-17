@@ -1,10 +1,9 @@
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
 
 use itertools::Itertools;
+use tokio::{fs::File, io::AsyncWriteExt};
 
 use crate::error::ChangesetParseError;
 use crate::version::{Version, Versioned};
@@ -47,10 +46,10 @@ impl<T: Versioned> Changeset<T> {
     Changeset::from_str(value)
   }
 
-  pub fn save(self, output: PathBuf) -> std::io::Result<()> {
-    let mut file = File::create(output)?;
+  pub async fn save(self, output: PathBuf) -> std::io::Result<()> {
+    let mut file = File::create(output).await?;
 
-    file.write_all(self.to_string().as_bytes())?;
+    file.write_all(self.to_string().as_bytes()).await?;
 
     Ok(())
   }

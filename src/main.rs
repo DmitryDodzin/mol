@@ -49,7 +49,7 @@ async fn main() -> Result<(), failure::Error> {
           path
         };
 
-        changeset.save(changeset_path)?;
+        changeset.save(changeset_path).await?;
       }
     }
     _ => {
