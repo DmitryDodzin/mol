@@ -1,22 +1,12 @@
-// use clap::Clap;
+use clap::Clap;
 
-// use lightbringer_core::prelude::*;
-
-// mod cli;
-// mod command;
-
-// use cli::Command;
-// use command::CommandTarget;
+mod cli;
+mod command;
 
 fn main() -> Result<(), failure::Error> {
-  // let opts: cli::Opts = cli::Opts::parse();
+  let opts: cli::Opts = cli::Opts::parse();
 
-  // let light = Lightbringer {};
-
-  // match opts.cmd {
-  //   Command::Add(add) => add.run(&light)?,
-  //   _ => {}
-  // }
+  println!("{:?}", opts.cmd);
 
   Ok(())
 }
