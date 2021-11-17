@@ -7,7 +7,7 @@ use std::str::FromStr;
 use itertools::Itertools;
 
 use crate::error::ChangesetParseError;
-use crate::version::Version;
+use crate::version::{Version, Versioned};
 
 #[derive(Debug, Default)]
 pub struct Changeset<T> {
@@ -42,7 +42,7 @@ impl<T> Changeset<T> {
   }
 }
 
-impl<T: FromStr + ToString + Ord> Changeset<T> {
+impl<T: Versioned> Changeset<T> {
   pub fn parse(value: &str) -> Result<Self, <Self as FromStr>::Err> {
     Changeset::from_str(value)
   }
@@ -99,7 +99,7 @@ where
   }
 }
 
-impl<T: ToString + Ord> ToString for Changeset<T> {
+impl<T: Versioned> ToString for Changeset<T> {
   fn to_string(&self) -> String {
     let mut output = vec![];
 
@@ -180,7 +180,7 @@ Do cool stuff
 
   #[test]
   fn to_str() {
-    let changeset: Changeset<Semantic> = Changeset {
+    let changeset = Changeset {
       packages: vec![("lightbinger".to_owned(), Version::new(Semantic::minor()))]
         .into_iter()
         .collect(),
@@ -198,7 +198,7 @@ Do cool stuff"
 
   #[test]
   fn to_str_multiple() {
-    let changeset: Changeset<Semantic> = Changeset {
+    let changeset = Changeset {
       packages: vec![
         ("lightbinger".to_owned(), Version::new(Semantic::minor())),
         (

@@ -29,7 +29,7 @@ impl From<std::io::Error> for ExplorerError {
 
 impl Display for ExplorerError {
   // add code here
-  fn fmt(&self, fmt: &mut Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+  fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
     write!(fmt, "ExplorerError")
   }
 }
@@ -48,7 +48,7 @@ impl From<String> for VersionParseError {
 
 impl Display for VersionParseError {
   // add code here
-  fn fmt(&self, fmt: &mut Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+  fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
     write!(
       fmt,
       "\"{}\" isn't a version, should be patch/minor/major",
@@ -58,3 +58,15 @@ impl Display for VersionParseError {
 }
 
 impl Error for VersionParseError {}
+
+#[derive(Debug)]
+pub struct VersionBumpError;
+
+impl Display for VersionBumpError {
+  // add code here
+  fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+    write!(fmt, "VersionBumpError")
+  }
+}
+
+impl Error for VersionBumpError {}

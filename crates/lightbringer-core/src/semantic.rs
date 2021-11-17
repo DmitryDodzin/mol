@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
-use crate::error::VersionParseError;
+use crate::error::{VersionBumpError, VersionParseError};
+use crate::version::Versioned;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 enum SemanticVersion {
@@ -29,6 +30,38 @@ impl Semantic {
     Semantic {
       r#type: SemanticVersion::Patch,
     }
+  }
+}
+
+impl Versioned for Semantic {
+  fn options() -> Vec<Self> {
+    vec![Self::patch(), Self::minor(), Self::major()]
+  }
+
+  fn apply(&self, current: &str) -> Result<String, VersionBumpError> {
+    let mut current = current.split('.');
+
+    let major = current
+      .next()
+      .map(|val| val.parse::<i32>().ok())
+      .flatten()
+      .ok_or(VersionBumpError)?;
+    let minor = current
+      .next()
+      .map(|val| val.parse::<i32>().ok())
+      .flatten()
+      .ok_or(VersionBumpError)?;
+    let patch = current
+      .next()
+      .map(|val| val.parse::<i32>().ok())
+      .flatten()
+      .ok_or(VersionBumpError)?;
+
+    Ok(match self.r#type {
+      SemanticVersion::Major => format!("{}.{}.{}", major + 1, minor, patch),
+      SemanticVersion::Minor => format!("{}.{}.{}", major, minor + 1, patch),
+      SemanticVersion::Patch => format!("{}.{}.{}", major, minor, patch + 1),
+    })
   }
 }
 
@@ -71,7 +104,7 @@ impl ToString for Semantic {
 mod tests {
 
   use super::*;
-  use crate::version::Version;
+  use crate::version::{Version, Versioned};
 
   #[test]
   fn from_str() {
@@ -95,7 +128,7 @@ mod tests {
 
   #[test]
   fn to_str() {
-    let versions: Vec<Version<Semantic>> = vec![
+    let versions = vec![
       Version::new(Semantic::patch()),
       Version::new(Semantic::minor()),
       Version::new(Semantic::minor()),
@@ -105,5 +138,38 @@ mod tests {
     let strings: Vec<String> = versions.iter().map(|item| item.to_string()).collect();
 
     assert_eq!(strings, vec!["patch", "minor", "minor", "major"]);
+  }
+
+  #[test]
+  fn patch_apply() {
+    let version = Version::new(Semantic::patch());
+
+    let bumped = version.apply("0.0.1");
+
+    assert!(bumped.is_ok());
+
+    assert_eq!(bumped.unwrap(), "0.0.2".to_owned())
+  }
+
+  #[test]
+  fn minor_apply() {
+    let version = Version::new(Semantic::minor());
+
+    let bumped = version.apply("0.0.1");
+
+    assert!(bumped.is_ok());
+
+    assert_eq!(bumped.unwrap(), "0.1.1".to_owned())
+  }
+
+  #[test]
+  fn major_apply() {
+    let version = Version::new(Semantic::major());
+
+    let bumped = version.apply("0.0.1");
+
+    assert!(bumped.is_ok());
+
+    assert_eq!(bumped.unwrap(), "1.0.1".to_owned())
   }
 }
