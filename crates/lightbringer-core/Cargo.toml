@@ -8,3 +8,5 @@ edition = "2018"
 
 [dependencies]
 itertools = "0.10"
+tokio = { version = "1", features = ["fs"] }
+failure = "0.1"

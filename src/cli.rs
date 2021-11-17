@@ -1,3 +1,4 @@
+use crate::command::Version;
 use clap::{AppSettings, Clap};
 
 pub use crate::command::*;

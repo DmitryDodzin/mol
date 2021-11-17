@@ -7,7 +7,7 @@ pub trait Versioned: FromStr + Ord + ToString {
   fn apply(&self, current: &str) -> Result<String, VersionBumpError>;
 }
 
-#[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Version<T> {
   version: T,
 }

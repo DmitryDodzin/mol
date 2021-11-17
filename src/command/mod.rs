@@ -1,10 +1,13 @@
+use std::path::PathBuf;
+
 use clap::Clap;
 
-pub trait CommandTarget {
-  fn run(&self) -> Result<(), failure::Error>;
-}
-
 mod add;
+
+#[derive(Debug)]
+pub struct Context {
+  pub packages: Vec<(PathBuf, String, String)>,
+}
 
 pub use add::Add;
 

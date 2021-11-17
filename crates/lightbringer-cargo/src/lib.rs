@@ -12,7 +12,7 @@ async fn check_dir(
   exists: Arc<DashSet<PathBuf>>,
   globs: GlobSet,
   entry: fs::DirEntry,
-) -> std::io::Result<Vec<(PathBuf, String)>> {
+) -> std::io::Result<Vec<(PathBuf, String, String)>> {
   let mut result = Vec::new();
   let entry_path = entry.path();
 
@@ -49,7 +49,7 @@ async fn check_read_dir(
   exists: Arc<DashSet<PathBuf>>,
   globs: GlobSet,
   mut current_dir: fs::ReadDir,
-) -> std::io::Result<Vec<(PathBuf, String)>> {
+) -> std::io::Result<Vec<(PathBuf, String, String)>> {
   let mut handles = Vec::new();
 
   while let Some(entry) = current_dir.next_entry().await? {
@@ -70,9 +70,9 @@ async fn check_read_dir(
   Ok(result)
 }
 
-async fn read_package<T: AsRef<Path> + Into<PathBuf>>(
+pub async fn read_package<T: AsRef<Path> + Into<PathBuf>>(
   crate_path: T,
-) -> std::io::Result<Vec<(PathBuf, String)>> {
+) -> std::io::Result<Vec<(PathBuf, String, String)>> {
   let mut result = Vec::new();
   let crate_path = crate_path.into();
 
@@ -81,14 +81,21 @@ async fn read_package<T: AsRef<Path> + Into<PathBuf>>(
     .parse::<Document>()
     .expect("Invalid Cargo.toml");
 
-  let package_name = if cargo.contains_key("package") {
-    cargo["package"]["name"].as_str()
+  let (package_name, version) = if cargo.contains_key("package") {
+    (
+      cargo["package"]["name"].as_str(),
+      cargo["package"]["version"].as_str(),
+    )
   } else {
-    None
+    (None, None)
   };
 
-  if let Some(package_name) = package_name {
-    result.push((crate_path.clone(), package_name.to_owned()));
+  if let (Some(package_name), Some(version)) = (package_name, version) {
+    result.push((
+      crate_path.clone(),
+      package_name.to_owned(),
+      version.to_owned(),
+    ));
   }
 
   let workspace = if cargo.contains_key("workspace") {
@@ -123,13 +130,4 @@ async fn read_package<T: AsRef<Path> + Into<PathBuf>>(
   }
 
   Ok(result)
-}
-
-#[tokio::main]
-async fn main() -> std::io::Result<()> {
-  let packages = read_package("Cargo.toml").await?;
-
-  println!("{:#?}", packages);
-
-  Ok(())
 }

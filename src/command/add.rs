@@ -1,13 +1,13 @@
-// use std::collections::HashMap;
-// use std::str::FromStr;
+use std::path::PathBuf;
+use std::str::FromStr;
 
 use clap::Clap;
-// use dialoguer::console::Term;
-// use dialoguer::{theme::ColorfulTheme, Input, Select};
+use dialoguer::{Input, MultiSelect, Select};
 
-// use lightbringer_core::prelude::*;
+use lightbringer_core::prelude::*;
 
-// use super::CommandTarget;
+use super::Context;
+use crate::COLOR_THEME;
 
 #[derive(Clap, Debug)]
 pub struct Add {
@@ -15,86 +15,111 @@ pub struct Add {
   #[clap(long)]
   pub empty: bool,
   #[clap(short, long)]
-  pub package: Option<String>,
-  #[clap(short, long)]
+  pub packages: Option<Vec<String>>,
+  #[clap(long)]
   pub version: Option<String>,
+  #[clap(long)]
+  pub patch: bool,
+  #[clap(long)]
+  pub minor: bool,
+  #[clap(long)]
+  pub major: bool,
   #[clap(short, long)]
   pub message: Option<String>,
 }
 
-// impl Add {
-//   fn select_version(&self) -> Result<Version, failure::Error> {
-//     if let Some(version) = &self.version {
-//       return Version::from_str(version).map_err(|err| err.into());
-//     }
+impl Add {
+  fn select_version(&self) -> Result<Version<Semantic>, failure::Error> {
+    if let Some(version) = &self.version {
+      return Version::<Semantic>::from_str(version).map_err(|err| err.into());
+    }
 
-//     let versions = vec![Version::Patch, Version::Minor, Version::Major];
-//     let version_selection = Select::with_theme(&ColorfulTheme::default())
-//       .with_prompt("version")
-//       .items(&versions)
-//       .default(0)
-//       .interact_on_opt(&Term::buffered_stderr())?
-//       .unwrap();
+    if self.major || self.minor || self.patch {
+      return Ok(match (self.major, self.minor, self.patch) {
+        (true, _, _) => Version::new(Semantic::major()),
+        (false, true, _) => Version::new(Semantic::minor()),
+        (false, false, true) => Version::new(Semantic::patch()),
+        (false, false, false) => unreachable!(),
+      });
+    }
 
-//     Ok(versions[version_selection])
-//   }
+    let versions = vec![
+      Version::new(Semantic::patch()),
+      Version::new(Semantic::minor()),
+      Version::new(Semantic::major()),
+    ];
+    let version_selection = Select::with_theme(&*COLOR_THEME)
+      .with_prompt("version")
+      .items(&versions)
+      .default(0)
+      .interact()?;
 
-//   fn select_package(&self, packages: Vec<Package>) -> Result<String, failure::Error> {
-//     if self.package.is_some() {
-//       return Ok(self.package.clone().unwrap());
-//     }
+    Ok(versions[version_selection].clone())
+  }
 
-//     let package_names: Vec<&str> = packages.iter().map(|package| package.name()).collect();
+  fn select_packages(
+    &self,
+    context: &Context,
+  ) -> Result<Vec<(PathBuf, String, String)>, failure::Error> {
+    if let Some(packages) = &self.packages {
+      let packages = context
+        .packages
+        .iter()
+        .filter(|(_, name, _)| packages.contains(name))
+        .cloned()
+        .collect();
 
-//     let package_selection = Select::with_theme(&ColorfulTheme::default())
-//       .with_prompt("package")
-//       .items(&package_names)
-//       .default(0)
-//       .interact_on_opt(&Term::buffered_stderr())?
-//       .unwrap();
+      return Ok(packages);
+    }
 
-//     Ok(package_names[package_selection].to_owned())
-//   }
-// }
+    let packages = MultiSelect::with_theme(&*COLOR_THEME)
+      .with_prompt("packages")
+      .items(
+        &context
+          .packages
+          .iter()
+          .map(|(_, name, _)| name)
+          .collect::<Vec<&String>>(),
+      )
+      .interact()?
+      .into_iter()
+      .map(|index| context.packages[index].clone())
+      .collect();
 
-// impl CommandTarget for Add {
-//   fn run(&self, context: &Lightbringer) -> Result<(), failure::Error> {
-//     let changset = if self.empty {
-//       if let (Some(package), Some(version)) = (
-//         self.package.as_ref(),
-//         self
-//           .version
-//           .as_ref()
-//           .and_then(|version| Version::from_str(version).ok()),
-//       ) {
-//         Changeset {
-//           packages: vec![(package.clone(), version)].into_iter().collect(),
-//           message: "".to_owned(),
-//         }
-//       } else {
-//         Changeset::default()
-//       }
-//     } else {
-//       let mut packages = HashMap::new();
-//       let package = self.select_package(context.get_packages())?;
-//       let version = self.select_version()?;
+    Ok(packages)
+  }
 
-//       packages.insert(package, version);
+  pub fn get_changeset(
+    &mut self,
+    context: &Context,
+  ) -> Result<Option<Changeset<Semantic>>, failure::Error> {
+    let packages = self.select_packages(context)?;
 
-//       let message = if self.message.is_some() {
-//         self.message.clone().unwrap()
-//       } else {
-//         Input::<String>::with_theme(&ColorfulTheme::default())
-//           .with_prompt("message")
-//           .allow_empty(true)
-//           .interact_on(&Term::buffered_stderr())?
-//       };
+    if packages.is_empty() {
+      return Ok(None);
+    }
 
-//       Changeset { packages, message }
-//     };
+    let version = self.select_version()?;
 
-//     println!("{}", changset.to_string());
+    let message = if self.empty {
+      String::new()
+    } else {
+      match &self.message {
+        Some(message) => message.clone(),
+        None => Input::with_theme(&*COLOR_THEME)
+          .with_prompt("message")
+          .interact_text()?,
+      }
+    };
 
-//     Ok(())
-//   }
-// }
+    let changeset: Changeset<Semantic> = Changeset {
+      packages: packages
+        .into_iter()
+        .map(|(_, name, _)| (name, version.clone()))
+        .collect(),
+      message,
+    };
+
+    Ok(Some(changeset))
+  }
+}
