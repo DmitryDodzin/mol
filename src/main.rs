@@ -13,6 +13,10 @@ lazy_static! {
     unchecked_item_prefix: console::style("✘".to_owned()).for_stderr().red(),
     ..Default::default()
   };
+  static ref INIT_REQ_PROMPT: console::StyledObject<&'static str> =
+    console::style("Changesets folder validation failed run 'init'").yellow();
+  static ref INIT_EXISTS_PROMPT: console::StyledObject<&'static str> =
+    console::style("Changesets folder already initialized").yellow();
 }
 
 use cli::Command;
@@ -28,16 +32,25 @@ async fn main() -> Result<(), failure::Error> {
 
   let context = Context { packages };
 
-  if !changesets.validate() {
-    println!("Changesets folder validation failed run 'init'");
-
-    return Ok(());
-  }
-
   match opts.cmd {
-    Command::Add(mut add) => add.run(&changesets, &context).await?,
-    _ => {
-      println!("{:?}", opts.cmd);
+    Command::Init(_) => {
+      if !changesets.validate() {
+        changesets.initialize().await?;
+      } else {
+        println!("{}", *INIT_EXISTS_PROMPT);
+      }
+    }
+    command => {
+      if !changesets.validate() {
+        println!("{}", *INIT_REQ_PROMPT);
+      }
+
+      match command {
+        Command::Add(mut add) => add.run(&changesets, &context).await?,
+        command => {
+          println!("{:?}", command);
+        }
+      }
     }
   }
 
