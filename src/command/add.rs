@@ -3,6 +3,8 @@ use std::str::FromStr;
 
 use clap::Clap;
 use dialoguer::{Input, MultiSelect, Select};
+use faker_rand::lorem::Word;
+use rand::Rng;
 
 use lightbringer_core::prelude::*;
 
@@ -89,7 +91,7 @@ impl Add {
     Ok(packages)
   }
 
-  pub fn get_changeset(
+  fn get_changeset(
     &mut self,
     context: &Context,
   ) -> Result<Option<Changeset<Semantic>>, failure::Error> {
@@ -121,5 +123,27 @@ impl Add {
     };
 
     Ok(Some(changeset))
+  }
+
+  pub async fn run(
+    &mut self,
+    changesets: &Changesets,
+    context: &Context,
+  ) -> Result<(), failure::Error> {
+    if let Some(changeset) = self.get_changeset(context)? {
+      let mut rng = rand::thread_rng();
+
+      let changeset_path = {
+        let mut path = changesets.directory.clone();
+
+        path.push(format!("{}-{}.md", rng.gen::<Word>(), rng.gen::<Word>()));
+
+        path
+      };
+
+      changeset.save(changeset_path).await?;
+    }
+
+    Ok(())
   }
 }
