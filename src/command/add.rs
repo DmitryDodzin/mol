@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use clap::Clap;
-use dialoguer::{Input, MultiSelect, Select};
+use dialoguer::{console::Term, Input, MultiSelect, Select};
 use faker_rand::lorem::Word;
 use rand::Rng;
 
@@ -54,7 +54,7 @@ impl Add {
       .with_prompt("version")
       .items(&versions)
       .default(0)
-      .interact()?;
+      .interact_on(&Term::buffered_stderr())?;
 
     Ok(versions[version_selection].clone())
   }
@@ -83,7 +83,7 @@ impl Add {
           .map(|(_, name, _)| name)
           .collect::<Vec<&String>>(),
       )
-      .interact()?
+      .interact_on(&Term::buffered_stderr())?
       .into_iter()
       .map(|index| context.packages[index].clone())
       .collect();
@@ -110,7 +110,7 @@ impl Add {
         Some(message) => message.clone(),
         None => Input::with_theme(&*COLOR_THEME)
           .with_prompt("message")
-          .interact_text()?,
+          .interact_on(&Term::buffered_stderr())?,
       }
     };
 
