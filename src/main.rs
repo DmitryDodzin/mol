@@ -20,9 +20,9 @@ lazy_static! {
 }
 
 use cli::Command;
-use command::Context;
+use command::{Context, ExecuteableCommand};
 
-#[tokio::main]
+#[tokio::main(flavor = "multi_thread", worker_threads = 12)]
 async fn main() -> Result<(), failure::Error> {
   let opts: cli::Opts = cli::Opts::parse();
 
@@ -46,7 +46,8 @@ async fn main() -> Result<(), failure::Error> {
       }
 
       match command {
-        Command::Add(mut add) => add.run(&changesets, &context).await?,
+        Command::Add(mut add) => add.execute(&changesets, &context).await?,
+        Command::Version(mut version) => version.execute(&changesets, &context).await?,
         command => {
           println!("{:?}", command);
         }

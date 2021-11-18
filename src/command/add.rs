@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use std::str::FromStr;
 
+use async_trait::async_trait;
 use clap::Clap;
 use dialoguer::{console::Term, Input, MultiSelect, Select};
 use faker_rand::lorem::Word;
@@ -8,7 +9,7 @@ use rand::Rng;
 
 use lightbringer_core::prelude::*;
 
-use super::Context;
+use super::{Context, ExecuteableCommand};
 use crate::COLOR_THEME;
 
 #[derive(Clap, Debug)]
@@ -124,16 +125,18 @@ impl Add {
 
     Ok(Some(changeset))
   }
+}
 
-  pub async fn run(
+#[async_trait]
+impl ExecuteableCommand for Add {
+  async fn execute(
     &mut self,
     changesets: &Changesets,
     context: &Context,
   ) -> Result<(), failure::Error> {
     if let Some(changeset) = self.get_changeset(context)? {
-      let mut rng = rand::thread_rng();
-
       let changeset_path = {
+        let mut rng = rand::thread_rng();
         let mut path = changesets.directory.clone();
 
         path.push(format!("{}-{}.md", rng.gen::<Word>(), rng.gen::<Word>()));

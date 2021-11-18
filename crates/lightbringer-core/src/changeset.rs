@@ -93,7 +93,7 @@ where
 
     Ok(Self {
       packages,
-      message: lines.collect::<Vec<&str>>().join("\n"),
+      message: lines.collect::<Vec<&str>>().join("\n").trim().to_owned(),
     })
   }
 }
@@ -106,8 +106,9 @@ impl<T: Versioned> ToString for Changeset<T> {
     for (package, version) in self.packages.iter().sorted() {
       output.extend(format!("\"{}\": {}\n", package, version.to_string()).as_bytes())
     }
-    output.extend(b"---\n");
+    output.extend(b"---\n\n");
     output.extend(self.message.as_bytes());
+    output.push(b'\n');
 
     String::from_utf8(output).unwrap()
   }
@@ -128,7 +129,7 @@ mod tests {
 ---
 
 Do cool stuff
-      ",
+",
     );
 
     assert!(changeset.is_ok());
@@ -141,12 +142,7 @@ Do cool stuff
         .into_iter()
         .collect()
     );
-    assert_eq!(
-      changeset.message,
-      "
-Do cool stuff
-      "
-    );
+    assert_eq!(changeset.message, "Do cool stuff");
   }
 
   #[test]
@@ -159,7 +155,7 @@ Do cool stuff
 ---
 
 Do cool stuff
-        ",
+",
     )
     .unwrap();
 
@@ -191,7 +187,9 @@ Do cool stuff
       "---
 \"lightbinger\": minor
 ---
-Do cool stuff"
+
+Do cool stuff
+"
     )
   }
 
@@ -216,7 +214,9 @@ Do cool stuff"
 \"lightbinger\": minor
 \"lightbinger-core\": major
 ---
-Do cool stuff"
+
+Do cool stuff
+"
     )
   }
 }
