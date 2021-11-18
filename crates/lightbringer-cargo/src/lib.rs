@@ -5,7 +5,7 @@ use async_recursion::async_recursion;
 use dashmap::DashSet;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use tokio::fs;
-use toml_edit::Document;
+use toml_edit::{value, Document};
 
 #[async_recursion]
 async fn check_dir(
@@ -70,21 +70,25 @@ async fn check_read_dir(
   Ok(result)
 }
 
-pub async fn read_package<T: AsRef<Path> + Into<PathBuf>>(
-  crate_path: T,
-) -> std::io::Result<Vec<(PathBuf, String, String)>> {
-  let mut result = Vec::new();
-  let crate_path = crate_path.into();
-
-  let cargo = fs::read_to_string(&crate_path)
+async fn load_document(crate_path: PathBuf) -> std::io::Result<(PathBuf, Document)> {
+  let document = fs::read_to_string(&crate_path)
     .await?
     .parse::<Document>()
     .expect("Invalid Cargo.toml");
 
-  let (package_name, version) = if cargo.contains_key("package") {
+  Ok((crate_path, document))
+}
+
+pub async fn read_package<T: AsRef<Path> + Into<PathBuf>>(
+  crate_path: T,
+) -> std::io::Result<Vec<(PathBuf, String, String)>> {
+  let mut result = Vec::new();
+  let (crate_path, document) = load_document(crate_path.into()).await?;
+
+  let (package_name, version) = if document.contains_key("package") {
     (
-      cargo["package"]["name"].as_str(),
-      cargo["package"]["version"].as_str(),
+      document["package"]["name"].as_str(),
+      document["package"]["version"].as_str(),
     )
   } else {
     (None, None)
@@ -98,8 +102,8 @@ pub async fn read_package<T: AsRef<Path> + Into<PathBuf>>(
     ));
   }
 
-  let workspace = if cargo.contains_key("workspace") {
-    cargo["workspace"]["members"].as_array().map(|val| {
+  let workspace = if document.contains_key("workspace") {
+    document["workspace"]["members"].as_array().map(|val| {
       val
         .iter()
         .filter_map(|v| v.as_str())
@@ -130,4 +134,19 @@ pub async fn read_package<T: AsRef<Path> + Into<PathBuf>>(
   }
 
   Ok(result)
+}
+
+pub async fn apply_version<T: AsRef<Path> + Into<PathBuf>>(
+  crate_path: T,
+  version: &str,
+) -> std::io::Result<()> {
+  let (crate_path, mut document) = load_document(crate_path.into()).await?;
+
+  if document.contains_key("package") {
+    document["package"]["version"] = value(version);
+  }
+
+  fs::write(&crate_path, document.to_string()).await?;
+
+  Ok(())
 }

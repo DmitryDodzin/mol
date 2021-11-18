@@ -62,7 +62,7 @@ where
   type Err = ChangesetParseError;
   fn from_str(value: &str) -> Result<Self, Self::Err> {
     let mut packages = HashMap::new();
-    let mut lines = value.split('\n');
+    let mut lines = value.split('\n').map(|line| line.trim_end());
 
     Self::find_changeset_start(&mut lines)?;
 
@@ -111,6 +111,18 @@ impl<T: Versioned> ToString for Changeset<T> {
     output.push(b'\n');
 
     String::from_utf8(output).unwrap()
+  }
+}
+
+#[derive(Debug, Default)]
+pub struct ChangesetPack<T> {
+  pub packages: HashMap<String, Version<T>>,
+  pub messages: HashMap<String, Vec<String>>,
+}
+
+impl<T> ChangesetPack<T> {
+  pub fn patch(&self, _pacakge: &str) -> Option<String> {
+    None
   }
 }
 

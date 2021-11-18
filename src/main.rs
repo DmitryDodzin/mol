@@ -8,6 +8,9 @@ use lightbringer_core::prelude::*;
 mod cli;
 mod command;
 
+use cli::{Command, Opts};
+use command::{Context, ExecuteableCommand};
+
 lazy_static! {
   pub(crate) static ref COLOR_THEME: ColorfulTheme = ColorfulTheme {
     unchecked_item_prefix: console::style("✘".to_owned()).for_stderr().red(),
@@ -19,12 +22,9 @@ lazy_static! {
     console::style("Changesets folder already initialized").yellow();
 }
 
-use cli::Command;
-use command::{Context, ExecuteableCommand};
-
-#[tokio::main(flavor = "multi_thread", worker_threads = 12)]
+#[tokio::main]
 async fn main() -> Result<(), failure::Error> {
-  let opts: cli::Opts = cli::Opts::parse();
+  let opts = Opts::parse();
 
   let changesets = Changesets::default();
 
