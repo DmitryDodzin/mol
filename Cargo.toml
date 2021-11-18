@@ -10,14 +10,16 @@ default = []
 [dependencies]
 lightbringer-cargo = { path = './crates/lightbringer-cargo' }
 lightbringer-core = { path = './crates/lightbringer-core' }
+
 async-trait = "0.1"
 clap = "3.0.0-beta.2"
-rand = "0.8"
-faker_rand = "0.1"
 dialoguer = "0.9"
-lazy_static = "1"
-tokio = { version = "1", features = ["rt", "macros", "rt-multi-thread"] }
 failure = "0.1"
+faker_rand = "0.1"
+git2 = "0.13"
+lazy_static = "1"
+rand = "0.8"
+tokio = { version = "1", features = ["rt", "macros", "rt-multi-thread"] }
 
 [workspace]
 members = [
