@@ -114,18 +114,6 @@ impl<T: Versioned> ToString for Changeset<T> {
   }
 }
 
-#[derive(Debug, Default)]
-pub struct ChangesetPack<T> {
-  pub packages: HashMap<String, Version<T>>,
-  pub messages: HashMap<String, Vec<String>>,
-}
-
-impl<T> ChangesetPack<T> {
-  pub fn patch(&self, _pacakge: &str) -> Option<String> {
-    None
-  }
-}
-
 #[cfg(test)]
 mod tests {
 

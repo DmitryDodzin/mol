@@ -1,4 +1,5 @@
-use std::path::{Path, PathBuf};
+use std::fmt::Debug;
+use std::path::Path;
 
 use async_trait::async_trait;
 use clap::Clap;
@@ -13,10 +14,8 @@ use super::{Context, ExecuteableCommand};
 pub struct Version;
 
 impl Version {
-  async fn consume_changesets(
-    changesets: &Changesets,
-  ) -> Result<(Changeset<Semantic>, Vec<PathBuf>), failure::Error> {
-    let mut concat_changeset = Changeset::default();
+  async fn consume_changesets(changesets: &Changesets) -> Result<Bump<Semantic>, failure::Error> {
+    let mut bump = Bump::default();
     let mut changeset_files_paths = Vec::new();
 
     let mut changeset_files = fs::read_dir(&changesets.directory).await?;
@@ -28,40 +27,23 @@ impl Version {
         if ext == "md" {
           let raw_changeset = fs::read_to_string(&changeset_path).await?;
 
-          let changeset = Changeset::<Semantic>::parse(&raw_changeset)?;
+          bump.add(Changeset::<Semantic>::parse(&raw_changeset)?);
 
-          for (name, version) in &changeset.packages {
-            if let Some(concat_version) = concat_changeset.packages.get_mut(name) {
-              if version > concat_version {
-                *concat_version = version.clone();
-              }
-            } else {
-              concat_changeset
-                .packages
-                .insert(name.to_owned(), version.clone());
-            }
-          }
-
-          if !changeset_files_paths.is_empty() {
-            concat_changeset.message.push_str("\n\n");
-          }
-          concat_changeset.message.push_str(&changeset.message);
+          fs::remove_file(&changeset_path).await?;
 
           changeset_files_paths.push(changeset_path);
         }
       }
     }
 
-    for path in &changeset_files_paths {
-      fs::remove_file(&path).await?
-    }
+    println!("{:?}", changeset_files_paths);
 
-    Ok((concat_changeset, changeset_files_paths))
+    Ok(bump)
   }
 
-  async fn update_changelog<T: Versioned, P: AsRef<Path>>(
+  async fn update_changelog<T: Versioned + Debug, P: AsRef<Path>>(
     changelog: P,
-    changeset: &Changeset<T>,
+    bump: &Bump<T>,
   ) -> Result<(), failure::Error> {
     let changelog = if changelog.as_ref().exists() {
       fs::read_to_string(changelog).await?
@@ -70,8 +52,7 @@ impl Version {
     };
 
     println!("{}", changelog);
-
-    println!("{}", changeset.to_string());
+    println!("{:#?}", bump);
 
     Ok(())
   }
@@ -84,6 +65,8 @@ impl ExecuteableCommand for Version {
     changesets: &Changesets,
     context: &Context,
   ) -> Result<(), failure::Error> {
+    println!("{:#?}", context);
+
     // {
     //   let mut repository = Repository::open(".")?;
 
@@ -107,40 +90,52 @@ impl ExecuteableCommand for Version {
     //   println!("{:?} -> {:?} ({:?})", head, next_barnch, stash);
     // }
 
-    let (concat_changeset, changeset_files_paths) = Self::consume_changesets(changesets).await?;
+    let bump = Self::consume_changesets(changesets).await?;
 
-    if changeset_files_paths.is_empty() {
-      println!(
-        "Sorry but no changesets found in {:?}",
-        changesets.directory
-      );
-
-      return Ok(());
+    for (path, name, version) in &context.packages {
+      if let Some(update) = bump.package(name).version() {
+        lightbringer_cargo::apply_version(path, &update.apply(version)?).await?;
+      }
     }
 
-    Self::update_changelog("CHANGELOG.md", &concat_changeset).await?;
+    // for (name, version) in bump.updates() {
+    //   lightbringer_cargo::apply_version(crate_path, &version).await?;
+    // }
 
-    let updates = context.packages.iter().filter_map(|(path, name, version)| {
-      concat_changeset
-        .packages
-        .get(name)
-        .map(|patch| {
-          patch
-            .apply(version)
-            .ok()
-            .map(|next| (path, name, version, next))
-        })
-        .flatten()
-    });
+    // if changeset_files_paths.is_empty() {
+    //   println!(
+    //     "Sorry but no changesets found in {:?}",
+    //     changesets.directory
+    //   );
 
-    for (crate_path, name, current_version, next_version) in updates {
-      println!(
-        "{:?} {:?} {:?} {:?}",
-        crate_path, name, current_version, next_version
-      );
+    //   return Ok(());
+    // }
 
-      lightbringer_cargo::apply_version(crate_path, &next_version).await?;
-    }
+    Self::update_changelog("CHANGELOG.md", &bump).await?;
+
+    println!("{:?}", bump.package("lightbringer").changesets());
+
+    // let updates = context.packages.iter().filter_map(|(path, name, version)| {
+    //   concat_changeset
+    //     .packages
+    //     .get(name)
+    //     .map(|patch| {
+    //       patch
+    //         .apply(version)
+    //         .ok()
+    //         .map(|next| (path, name, version, next))
+    //     })
+    //     .flatten()
+    // });
+
+    // for (crate_path, name, current_version, next_version) in updates {
+    //   println!(
+    //     "{:?} {:?} {:?} {:?}",
+    //     crate_path, name, current_version, next_version
+    //   );
+
+    //   lightbringer_cargo::apply_version(crate_path, &next_version).await?;
+    // }
 
     Ok(())
   }

@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use crate::error::VersionBumpError;
 
-pub trait Versioned: FromStr + Ord + ToString {
+pub trait Versioned: Clone + FromStr + Ord + ToString {
   fn options() -> Vec<Self>;
   fn apply(&self, current: &str) -> Result<String, VersionBumpError>;
 }

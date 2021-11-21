@@ -11,6 +11,7 @@ lightbringer-core = { path = '../lightbringer-core' }
 
 async-recursion = "0.3"
 dashmap = "4"
+failure = "0.1"
 futures = "0.3"
 globset = "0.4"
 tokio = { version = "1", features = ["rt", "fs"] }

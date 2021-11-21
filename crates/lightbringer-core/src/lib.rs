@@ -1,3 +1,4 @@
+pub mod bump;
 pub mod changeset;
 pub mod changesets;
 pub mod error;

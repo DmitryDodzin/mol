@@ -548,6 +548,7 @@ version = "0.1.0"
 dependencies = [
  "async-recursion",
  "dashmap",
+ "failure",
  "futures",
  "globset",
  "lightbringer-core",
