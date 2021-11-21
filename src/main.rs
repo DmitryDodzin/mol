@@ -2,7 +2,7 @@ use clap::Clap;
 use dialoguer::{console, theme::ColorfulTheme};
 use lazy_static::lazy_static;
 
-use lightbringer_cargo::read_package;
+use lightbringer_cargo::Cargo;
 use lightbringer_core::prelude::*;
 
 mod cli;
@@ -28,7 +28,9 @@ async fn main() -> Result<(), failure::Error> {
 
   let changesets = Changesets::default();
 
-  let packages = read_package("Cargo.toml").await?;
+  let package_manager = Cargo::default();
+
+  let packages = package_manager.read_package("Cargo.toml").await?;
 
   let context = Context { packages };
 

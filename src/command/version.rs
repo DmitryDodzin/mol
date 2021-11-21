@@ -92,11 +92,11 @@ impl ExecuteableCommand for Version {
 
     let bump = Self::consume_changesets(changesets).await?;
 
-    for (path, name, version) in &context.packages {
-      if let Some(update) = bump.package(name).version() {
-        lightbringer_cargo::apply_version(path, &update.apply(version)?).await?;
-      }
-    }
+    // for (path, name, version) in &context.packages {
+    //   if let Some(update) = bump.package(name).version() {
+    //     lightbringer_cargo::apply_version(path, &update.apply(version)?).await?;
+    //   }
+    // }
 
     // for (name, version) in bump.updates() {
     //   lightbringer_cargo::apply_version(crate_path, &version).await?;
