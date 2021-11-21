@@ -10,8 +10,9 @@ mod version;
 
 #[derive(Debug)]
 pub struct Context<T: PackageManager> {
-  pub packages: Vec<(PathBuf, String, String)>,
+  pub dry_run: bool,
   pub package_manager: T,
+  pub packages: Vec<(PathBuf, String, String)>,
 }
 
 #[async_trait]

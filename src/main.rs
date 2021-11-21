@@ -31,6 +31,7 @@ async fn main() -> Result<(), failure::Error> {
   let package_manager = Cargo::default();
 
   let context = Context {
+    dry_run: opts.dry_run,
     packages: package_manager.read_package("Cargo.toml").await?,
     package_manager,
   };

@@ -144,7 +144,11 @@ impl<T: PackageManager + Send + Sync> ExecuteableCommand<T> for Add {
         path
       };
 
-      changeset.save(changeset_path).await?;
+      if context.dry_run {
+        println!("{}", changeset.to_string());
+      } else {
+        changeset.save(changeset_path).await?;
+      }
     }
 
     Ok(())

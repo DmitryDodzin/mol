@@ -1,9 +1,8 @@
 use std::fmt::Debug;
-use std::path::Path;
+// use std::path::Path;
 
 use async_trait::async_trait;
 use clap::Clap;
-// use git2::Repository;
 use tokio::fs;
 
 use lightbringer_core::prelude::*;
@@ -14,7 +13,10 @@ use super::{Context, ExecuteableCommand};
 pub struct Version;
 
 impl Version {
-  async fn consume_changesets(changesets: &Changesets) -> Result<Bump<Semantic>, failure::Error> {
+  async fn consume_changesets<T: PackageManager>(
+    changesets: &Changesets,
+    context: &Context<T>,
+  ) -> Result<Bump<Semantic>, failure::Error> {
     let mut bump = Bump::default();
     let mut changeset_files_paths = Vec::new();
 
@@ -29,32 +31,18 @@ impl Version {
 
           bump.add(Changeset::<Semantic>::parse(&raw_changeset)?);
 
-          fs::remove_file(&changeset_path).await?;
+          if context.dry_run {
+            println!("dry_run - delete: {:?}", changeset_path);
+          } else {
+            fs::remove_file(&changeset_path).await?;
+          }
 
           changeset_files_paths.push(changeset_path);
         }
       }
     }
 
-    println!("{:?}", changeset_files_paths);
-
     Ok(bump)
-  }
-
-  async fn update_changelog<T: Versioned + Debug, P: AsRef<Path>>(
-    changelog: P,
-    bump: &Bump<T>,
-  ) -> Result<(), failure::Error> {
-    let changelog = if changelog.as_ref().exists() {
-      fs::read_to_string(changelog).await?
-    } else {
-      String::new()
-    };
-
-    println!("{}", changelog);
-    println!("{:#?}", bump);
-
-    Ok(())
   }
 }
 
@@ -65,78 +53,53 @@ impl<T: PackageManager + Send + Sync> ExecuteableCommand<T> for Version {
     changesets: &Changesets,
     context: &Context<T>,
   ) -> Result<(), failure::Error> {
-    // {
-    //   let mut repository = Repository::open(".")?;
+    let bump = Self::consume_changesets(changesets, context).await?;
 
-    //   let signature = repository.signature()?;
+    if bump.is_empty() {
+      println!(
+        "Sorry but no changesets found in {:?}",
+        changesets.directory
+      );
 
-    //   let (head, next_barnch) = {
-    //     let head = repository.head()?;
-
-    //     let head_commit = head.peel_to_commit()?;
-
-    //     let next_branch = repository.branch("lightbringer/version", &head_commit, true)?;
-
-    //     (
-    //       head.name().map(|val| val.to_owned()),
-    //       next_branch.name()?.map(|val| val.to_owned()),
-    //     )
-    //   };
-
-    //   let stash = repository.stash_save2(&signature, None, None).ok();
-
-    //   println!("{:?} -> {:?} ({:?})", head, next_barnch, stash);
-    // }
-
-    let bump = Self::consume_changesets(changesets).await?;
+      return Ok(());
+    }
 
     for (path, name, version) in &context.packages {
       if let Some(update) = bump.package(name).version() {
-        context
-          .package_manager
-          .apply_version(path, &update.apply(version)?)
-          .await?;
+        let next_version = update.apply(version)?;
+
+        if context.dry_run {
+          println!("dry_run - version bump: {} -> {}", version, next_version);
+        } else {
+          context
+            .package_manager
+            .apply_version(path, &next_version)
+            .await?;
+        }
+
+        if let Some(root_path) = path.parent() {
+          let changelog_path = {
+            let mut root_path = root_path.to_path_buf();
+            root_path.push("CHANGELOG.md");
+            root_path
+          };
+
+          if context.dry_run {
+            println!(
+              "dry_run - update changelog {:?} with {}",
+              changelog_path,
+              bump
+                .package(name)
+                .version()
+                .map(|value| value.to_string())
+                .unwrap_or_else(String::new)
+            );
+          } else {
+            Changelog::update_changelog(changelog_path, next_version, &bump.package(name)).await?;
+          }
+        }
       }
     }
-
-    // for (name, version) in bump.updates() {
-    //   lightbringer_cargo::apply_version(crate_path, &version).await?;
-    // }
-
-    // if changeset_files_paths.is_empty() {
-    //   println!(
-    //     "Sorry but no changesets found in {:?}",
-    //     changesets.directory
-    //   );
-
-    //   return Ok(());
-    // }
-
-    Self::update_changelog("CHANGELOG.md", &bump).await?;
-
-    println!("{:?}", bump.package("lightbringer").changesets());
-
-    // let updates = context.packages.iter().filter_map(|(path, name, version)| {
-    //   concat_changeset
-    //     .packages
-    //     .get(name)
-    //     .map(|patch| {
-    //       patch
-    //         .apply(version)
-    //         .ok()
-    //         .map(|next| (path, name, version, next))
-    //     })
-    //     .flatten()
-    // });
-
-    // for (crate_path, name, current_version, next_version) in updates {
-    //   println!(
-    //     "{:?} {:?} {:?} {:?}",
-    //     crate_path, name, current_version, next_version
-    //   );
-
-    //   lightbringer_cargo::apply_version(crate_path, &next_version).await?;
-    // }
 
     Ok(())
   }

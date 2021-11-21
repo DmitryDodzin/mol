@@ -32,6 +32,10 @@ impl<'a, T: Versioned> Bump<T> {
     }
   }
 
+  pub fn is_empty(&self) -> bool {
+    self.changesets.is_empty()
+  }
+
   pub fn package(&'a self, package: &'a str) -> PackageBump<'a, T> {
     PackageBump {
       package,

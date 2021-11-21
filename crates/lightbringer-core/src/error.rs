@@ -19,6 +19,25 @@ impl Display for ChangesetParseError {
 impl Error for ChangesetParseError {}
 
 #[derive(Debug)]
+pub struct ChangelogParseError(String);
+
+impl From<String> for ChangelogParseError {
+  // add code here
+  fn from(value: String) -> Self {
+    ChangelogParseError(value)
+  }
+}
+
+impl Display for ChangelogParseError {
+  // add code here
+  fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+    write!(fmt, "Could not parse changelog: {}", self.0)
+  }
+}
+
+impl Error for ChangelogParseError {}
+
+#[derive(Debug)]
 pub struct ExplorerError;
 
 impl From<std::io::Error> for ExplorerError {
