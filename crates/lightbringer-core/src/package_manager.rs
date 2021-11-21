@@ -8,4 +8,9 @@ pub trait PackageManager {
     &self,
     crate_path: T,
   ) -> std::io::Result<Vec<(PathBuf, String, String)>>;
+  async fn apply_version<T: AsRef<Path> + Send + Sync>(
+    &self,
+    crate_path: T,
+    version: &str,
+  ) -> std::io::Result<()>;
 }

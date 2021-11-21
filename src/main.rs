@@ -30,9 +30,10 @@ async fn main() -> Result<(), failure::Error> {
 
   let package_manager = Cargo::default();
 
-  let packages = package_manager.read_package("Cargo.toml").await?;
-
-  let context = Context { packages };
+  let context = Context {
+    packages: package_manager.read_package("Cargo.toml").await?,
+    package_manager,
+  };
 
   match opts.cmd {
     Command::Init(_) => {

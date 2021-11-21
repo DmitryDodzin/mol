@@ -88,22 +88,6 @@ impl Cargo {
 
     Ok((crate_path.as_ref().to_path_buf(), document))
   }
-
-  pub async fn apply_version<T: AsRef<Path> + Into<PathBuf>>(
-    &self,
-    crate_path: T,
-    version: &str,
-  ) -> std::io::Result<()> {
-    let (crate_path, mut document) = self.load_document(crate_path.into()).await?;
-
-    if document.contains_key("package") {
-      document["package"]["version"] = value(version);
-    }
-
-    fs::write(&crate_path, document.to_string()).await?;
-
-    Ok(())
-  }
 }
 
 #[async_trait]
@@ -164,5 +148,21 @@ impl PackageManager for Cargo {
     }
 
     Ok(result)
+  }
+
+  async fn apply_version<T: AsRef<Path> + Send + Sync>(
+    &self,
+    crate_path: T,
+    version: &str,
+  ) -> std::io::Result<()> {
+    let (crate_path, mut document) = self.load_document(crate_path).await?;
+
+    if document.contains_key("package") {
+      document["package"]["version"] = value(version);
+    }
+
+    fs::write(&crate_path, document.to_string()).await?;
+
+    Ok(())
   }
 }

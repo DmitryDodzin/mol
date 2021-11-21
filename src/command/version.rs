@@ -59,14 +59,12 @@ impl Version {
 }
 
 #[async_trait]
-impl ExecuteableCommand for Version {
+impl<T: PackageManager + Send + Sync> ExecuteableCommand<T> for Version {
   async fn execute(
     &mut self,
     changesets: &Changesets,
-    context: &Context,
+    context: &Context<T>,
   ) -> Result<(), failure::Error> {
-    println!("{:#?}", context);
-
     // {
     //   let mut repository = Repository::open(".")?;
 
@@ -92,11 +90,14 @@ impl ExecuteableCommand for Version {
 
     let bump = Self::consume_changesets(changesets).await?;
 
-    // for (path, name, version) in &context.packages {
-    //   if let Some(update) = bump.package(name).version() {
-    //     lightbringer_cargo::apply_version(path, &update.apply(version)?).await?;
-    //   }
-    // }
+    for (path, name, version) in &context.packages {
+      if let Some(update) = bump.package(name).version() {
+        context
+          .package_manager
+          .apply_version(path, &update.apply(version)?)
+          .await?;
+      }
+    }
 
     // for (name, version) in bump.updates() {
     //   lightbringer_cargo::apply_version(crate_path, &version).await?;
