@@ -10,7 +10,7 @@ mod cli;
 mod command;
 
 use crate::{
-  cli::{Command, Opts, Root},
+  cli::{Command, CommandWithSelf, Opts},
   command::{ExecutableContext, IntoExecutableCommand},
 };
 
@@ -67,11 +67,11 @@ pub async fn exec<T: Default + PackageManager + Send + Sync>() -> anyhow::Result
   };
 
   match opts.cmd {
-    Root::Mol(command) => match command.target {
+    CommandWithSelf::Mol(command) => match command.target {
       Command::Init(_) => handle_init(&changesets).await?,
       command => handle_command(&changesets, &context, command).await?,
     },
-    Root::Init(_) => handle_init(&changesets).await?,
+    CommandWithSelf::Init(_) => handle_init(&changesets).await?,
     command => handle_command(&changesets, &context, command).await?,
   }
 

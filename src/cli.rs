@@ -31,7 +31,7 @@ pub struct CommandTarget {
 }
 
 #[derive(Parser, Debug)]
-pub enum Root {
+pub enum CommandWithSelf {
   Mol(CommandTarget),
   Init(Init),
   Add(Add),
@@ -40,7 +40,7 @@ pub enum Root {
   Status(Status),
 }
 
-impl<T: PackageManager + Send + Sync> IntoExecutableCommand<T> for Root {
+impl<T: PackageManager + Send + Sync> IntoExecutableCommand<T> for CommandWithSelf {
   fn as_executable(&self) -> Option<&dyn ExecutableCommand<T>> {
     match self {
       Self::Add(add) => Some(add as &dyn ExecutableCommand<T>),
@@ -51,11 +51,11 @@ impl<T: PackageManager + Send + Sync> IntoExecutableCommand<T> for Root {
 }
 
 #[derive(Parser, Debug)]
-#[clap(author = "Dmitry Dodzin <d.dodzin@gmail.com>")]
+#[clap(name = "cargo-mol", author = "Dmitry Dodzin <d.dodzin@gmail.com>")]
 pub struct Opts {
   /// Command
   #[clap(subcommand)]
-  pub cmd: Root,
+  pub cmd: CommandWithSelf,
 
   /// Dry the changes
   #[clap(long)]
