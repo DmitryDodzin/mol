@@ -2,17 +2,17 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use async_trait::async_trait;
-use clap::Clap;
+use clap::Parser;
 use dialoguer::{console::Term, Input, MultiSelect, Select};
 use faker_rand::lorem::Word;
 use rand::Rng;
 
-use lightbringer_core::prelude::*;
+use mol_core::prelude::*;
 
 use super::{Context, ExecuteableCommand};
 use crate::COLOR_THEME;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Add {
   /// Generate empty changeset
   #[clap(long)]
@@ -93,7 +93,7 @@ impl Add {
   }
 
   fn get_changeset<T: PackageManager>(
-    &mut self,
+    &self,
     context: &Context<T>,
   ) -> Result<Option<Changeset<Semantic>>, failure::Error> {
     let packages = self.select_packages(context)?;
@@ -130,7 +130,7 @@ impl Add {
 #[async_trait]
 impl<T: PackageManager + Send + Sync> ExecuteableCommand<T> for Add {
   async fn execute(
-    &mut self,
+    &self,
     changesets: &Changesets,
     context: &Context<T>,
   ) -> Result<(), failure::Error> {

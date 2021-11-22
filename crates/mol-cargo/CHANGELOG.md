@@ -1,4 +1,4 @@
-# lightbringer-core
+# mol-cargo
 
 ## 0.1.0
 

@@ -92,18 +92,15 @@ mod tests {
     let mut bump = Bump::default();
 
     bump.add(Changeset {
-      packages: vec![("lightbringer".to_owned(), Version::new(Semantic::minor()))]
+      packages: vec![("mol".to_owned(), Version::new(Semantic::minor()))]
         .into_iter()
         .collect(),
       message: "Hi".to_owned(),
     });
     bump.add(Changeset {
       packages: vec![
-        ("lightbringer".to_owned(), Version::new(Semantic::patch())),
-        (
-          "lightbringer-core".to_owned(),
-          Version::new(Semantic::major()),
-        ),
+        ("mol".to_owned(), Version::new(Semantic::patch())),
+        ("mol-core".to_owned(), Version::new(Semantic::major())),
       ]
       .into_iter()
       .collect(),
@@ -111,20 +108,14 @@ mod tests {
     });
 
     assert_eq!(bump.changesets.len(), 2);
+    assert_eq!(bump.package_changesets.get("mol-core"), Some(&vec![1]));
+    assert_eq!(bump.package_changesets.get("mol"), Some(&vec![0, 1]));
     assert_eq!(
-      bump.package_changesets.get("lightbringer-core"),
-      Some(&vec![1])
-    );
-    assert_eq!(
-      bump.package_changesets.get("lightbringer"),
-      Some(&vec![0, 1])
-    );
-    assert_eq!(
-      bump.package_update.get("lightbringer"),
+      bump.package_update.get("mol"),
       Some(&Version::new(Semantic::minor()))
     );
     assert_eq!(
-      bump.package_update.get("lightbringer-core"),
+      bump.package_update.get("mol-core"),
       Some(&Version::new(Semantic::major()))
     );
   }
@@ -134,25 +125,22 @@ mod tests {
     let mut bump = Bump::default();
 
     bump.add(Changeset {
-      packages: vec![("lightbringer".to_owned(), Version::new(Semantic::minor()))]
+      packages: vec![("mol".to_owned(), Version::new(Semantic::minor()))]
         .into_iter()
         .collect(),
       message: "Hi".to_owned(),
     });
     bump.add(Changeset {
       packages: vec![
-        ("lightbringer".to_owned(), Version::new(Semantic::major())),
-        (
-          "lightbringer-core".to_owned(),
-          Version::new(Semantic::major()),
-        ),
+        ("mol".to_owned(), Version::new(Semantic::major())),
+        ("mol-core".to_owned(), Version::new(Semantic::major())),
       ]
       .into_iter()
       .collect(),
       message: "Too bad we dont play games".to_owned(),
     });
 
-    let changesets = bump.package("lightbringer").changesets();
+    let changesets = bump.package("mol").changesets();
 
     assert!(changesets.is_some());
 
@@ -161,7 +149,7 @@ mod tests {
     assert_eq!(changesets.len(), 2);
     assert_eq!(changesets[0].message, "Hi");
 
-    let changesets = bump.package("lightbringer-core").changesets();
+    let changesets = bump.package("mol-core").changesets();
 
     assert!(changesets.is_some());
 

@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 
 use async_trait::async_trait;
-use clap::Clap;
+use clap::Parser;
 
-use lightbringer_core::prelude::*;
+use mol_core::prelude::*;
 
 mod add;
 mod version;
@@ -15,10 +15,14 @@ pub struct Context<T: PackageManager> {
   pub packages: Vec<(PathBuf, String, String)>,
 }
 
+pub trait IntoExecuteableCommand<T: PackageManager> {
+  fn as_executable(&self) -> Option<&dyn ExecuteableCommand<T>>;
+}
+
 #[async_trait]
 pub trait ExecuteableCommand<T: PackageManager> {
   async fn execute(
-    &mut self,
+    &self,
     changesets: &Changesets,
     context: &Context<T>,
   ) -> Result<(), failure::Error>;
@@ -27,14 +31,14 @@ pub trait ExecuteableCommand<T: PackageManager> {
 pub use add::Add;
 pub use version::Version;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Init;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Publish;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Status;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Pre;

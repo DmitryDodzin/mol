@@ -1,4 +1,4 @@
-# lightbringer
+# mol
 
 ## 0.1.0
 

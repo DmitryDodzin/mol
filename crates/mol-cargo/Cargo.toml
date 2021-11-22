@@ -1,5 +1,5 @@
 [package]
-name = "lightbringer-core"
+name = "mol-cargo"
 version = "0.1.0"
 authors = ["Dmitry Dodzin <d.dodzin@gmail.com>"]
 edition = "2018"
@@ -7,7 +7,13 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+mol-core = { path = '../mol-core' }
+
+async-recursion = "0.3"
 async-trait = "0.1"
-itertools = "0.10"
-tokio = { version = "1", features = ["fs", "io-util"] }
+dashmap = "4"
 failure = "0.1"
+futures = "0.3"
+globset = "0.4"
+tokio = { version = "1", features = ["rt", "fs"] }
+toml_edit = "0.9"

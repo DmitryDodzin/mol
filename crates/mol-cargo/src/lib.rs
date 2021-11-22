@@ -8,7 +8,7 @@ use globset::{Glob, GlobSet, GlobSetBuilder};
 use tokio::fs;
 use toml_edit::{value, Document};
 
-use lightbringer_core::prelude::*;
+use mol_core::prelude::*;
 
 #[derive(Default)]
 pub struct Cargo;

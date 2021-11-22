@@ -1,18 +1,24 @@
 [package]
-name = "lightbringer"
+name = "mol"
 version = "0.1.0"
 authors = ["Dmitry Dodzin <d.dodzin@gmail.com>"]
 edition = "2018"
+repository = "https://github.com/DmitryDodzin/mol"
+categories = ["development-tools::cargo-plugins"]
+keywords = ["cargo", "versioning", "changeset", "changesets"]
+
+[[bin]]
+name = "cargo-mol"
 
 [features]
 default = []
 
 [dependencies]
-lightbringer-cargo = { path = './crates/lightbringer-cargo' }
-lightbringer-core = { path = './crates/lightbringer-core' }
+mol-cargo = { path = './crates/mol-cargo' }
+mol-core = { path = './crates/mol-core' }
 
 async-trait = "0.1"
-clap = "3.0.0-beta.2"
+clap = "3.0.0-beta.5"
 dialoguer = "0.9"
 failure = "0.1"
 faker_rand = "0.1"
