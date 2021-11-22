@@ -1,9 +1,9 @@
 use crate::command::Version;
-use clap::{AppSettings, Clap};
+use clap::Parser;
 
 pub use crate::command::*;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub enum Command {
   Init(Init),
   /// Add changeset
@@ -13,9 +13,8 @@ pub enum Command {
   Status(Status),
 }
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(version = "0.1.0", author = "Dmitry Dodzin <d.dodzin@gmail.com>")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct Opts {
   /// Command
   #[clap(subcommand)]

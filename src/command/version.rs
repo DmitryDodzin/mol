@@ -2,14 +2,14 @@ use std::fmt::Debug;
 // use std::path::Path;
 
 use async_trait::async_trait;
-use clap::Clap;
+use clap::Parser;
 use tokio::fs;
 
-use lightbringer_core::prelude::*;
+use mol_core::prelude::*;
 
 use super::{Context, ExecuteableCommand};
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Version;
 
 impl Version {

@@ -2,17 +2,17 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use async_trait::async_trait;
-use clap::Clap;
+use clap::Parser;
 use dialoguer::{console::Term, Input, MultiSelect, Select};
 use faker_rand::lorem::Word;
 use rand::Rng;
 
-use lightbringer_core::prelude::*;
+use mol_core::prelude::*;
 
 use super::{Context, ExecuteableCommand};
 use crate::COLOR_THEME;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Add {
   /// Generate empty changeset
   #[clap(long)]

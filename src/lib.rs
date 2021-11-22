@@ -1,15 +1,16 @@
-use clap::Clap;
+use clap::Parser;
 use dialoguer::{console, theme::ColorfulTheme};
 use lazy_static::lazy_static;
 
-use lightbringer_cargo::Cargo;
-use lightbringer_core::prelude::*;
+use mol_core::prelude::*;
 
 mod cli;
 mod command;
 
-use cli::{Command, Opts};
-use command::{Context, ExecuteableCommand};
+use crate::{
+  cli::{Command, Opts},
+  command::{Context, ExecuteableCommand},
+};
 
 lazy_static! {
   pub(crate) static ref COLOR_THEME: ColorfulTheme = ColorfulTheme {
@@ -22,13 +23,12 @@ lazy_static! {
     console::style("Changesets folder already initialized").yellow();
 }
 
-#[tokio::main]
-async fn main() -> Result<(), failure::Error> {
+pub async fn exec<T: Default + PackageManager + Send + Sync>() -> Result<(), failure::Error> {
   let opts = Opts::parse();
 
   let changesets = Changesets::default();
 
-  let package_manager = Cargo::default();
+  let package_manager = T::default();
 
   let context = Context {
     dry_run: opts.dry_run,
