@@ -20,4 +20,8 @@ pub struct Opts {
   /// Command
   #[clap(subcommand)]
   pub cmd: Command,
+
+  /// Dry the changes
+  #[clap(long)]
+  pub dry_run: bool,
 }

@@ -62,7 +62,7 @@ where
   type Err = ChangesetParseError;
   fn from_str(value: &str) -> Result<Self, Self::Err> {
     let mut packages = HashMap::new();
-    let mut lines = value.split('\n');
+    let mut lines = value.split('\n').map(|line| line.trim_end());
 
     Self::find_changeset_start(&mut lines)?;
 

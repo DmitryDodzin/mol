@@ -9,16 +9,18 @@ mod add;
 mod version;
 
 #[derive(Debug)]
-pub struct Context {
+pub struct Context<T: PackageManager> {
+  pub dry_run: bool,
+  pub package_manager: T,
   pub packages: Vec<(PathBuf, String, String)>,
 }
 
 #[async_trait]
-pub trait ExecuteableCommand {
+pub trait ExecuteableCommand<T: PackageManager> {
   async fn execute(
     &mut self,
     changesets: &Changesets,
-    context: &Context,
+    context: &Context<T>,
   ) -> Result<(), failure::Error>;
 }
 

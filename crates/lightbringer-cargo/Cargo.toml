@@ -10,7 +10,9 @@ edition = "2018"
 lightbringer-core = { path = '../lightbringer-core' }
 
 async-recursion = "0.3"
+async-trait = "0.1"
 dashmap = "4"
+failure = "0.1"
 futures = "0.3"
 globset = "0.4"
 tokio = { version = "1", features = ["rt", "fs"] }

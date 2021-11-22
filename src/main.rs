@@ -2,11 +2,14 @@ use clap::Clap;
 use dialoguer::{console, theme::ColorfulTheme};
 use lazy_static::lazy_static;
 
-use lightbringer_cargo::read_package;
+use lightbringer_cargo::Cargo;
 use lightbringer_core::prelude::*;
 
 mod cli;
 mod command;
+
+use cli::{Command, Opts};
+use command::{Context, ExecuteableCommand};
 
 lazy_static! {
   pub(crate) static ref COLOR_THEME: ColorfulTheme = ColorfulTheme {
@@ -19,18 +22,19 @@ lazy_static! {
     console::style("Changesets folder already initialized").yellow();
 }
 
-use cli::Command;
-use command::{Context, ExecuteableCommand};
-
-#[tokio::main(flavor = "multi_thread", worker_threads = 12)]
+#[tokio::main]
 async fn main() -> Result<(), failure::Error> {
-  let opts: cli::Opts = cli::Opts::parse();
+  let opts = Opts::parse();
 
   let changesets = Changesets::default();
 
-  let packages = read_package("Cargo.toml").await?;
+  let package_manager = Cargo::default();
 
-  let context = Context { packages };
+  let context = Context {
+    dry_run: opts.dry_run,
+    packages: package_manager.read_package("Cargo.toml").await?,
+    package_manager,
+  };
 
   match opts.cmd {
     Command::Init(_) => {
@@ -41,6 +45,7 @@ async fn main() -> Result<(), failure::Error> {
       }
     }
     command => {
+      // TODO: replace with validation step and join init logic
       if !changesets.validate() {
         println!("{}", *INIT_REQ_PROMPT);
       }

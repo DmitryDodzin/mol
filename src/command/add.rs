@@ -60,9 +60,9 @@ impl Add {
     Ok(versions[version_selection].clone())
   }
 
-  fn select_packages(
+  fn select_packages<T: PackageManager>(
     &self,
-    context: &Context,
+    context: &Context<T>,
   ) -> Result<Vec<(PathBuf, String, String)>, failure::Error> {
     if let Some(packages) = &self.packages {
       let packages = context
@@ -92,9 +92,9 @@ impl Add {
     Ok(packages)
   }
 
-  fn get_changeset(
+  fn get_changeset<T: PackageManager>(
     &mut self,
-    context: &Context,
+    context: &Context<T>,
   ) -> Result<Option<Changeset<Semantic>>, failure::Error> {
     let packages = self.select_packages(context)?;
 
@@ -128,11 +128,11 @@ impl Add {
 }
 
 #[async_trait]
-impl ExecuteableCommand for Add {
+impl<T: PackageManager + Send + Sync> ExecuteableCommand<T> for Add {
   async fn execute(
     &mut self,
     changesets: &Changesets,
-    context: &Context,
+    context: &Context<T>,
   ) -> Result<(), failure::Error> {
     if let Some(changeset) = self.get_changeset(context)? {
       let changeset_path = {
@@ -144,7 +144,11 @@ impl ExecuteableCommand for Add {
         path
       };
 
-      changeset.save(changeset_path).await?;
+      if context.dry_run {
+        println!("{}", changeset.to_string());
+      } else {
+        changeset.save(changeset_path).await?;
+      }
     }
 
     Ok(())

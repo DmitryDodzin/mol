@@ -3,14 +3,14 @@ use std::str::FromStr;
 use crate::error::{VersionBumpError, VersionParseError};
 use crate::version::Versioned;
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Copy, Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 enum SemanticVersion {
   Patch,
   Minor,
   Major,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 pub struct Semantic {
   r#type: SemanticVersion,
 }
