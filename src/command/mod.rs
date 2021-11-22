@@ -21,11 +21,7 @@ pub trait IntoExecuteableCommand<T: PackageManager> {
 
 #[async_trait]
 pub trait ExecuteableCommand<T: PackageManager> {
-  async fn execute(
-    &self,
-    changesets: &Changesets,
-    context: &Context<T>,
-  ) -> Result<(), failure::Error>;
+  async fn execute(&self, changesets: &Changesets, context: &Context<T>) -> anyhow::Result<()>;
 }
 
 pub use add::Add;

@@ -1,5 +1,4 @@
 use std::fmt::Debug;
-// use std::path::Path;
 
 use async_trait::async_trait;
 use clap::Parser;
@@ -16,7 +15,7 @@ impl Version {
   async fn consume_changesets<T: PackageManager>(
     changesets: &Changesets,
     context: &Context<T>,
-  ) -> Result<Bump<Semantic>, failure::Error> {
+  ) -> anyhow::Result<Bump<Semantic>> {
     let mut bump = Bump::default();
     let mut changeset_files_paths = Vec::new();
 
@@ -48,11 +47,7 @@ impl Version {
 
 #[async_trait]
 impl<T: PackageManager + Send + Sync> ExecuteableCommand<T> for Version {
-  async fn execute(
-    &self,
-    changesets: &Changesets,
-    context: &Context<T>,
-  ) -> Result<(), failure::Error> {
+  async fn execute(&self, changesets: &Changesets, context: &Context<T>) -> anyhow::Result<()> {
     let bump = Self::consume_changesets(changesets, context).await?;
 
     if bump.is_empty() {

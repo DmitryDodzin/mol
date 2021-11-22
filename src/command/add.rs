@@ -32,7 +32,7 @@ pub struct Add {
 }
 
 impl Add {
-  fn select_version(&self) -> Result<Version<Semantic>, failure::Error> {
+  fn select_version(&self) -> anyhow::Result<Version<Semantic>> {
     if let Some(version) = &self.version {
       return Version::<Semantic>::from_str(version).map_err(|err| err.into());
     }
@@ -63,7 +63,7 @@ impl Add {
   fn select_packages<T: PackageManager>(
     &self,
     context: &Context<T>,
-  ) -> Result<Vec<(PathBuf, String, String)>, failure::Error> {
+  ) -> anyhow::Result<Vec<(PathBuf, String, String)>> {
     if let Some(packages) = &self.packages {
       let packages = context
         .packages
@@ -95,7 +95,7 @@ impl Add {
   fn get_changeset<T: PackageManager>(
     &self,
     context: &Context<T>,
-  ) -> Result<Option<Changeset<Semantic>>, failure::Error> {
+  ) -> anyhow::Result<Option<Changeset<Semantic>>> {
     let packages = self.select_packages(context)?;
 
     if packages.is_empty() {
@@ -129,11 +129,7 @@ impl Add {
 
 #[async_trait]
 impl<T: PackageManager + Send + Sync> ExecuteableCommand<T> for Add {
-  async fn execute(
-    &self,
-    changesets: &Changesets,
-    context: &Context<T>,
-  ) -> Result<(), failure::Error> {
+  async fn execute(&self, changesets: &Changesets, context: &Context<T>) -> anyhow::Result<()> {
     if let Some(changeset) = self.get_changeset(context)? {
       let changeset_path = {
         let mut rng = rand::thread_rng();

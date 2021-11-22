@@ -25,7 +25,7 @@ lazy_static! {
     console::style("Changesets folder already initialized").yellow();
 }
 
-pub async fn handle_init(changesets: &Changesets) -> Result<(), failure::Error> {
+pub async fn handle_init(changesets: &Changesets) -> anyhow::Result<()> {
   if !changesets.validate() {
     changesets.initialize().await?;
   } else {
@@ -39,7 +39,7 @@ pub async fn handle_command<U: PackageManager, T: IntoExecuteableCommand<U> + De
   changesets: &Changesets,
   context: &Context<U>,
   command: T,
-) -> Result<(), failure::Error> {
+) -> anyhow::Result<()> {
   if !changesets.validate() {
     println!("{}", *INIT_REQ_PROMPT);
   }
@@ -53,7 +53,7 @@ pub async fn handle_command<U: PackageManager, T: IntoExecuteableCommand<U> + De
   Ok(())
 }
 
-pub async fn exec<T: Default + PackageManager + Send + Sync>() -> Result<(), failure::Error> {
+pub async fn exec<T: Default + PackageManager + Send + Sync>() -> anyhow::Result<()> {
   let opts = Opts::parse();
 
   let changesets = Changesets::default();

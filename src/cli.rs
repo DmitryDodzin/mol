@@ -51,7 +51,7 @@ impl<T: PackageManager + Send + Sync> IntoExecuteableCommand<T> for Root {
 }
 
 #[derive(Parser, Debug)]
-#[clap(version = "0.1.0", author = "Dmitry Dodzin <d.dodzin@gmail.com>")]
+#[clap(author = "Dmitry Dodzin <d.dodzin@gmail.com>")]
 pub struct Opts {
   /// Command
   #[clap(subcommand)]

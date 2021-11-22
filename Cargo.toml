@@ -17,10 +17,10 @@ default = []
 mol-cargo = { path = 'crates/mol-cargo' }
 mol-core = { path = 'crates/mol-core' }
 
+anyhow = "1"
 async-trait = "0.1"
 clap = "3.0.0-beta.5"
 dialoguer = "0.9"
-failure = "0.1"
 faker_rand = "0.1"
 lazy_static = "1"
 rand = "0.8"

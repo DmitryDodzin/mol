@@ -10,7 +10,7 @@ impl Changesets {
     self.directory.exists()
   }
 
-  pub async fn initialize(&self) -> Result<(), failure::Error> {
+  pub async fn initialize(&self) -> Result<(), std::io::Error> {
     create_dir(&self.directory).await?;
     Ok(())
   }
