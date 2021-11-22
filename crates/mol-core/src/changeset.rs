@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::Path;
 use std::str::FromStr;
 
 use itertools::Itertools;
@@ -46,7 +46,7 @@ impl<T: Versioned> Changeset<T> {
     Changeset::from_str(value)
   }
 
-  pub async fn save(self, output: PathBuf) -> std::io::Result<()> {
+  pub async fn save<P: AsRef<Path>>(self, output: P) -> std::io::Result<()> {
     let mut file = File::create(output).await?;
 
     file.write_all(self.to_string().as_bytes()).await?;

@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use std::str::FromStr;
 
+use anyhow::Context;
 use async_trait::async_trait;
 use clap::Parser;
 use dialoguer::{console::Term, Input, MultiSelect, Select};
@@ -147,7 +148,10 @@ impl<T: PackageManager + Send + Sync> ExecutableCommand<T> for Add {
       if context.dry_run {
         println!("{}", changeset.to_string());
       } else {
-        changeset.save(changeset_path).await?;
+        changeset
+          .save(&changeset_path)
+          .await
+          .with_context(|| format!("Could not save the changset at {:?}", changeset_path))?;
       }
     }
 
