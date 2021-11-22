@@ -21,7 +21,7 @@ impl Changelog {
     let package_name = package_bump.name();
 
     // TODO: move to validate
-    if !changelog_path.as_ref().exists() {
+    if !dry_run && !changelog_path.as_ref().exists() {
       fs::write(
         &changelog_path,
         &format!("# {}\n", package_bump.name()).into_bytes(),
