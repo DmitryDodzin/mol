@@ -1,3 +1,4 @@
+use std::marker::PhantomData;
 use std::path::PathBuf;
 
 use async_trait::async_trait;
@@ -13,21 +14,22 @@ pub use init::Init;
 pub use version::Version;
 
 #[derive(Debug)]
-pub struct ExecutableContext<T: PackageManager> {
+pub struct ExecutableContext<T: PackageManager, V: Versioned + Default> {
   pub dry_run: bool,
   pub package_manager: T,
   pub packages: Vec<(PathBuf, String, String)>,
+  pub phantom_version_syntax: PhantomData<V>,
 }
 
-pub trait IntoExecutableCommand<T: PackageManager> {
-  fn as_executable(&self) -> Option<&dyn ExecutableCommand<T>>;
+pub trait IntoExecutableCommand<T: PackageManager, V: Versioned + Default> {
+  fn as_executable(&self) -> Option<&dyn ExecutableCommand<T, V>>;
 }
 
 #[async_trait]
-pub trait ExecutableCommand<T: PackageManager> {
+pub trait ExecutableCommand<T: PackageManager, V: Versioned + Default> {
   async fn execute(
     &self,
     changesets: &Changesets,
-    context: &ExecutableContext<T>,
+    context: &ExecutableContext<T, V>,
   ) -> anyhow::Result<()>;
 }

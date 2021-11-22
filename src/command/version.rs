@@ -13,10 +13,10 @@ use super::{ExecutableCommand, ExecutableContext};
 pub struct Version;
 
 impl Version {
-  async fn consume_changesets<T: PackageManager>(
+  async fn consume_changesets<T: PackageManager, V: Versioned + Default>(
     changesets: &Changesets,
-    context: &ExecutableContext<T>,
-  ) -> anyhow::Result<Bump<Semantic>> {
+    context: &ExecutableContext<T, V>,
+  ) -> anyhow::Result<Bump<V>> {
     let mut bump = Bump::default();
     let mut changeset_files_paths = Vec::new();
 
@@ -37,7 +37,7 @@ impl Version {
             .with_context(|| format!("Unable to read the changeset at {:?}", changeset_path))?;
 
           bump.add(
-            Changeset::<Semantic>::parse(&raw_changeset)
+            Changeset::<V>::parse(&raw_changeset)
               .with_context(|| format!("Unable to parse changeset at {:?}", changeset_path))?,
           );
 
@@ -59,11 +59,13 @@ impl Version {
 }
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync> ExecutableCommand<T> for Version {
+impl<T: PackageManager + Send + Sync, V: Versioned + Default + Send + Sync> ExecutableCommand<T, V>
+  for Version
+{
   async fn execute(
     &self,
     changesets: &Changesets,
-    context: &ExecutableContext<T>,
+    context: &ExecutableContext<T, V>,
   ) -> anyhow::Result<()> {
     let bump = Self::consume_changesets(changesets, context).await?;
 

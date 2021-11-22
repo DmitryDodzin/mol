@@ -12,7 +12,7 @@ use crate::version::{Version, Versioned};
 pub struct Changelog;
 
 impl Changelog {
-  pub async fn update_changelog<T: AsRef<Path> + Debug, U: Debug + Versioned + Hash>(
+  pub async fn update_changelog<T: AsRef<Path> + Debug, U: Versioned + Hash>(
     changelog_path: T,
     next_version: String,
     package_bump: &PackageBump<'_, U>,

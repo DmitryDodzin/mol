@@ -1,4 +1,6 @@
 use std::fmt::Debug;
+use std::marker::PhantomData;
+use std::str::FromStr;
 
 use clap::Parser;
 use dialoguer::{console, theme::ColorfulTheme};
@@ -19,15 +21,21 @@ lazy_static! {
     unchecked_item_prefix: console::style("✘".to_owned()).for_stderr().red(),
     ..Default::default()
   };
+  pub(crate) static ref ADD_NO_PACKAGES: console::StyledObject<&'static str> =
+    console::style("Please select a package to create a chageset").yellow();
   static ref INIT_REQ_PROMPT: console::StyledObject<&'static str> =
     console::style("Changesets folder validation failed run 'init'").yellow();
   static ref INIT_EXISTS_PROMPT: console::StyledObject<&'static str> =
     console::style("Changesets folder already initialized").yellow();
 }
 
-pub async fn handle_command<U: PackageManager, T: IntoExecutableCommand<U> + Debug>(
+pub async fn handle_command<
+  U: PackageManager,
+  V: Versioned + Default,
+  T: IntoExecutableCommand<U, V> + Debug,
+>(
   changesets: &Changesets,
-  context: &ExecutableContext<U>,
+  context: &ExecutableContext<U, V>,
   command: T,
 ) -> anyhow::Result<()> {
   if !changesets.validate() {
@@ -43,7 +51,11 @@ pub async fn handle_command<U: PackageManager, T: IntoExecutableCommand<U> + Deb
   Ok(())
 }
 
-pub async fn exec<T: Default + PackageManager + Send + Sync>() -> anyhow::Result<()> {
+pub async fn exec<T: Default + PackageManager + Send + Sync, V: Versioned + Default + Send + Sync>(
+) -> anyhow::Result<()>
+where
+  <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
+{
   let args: Vec<String> = std::env::args().collect();
   let opts = if args.len() > 1 && args[1] == "mol" {
     Opts::parse_from(args[..1].iter().chain(&args[2..]))
@@ -59,6 +71,7 @@ pub async fn exec<T: Default + PackageManager + Send + Sync>() -> anyhow::Result
     dry_run: opts.dry_run,
     packages: package_manager.read_package("Cargo.toml").await?,
     package_manager,
+    phantom_version_syntax: PhantomData::<V>,
   };
 
   handle_command(&changesets, &context, opts.cmd).await?;

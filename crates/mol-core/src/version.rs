@@ -1,3 +1,4 @@
+use std::hash::Hash;
 use std::str::FromStr;
 
 use crate::error::VersionBumpError;
@@ -10,7 +11,7 @@ fn capitalize(s: &str) -> String {
   }
 }
 
-pub trait Versioned: Clone + FromStr + Ord + ToString {
+pub trait Versioned: Clone + Hash + FromStr + Ord + ToString {
   fn options() -> Vec<Self>;
 
   fn apply(&self, current: &str) -> Result<String, VersionBumpError>;
