@@ -122,10 +122,10 @@ mod tests {
 
   #[test]
   fn from_str() {
-    let changeset = Changeset::<Semantic>::from_str(
+    let changeset = Changeset::from_str(
       "
 ---
-\"lightbinger\": minor
+\"mol\": minor
 ---
 
 Do cool stuff
@@ -138,7 +138,7 @@ Do cool stuff
 
     assert_eq!(
       changeset.packages,
-      vec![("lightbinger".to_string(), Version::new(Semantic::minor()))]
+      vec![("mol".to_string(), Version::new(Semantic::minor()))]
         .into_iter()
         .collect()
     );
@@ -147,11 +147,11 @@ Do cool stuff
 
   #[test]
   fn from_str_multiple() {
-    let changeset = Changeset::<Semantic>::from_str(
+    let changeset = Changeset::from_str(
       "
 ---
-\"lightbinger\": minor
-\"lightbinger-core\": major
+\"mol\": minor
+\"mol-core\": major
 ---
 
 Do cool stuff
@@ -162,11 +162,8 @@ Do cool stuff
     assert_eq!(
       changeset.packages,
       vec![
-        ("lightbinger".to_string(), Version::new(Semantic::minor())),
-        (
-          "lightbinger-core".to_string(),
-          Version::new(Semantic::major())
-        )
+        ("mol".to_string(), Version::new(Semantic::minor())),
+        ("mol-core".to_string(), Version::new(Semantic::major()))
       ]
       .into_iter()
       .collect()
@@ -176,7 +173,7 @@ Do cool stuff
   #[test]
   fn to_str() {
     let changeset = Changeset {
-      packages: vec![("lightbinger".to_owned(), Version::new(Semantic::minor()))]
+      packages: vec![("mol".to_owned(), Version::new(Semantic::minor()))]
         .into_iter()
         .collect(),
       message: "Do cool stuff".to_string(),
@@ -185,7 +182,7 @@ Do cool stuff
     assert_eq!(
       changeset.to_string(),
       "---
-\"lightbinger\": minor
+\"mol\": minor
 ---
 
 Do cool stuff
@@ -197,11 +194,8 @@ Do cool stuff
   fn to_str_multiple() {
     let changeset = Changeset {
       packages: vec![
-        ("lightbinger".to_owned(), Version::new(Semantic::minor())),
-        (
-          "lightbinger-core".to_owned(),
-          Version::new(Semantic::major()),
-        ),
+        ("mol".to_owned(), Version::new(Semantic::minor())),
+        ("mol-core".to_owned(), Version::new(Semantic::major())),
       ]
       .into_iter()
       .collect(),
@@ -211,8 +205,8 @@ Do cool stuff
     assert_eq!(
       changeset.to_string(),
       "---
-\"lightbinger\": minor
-\"lightbinger-core\": major
+\"mol\": minor
+\"mol-core\": major
 ---
 
 Do cool stuff
