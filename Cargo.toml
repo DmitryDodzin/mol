@@ -2,10 +2,10 @@
 name = "mol"
 version = "0.1.0"
 authors = ["Dmitry Dodzin <d.dodzin@gmail.com>"]
-categories = ["development-tools::cargo-plugins"]
-repository = "https://github.com/DmitryDodzin/lightbringer"
-keywords = ["cargo", "versioning", "changeset", "changesets"]
 edition = "2018"
+repository = "https://github.com/DmitryDodzin/mol"
+categories = ["development-tools::cargo-plugins"]
+keywords = ["cargo", "versioning", "changeset", "changesets"]
 
 [[bin]]
 name = "cargo-mol"
