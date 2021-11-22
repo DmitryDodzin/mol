@@ -11,14 +11,6 @@ use crate::version::{Version, Versioned};
 
 pub struct Changelog;
 
-fn version_format(s: &str) -> String {
-  let mut c = s.chars();
-  match c.next() {
-    None => String::new(),
-    Some(f) => f.to_uppercase().chain(c).collect(),
-  }
-}
-
 impl Changelog {
   pub async fn update_changelog<T: AsRef<Path> + Debug, U: Debug + Versioned + Hash>(
     changelog_path: T,
@@ -87,9 +79,7 @@ impl Changelog {
         output.push('\n');
 
         for (version, changes) in patches.iter().sorted_by(|(a, _), (b, _)| Ord::cmp(&b, &a)) {
-          output.push_str("\n### ");
-          output.push_str(&version_format(&version.to_string()));
-          output.push_str(" Changes\n");
+          output.push_str(&version.as_changelog_fmt());
           output.push('\n');
 
           output.push_str(&changes.join("\n"));
