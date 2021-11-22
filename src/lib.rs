@@ -10,7 +10,7 @@ mod cli;
 mod command;
 
 use crate::{
-  cli::{Command, CommandWithSelf, Opts},
+  cli::{Command, Opts},
   command::{ExecutableContext, IntoExecutableCommand},
 };
 
@@ -54,7 +54,18 @@ pub async fn handle_command<U: PackageManager, T: IntoExecutableCommand<U> + Deb
 }
 
 pub async fn exec<T: Default + PackageManager + Send + Sync>() -> anyhow::Result<()> {
-  let opts = Opts::parse();
+  let args: Vec<String> = std::env::args().collect();
+  let opts = if args[1] == "mol" {
+    Opts::parse_from(
+      args
+        .into_iter()
+        .enumerate()
+        .filter(|(index, _)| *index != 1)
+        .map(|(_, arg)| arg),
+    )
+  } else {
+    Opts::parse_from(args)
+  };
 
   let changesets = Changesets::default();
 
@@ -67,11 +78,7 @@ pub async fn exec<T: Default + PackageManager + Send + Sync>() -> anyhow::Result
   };
 
   match opts.cmd {
-    CommandWithSelf::Mol(command) => match command.target {
-      Command::Init(_) => handle_init(&changesets).await?,
-      command => handle_command(&changesets, &context, command).await?,
-    },
-    CommandWithSelf::Init(_) => handle_init(&changesets).await?,
+    Command::Init(_) => handle_init(&changesets).await?,
     command => handle_command(&changesets, &context, command).await?,
   }
 
