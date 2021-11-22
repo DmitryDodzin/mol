@@ -1,12 +1,13 @@
 use std::fmt::Debug;
 
+use anyhow::Context;
 use async_trait::async_trait;
 use clap::Parser;
 use tokio::fs;
 
 use mol_core::prelude::*;
 
-use super::{Context, ExecuteableCommand};
+use super::{ExecutableCommand, ExecutableContext};
 
 #[derive(Parser, Debug)]
 pub struct Version;
@@ -14,7 +15,7 @@ pub struct Version;
 impl Version {
   async fn consume_changesets<T: PackageManager>(
     changesets: &Changesets,
-    context: &Context<T>,
+    context: &ExecutableContext<T>,
   ) -> anyhow::Result<Bump<Semantic>> {
     let mut bump = Bump::default();
     let mut changeset_files_paths = Vec::new();
@@ -46,8 +47,12 @@ impl Version {
 }
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync> ExecuteableCommand<T> for Version {
-  async fn execute(&self, changesets: &Changesets, context: &Context<T>) -> anyhow::Result<()> {
+impl<T: PackageManager + Send + Sync> ExecutableCommand<T> for Version {
+  async fn execute(
+    &self,
+    changesets: &Changesets,
+    context: &ExecutableContext<T>,
+  ) -> anyhow::Result<()> {
     let bump = Self::consume_changesets(changesets, context).await?;
 
     if bump.is_empty() {
@@ -61,7 +66,9 @@ impl<T: PackageManager + Send + Sync> ExecuteableCommand<T> for Version {
 
     for (path, name, version) in &context.packages {
       if let Some(update) = bump.package(name).version() {
-        let next_version = update.apply(version)?;
+        let next_version = update
+          .apply(version)
+          .with_context(|| format!("Failed updating package {}", &name))?;
 
         if context.dry_run {
           println!("dry_run - version bump: {} -> {}", version, next_version);

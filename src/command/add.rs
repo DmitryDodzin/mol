@@ -9,7 +9,7 @@ use rand::Rng;
 
 use mol_core::prelude::*;
 
-use super::{Context, ExecuteableCommand};
+use super::{ExecutableCommand, ExecutableContext};
 use crate::COLOR_THEME;
 
 #[derive(Parser, Debug)]
@@ -62,7 +62,7 @@ impl Add {
 
   fn select_packages<T: PackageManager>(
     &self,
-    context: &Context<T>,
+    context: &ExecutableContext<T>,
   ) -> anyhow::Result<Vec<(PathBuf, String, String)>> {
     if let Some(packages) = &self.packages {
       let packages = context
@@ -94,7 +94,7 @@ impl Add {
 
   fn get_changeset<T: PackageManager>(
     &self,
-    context: &Context<T>,
+    context: &ExecutableContext<T>,
   ) -> anyhow::Result<Option<Changeset<Semantic>>> {
     let packages = self.select_packages(context)?;
 
@@ -128,8 +128,12 @@ impl Add {
 }
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync> ExecuteableCommand<T> for Add {
-  async fn execute(&self, changesets: &Changesets, context: &Context<T>) -> anyhow::Result<()> {
+impl<T: PackageManager + Send + Sync> ExecutableCommand<T> for Add {
+  async fn execute(
+    &self,
+    changesets: &Changesets,
+    context: &ExecutableContext<T>,
+  ) -> anyhow::Result<()> {
     if let Some(changeset) = self.get_changeset(context)? {
       let changeset_path = {
         let mut rng = rand::thread_rng();

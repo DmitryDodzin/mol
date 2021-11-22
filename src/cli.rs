@@ -14,11 +14,11 @@ pub enum Command {
   Status(Status),
 }
 
-impl<T: PackageManager + Send + Sync> IntoExecuteableCommand<T> for Command {
-  fn as_executable(&self) -> Option<&dyn ExecuteableCommand<T>> {
+impl<T: PackageManager + Send + Sync> IntoExecutableCommand<T> for Command {
+  fn as_executable(&self) -> Option<&dyn ExecutableCommand<T>> {
     match self {
-      Self::Add(add) => Some(add as &dyn ExecuteableCommand<T>),
-      Self::Version(version) => Some(version as &dyn ExecuteableCommand<T>),
+      Self::Add(add) => Some(add as &dyn ExecutableCommand<T>),
+      Self::Version(version) => Some(version as &dyn ExecutableCommand<T>),
       _ => None,
     }
   }
@@ -40,11 +40,11 @@ pub enum Root {
   Status(Status),
 }
 
-impl<T: PackageManager + Send + Sync> IntoExecuteableCommand<T> for Root {
-  fn as_executable(&self) -> Option<&dyn ExecuteableCommand<T>> {
+impl<T: PackageManager + Send + Sync> IntoExecutableCommand<T> for Root {
+  fn as_executable(&self) -> Option<&dyn ExecutableCommand<T>> {
     match self {
-      Self::Add(add) => Some(add as &dyn ExecuteableCommand<T>),
-      Self::Version(version) => Some(version as &dyn ExecuteableCommand<T>),
+      Self::Add(add) => Some(add as &dyn ExecutableCommand<T>),
+      Self::Version(version) => Some(version as &dyn ExecutableCommand<T>),
       _ => None,
     }
   }

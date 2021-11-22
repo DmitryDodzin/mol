@@ -11,7 +11,7 @@ mod command;
 
 use crate::{
   cli::{Command, Opts, Root},
-  command::{Context, IntoExecuteableCommand},
+  command::{ExecutableContext, IntoExecutableCommand},
 };
 
 lazy_static! {
@@ -35,9 +35,9 @@ pub async fn handle_init(changesets: &Changesets) -> anyhow::Result<()> {
   Ok(())
 }
 
-pub async fn handle_command<U: PackageManager, T: IntoExecuteableCommand<U> + Debug>(
+pub async fn handle_command<U: PackageManager, T: IntoExecutableCommand<U> + Debug>(
   changesets: &Changesets,
-  context: &Context<U>,
+  context: &ExecutableContext<U>,
   command: T,
 ) -> anyhow::Result<()> {
   if !changesets.validate() {
@@ -60,7 +60,7 @@ pub async fn exec<T: Default + PackageManager + Send + Sync>() -> anyhow::Result
 
   let package_manager = T::default();
 
-  let context = Context {
+  let context = ExecutableContext {
     dry_run: opts.dry_run,
     packages: package_manager.read_package("Cargo.toml").await?,
     package_manager,
