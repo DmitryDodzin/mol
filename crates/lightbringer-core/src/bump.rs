@@ -36,11 +36,8 @@ impl<'a, T: Versioned> Bump<T> {
     self.changesets.is_empty()
   }
 
-  pub fn package(&'a self, package: &'a str) -> PackageBump<'a, T> {
-    PackageBump {
-      package,
-      bump: self,
-    }
+  pub fn package(&'a self, name: &'a str) -> PackageBump<'a, T> {
+    PackageBump { name, bump: self }
   }
 }
 
@@ -61,26 +58,26 @@ where
 }
 
 pub struct PackageBump<'a, T> {
-  package: &'a str,
+  name: &'a str,
   bump: &'a Bump<T>,
 }
 
 impl<'a, T> PackageBump<'a, T> {
   pub fn changesets(&self) -> Option<Vec<&'a Changeset<T>>> {
-    self
-      .bump
-      .package_changesets
-      .get(self.package)
-      .map(|indexes| {
-        indexes
-          .iter()
-          .map(|index| &self.bump.changesets[*index])
-          .collect()
-      })
+    self.bump.package_changesets.get(self.name).map(|indexes| {
+      indexes
+        .iter()
+        .map(|index| &self.bump.changesets[*index])
+        .collect()
+    })
+  }
+
+  pub fn name(&self) -> &str {
+    self.name
   }
 
   pub fn version(&self) -> Option<&Version<T>> {
-    self.bump.package_update.get(self.package)
+    self.bump.package_update.get(self.name)
   }
 }
 

@@ -84,19 +84,13 @@ impl<T: PackageManager + Send + Sync> ExecuteableCommand<T> for Version {
             root_path
           };
 
-          if context.dry_run {
-            println!(
-              "dry_run - update changelog {:?} with {}",
-              changelog_path,
-              bump
-                .package(name)
-                .version()
-                .map(|value| value.to_string())
-                .unwrap_or_else(String::new)
-            );
-          } else {
-            Changelog::update_changelog(changelog_path, next_version, &bump.package(name)).await?;
-          }
+          Changelog::update_changelog(
+            changelog_path,
+            next_version,
+            &bump.package(name),
+            context.dry_run,
+          )
+          .await?;
         }
       }
     }

@@ -45,6 +45,7 @@ async fn main() -> Result<(), failure::Error> {
       }
     }
     command => {
+      // TODO: replace with validation step and join init logic
       if !changesets.validate() {
         println!("{}", *INIT_REQ_PROMPT);
       }
