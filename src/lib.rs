@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use clap::Parser;
 use dialoguer::{console, theme::ColorfulTheme};
 use lazy_static::lazy_static;
@@ -8,8 +10,8 @@ mod cli;
 mod command;
 
 use crate::{
-  cli::{Command, Opts},
-  command::{Context, ExecuteableCommand},
+  cli::{Command, Opts, Root},
+  command::{Context, IntoExecuteableCommand},
 };
 
 lazy_static! {
@@ -21,6 +23,34 @@ lazy_static! {
     console::style("Changesets folder validation failed run 'init'").yellow();
   static ref INIT_EXISTS_PROMPT: console::StyledObject<&'static str> =
     console::style("Changesets folder already initialized").yellow();
+}
+
+pub async fn handle_init(changesets: &Changesets) -> Result<(), failure::Error> {
+  if !changesets.validate() {
+    changesets.initialize().await?;
+  } else {
+    println!("{}", *INIT_EXISTS_PROMPT);
+  }
+
+  Ok(())
+}
+
+pub async fn handle_command<U: PackageManager, T: IntoExecuteableCommand<U> + Debug>(
+  changesets: &Changesets,
+  context: &Context<U>,
+  command: T,
+) -> Result<(), failure::Error> {
+  if !changesets.validate() {
+    println!("{}", *INIT_REQ_PROMPT);
+  }
+
+  if let Some(exeutable) = command.as_executable() {
+    exeutable.execute(changesets, context).await?;
+  } else {
+    println!("{:?}", command);
+  }
+
+  Ok(())
 }
 
 pub async fn exec<T: Default + PackageManager + Send + Sync>() -> Result<(), failure::Error> {
@@ -37,27 +67,12 @@ pub async fn exec<T: Default + PackageManager + Send + Sync>() -> Result<(), fai
   };
 
   match opts.cmd {
-    Command::Init(_) => {
-      if !changesets.validate() {
-        changesets.initialize().await?;
-      } else {
-        println!("{}", *INIT_EXISTS_PROMPT);
-      }
-    }
-    command => {
-      // TODO: replace with validation step and join init logic
-      if !changesets.validate() {
-        println!("{}", *INIT_REQ_PROMPT);
-      }
-
-      match command {
-        Command::Add(mut add) => add.execute(&changesets, &context).await?,
-        Command::Version(mut version) => version.execute(&changesets, &context).await?,
-        command => {
-          println!("{:?}", command);
-        }
-      }
-    }
+    Root::Mol(command) => match command.target {
+      Command::Init(_) => handle_init(&changesets).await?,
+      command => handle_command(&changesets, &context, command).await?,
+    },
+    Root::Init(_) => handle_init(&changesets).await?,
+    command => handle_command(&changesets, &context, command).await?,
   }
 
   Ok(())

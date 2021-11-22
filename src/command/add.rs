@@ -93,7 +93,7 @@ impl Add {
   }
 
   fn get_changeset<T: PackageManager>(
-    &mut self,
+    &self,
     context: &Context<T>,
   ) -> Result<Option<Changeset<Semantic>>, failure::Error> {
     let packages = self.select_packages(context)?;
@@ -130,7 +130,7 @@ impl Add {
 #[async_trait]
 impl<T: PackageManager + Send + Sync> ExecuteableCommand<T> for Add {
   async fn execute(
-    &mut self,
+    &self,
     changesets: &Changesets,
     context: &Context<T>,
   ) -> Result<(), failure::Error> {

@@ -15,10 +15,14 @@ pub struct Context<T: PackageManager> {
   pub packages: Vec<(PathBuf, String, String)>,
 }
 
+pub trait IntoExecuteableCommand<T: PackageManager> {
+  fn as_executable(&self) -> Option<&dyn ExecuteableCommand<T>>;
+}
+
 #[async_trait]
 pub trait ExecuteableCommand<T: PackageManager> {
   async fn execute(
-    &mut self,
+    &self,
     changesets: &Changesets,
     context: &Context<T>,
   ) -> Result<(), failure::Error>;

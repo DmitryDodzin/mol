@@ -49,7 +49,7 @@ impl Version {
 #[async_trait]
 impl<T: PackageManager + Send + Sync> ExecuteableCommand<T> for Version {
   async fn execute(
-    &mut self,
+    &self,
     changesets: &Changesets,
     context: &Context<T>,
   ) -> Result<(), failure::Error> {
