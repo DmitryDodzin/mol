@@ -7,19 +7,17 @@ pub use crate::command::*;
 
 #[derive(Parser, Debug)]
 pub enum Command {
-  Init(Init),
   Add(Add),
+  Init(Init),
   Version(Version),
-  Publish(Publish),
-  Status(Status),
 }
 
 impl<T: PackageManager + Send + Sync> IntoExecutableCommand<T> for Command {
   fn as_executable(&self) -> Option<&dyn ExecutableCommand<T>> {
     match self {
       Self::Add(add) => Some(add as &dyn ExecutableCommand<T>),
+      Self::Init(init) => Some(init as &dyn ExecutableCommand<T>),
       Self::Version(version) => Some(version as &dyn ExecutableCommand<T>),
-      _ => None,
     }
   }
 }
@@ -31,7 +29,7 @@ pub struct Opts {
   #[clap(subcommand)]
   pub cmd: Command,
 
-  /// Dry the changes
+  /// Run with dry_run no files actually change
   #[clap(long)]
   pub dry_run: bool,
 }

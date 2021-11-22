@@ -10,7 +10,7 @@ mod cli;
 mod command;
 
 use crate::{
-  cli::{Command, Opts},
+  cli::Opts,
   command::{ExecutableContext, IntoExecutableCommand},
 };
 
@@ -23,16 +23,6 @@ lazy_static! {
     console::style("Changesets folder validation failed run 'init'").yellow();
   static ref INIT_EXISTS_PROMPT: console::StyledObject<&'static str> =
     console::style("Changesets folder already initialized").yellow();
-}
-
-pub async fn handle_init(changesets: &Changesets) -> anyhow::Result<()> {
-  if !changesets.validate() {
-    changesets.initialize().await?;
-  } else {
-    println!("{}", *INIT_EXISTS_PROMPT);
-  }
-
-  Ok(())
 }
 
 pub async fn handle_command<U: PackageManager, T: IntoExecutableCommand<U> + Debug>(
@@ -55,9 +45,10 @@ pub async fn handle_command<U: PackageManager, T: IntoExecutableCommand<U> + Deb
 
 pub async fn exec<T: Default + PackageManager + Send + Sync>() -> anyhow::Result<()> {
   let args: Vec<String> = std::env::args().collect();
-  let opts = match args[1].as_str() {
-    "mol" => Opts::parse_from(args[..1].into_iter().chain(&args[2..])),
-    _ => Opts::parse_from(args),
+  let opts = if args.len() > 1 && args[1] == "mol" {
+    Opts::parse_from(args[..1].iter().chain(&args[2..]))
+  } else {
+    Opts::parse_from(args)
   };
 
   let changesets = Changesets::default();
@@ -70,10 +61,7 @@ pub async fn exec<T: Default + PackageManager + Send + Sync>() -> anyhow::Result
     package_manager,
   };
 
-  match opts.cmd {
-    Command::Init(_) => handle_init(&changesets).await?,
-    command => handle_command(&changesets, &context, command).await?,
-  }
+  handle_command(&changesets, &context, opts.cmd).await?;
 
   Ok(())
 }

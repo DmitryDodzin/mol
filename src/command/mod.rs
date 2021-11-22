@@ -1,12 +1,16 @@
 use std::path::PathBuf;
 
 use async_trait::async_trait;
-use clap::Parser;
 
 use mol_core::prelude::*;
 
 mod add;
+mod init;
 mod version;
+
+pub use add::Add;
+pub use init::Init;
+pub use version::Version;
 
 #[derive(Debug)]
 pub struct ExecutableContext<T: PackageManager> {
@@ -27,18 +31,3 @@ pub trait ExecutableCommand<T: PackageManager> {
     context: &ExecutableContext<T>,
   ) -> anyhow::Result<()>;
 }
-
-pub use add::Add;
-pub use version::Version;
-
-#[derive(Parser, Debug)]
-pub struct Init;
-
-#[derive(Parser, Debug)]
-pub struct Publish;
-
-#[derive(Parser, Debug)]
-pub struct Status;
-
-#[derive(Parser, Debug)]
-pub struct Pre;
