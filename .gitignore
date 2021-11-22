@@ -1,2 +1,5 @@
 # Built Files
 /target
+
+# Lockfile
+Cargo.lock
