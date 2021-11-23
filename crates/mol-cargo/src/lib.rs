@@ -108,8 +108,23 @@ impl PackageManager for Cargo {
       (None, None)
     };
 
-    for item in document["dependencies"].as_array() {
-      println!("{:?}", item);
+    let mut dependencies = Vec::new();
+
+    // TODO: support [dependencies.xyz] patterns
+    if let Some(deps) = document["dependencies"].as_table() {
+      for (key, value) in deps.iter() {
+        if value.is_str() {
+          dependencies.push((
+            key.to_owned(),
+            value.as_str().unwrap_or_default().to_owned(),
+          ));
+        } else if value.is_table() || value.is_inline_table() {
+          dependencies.push((
+            key.to_owned(),
+            value["version"].as_str().unwrap_or_default().to_owned(),
+          ));
+        }
+      }
     }
 
     if let (Some(package_name), Some(version)) = (package_name, version) {
@@ -117,6 +132,7 @@ impl PackageManager for Cargo {
         path: crate_path.clone(),
         name: package_name.to_owned(),
         version: version.to_owned(),
+        dependencies,
       });
     }
 
