@@ -108,6 +108,10 @@ impl PackageManager for Cargo {
       (None, None)
     };
 
+    for item in document["dependencies"].as_array() {
+      println!("{:?}", item);
+    }
+
     if let (Some(package_name), Some(version)) = (package_name, version) {
       result.push(Package {
         path: crate_path.clone(),

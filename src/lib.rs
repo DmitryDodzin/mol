@@ -12,7 +12,7 @@ mod cli;
 mod command;
 
 use crate::{
-  cli::Opts,
+  cli::{Command, Opts},
   command::{ExecutableContext, IntoExecutableCommand},
 };
 
@@ -29,7 +29,7 @@ lazy_static! {
     console::style("Changesets folder already initialized").yellow();
 }
 
-pub async fn handle_command<
+async fn handle_command<
   U: PackageManager,
   V: Versioned + Default,
   T: IntoExecutableCommand<U, V> + Debug,
@@ -38,10 +38,6 @@ pub async fn handle_command<
   context: &ExecutableContext<U, V>,
   command: T,
 ) -> anyhow::Result<()> {
-  if !changesets.validate() {
-    println!("{}", *INIT_REQ_PROMPT);
-  }
-
   if let Some(exeutable) = command.as_executable() {
     exeutable.execute(changesets, context).await?;
   } else {
@@ -74,7 +70,16 @@ where
     phantom_version_syntax: PhantomData::<V>,
   };
 
-  handle_command(&changesets, &context, opts.cmd).await?;
+  match opts.cmd {
+    Command::Init(_) => handle_command(&changesets, &context, opts.cmd).await?,
+    command => {
+      if !changesets.validate() {
+        println!("{}", *INIT_REQ_PROMPT);
+      }
+
+      handle_command(&changesets, &context, command).await?
+    }
+  }
 
   Ok(())
 }
