@@ -14,8 +14,8 @@ name = "cargo-mol"
 default = []
 
 [dependencies]
-mol-cargo = { path = 'crates/mol-cargo' }
-mol-core = { path = 'crates/mol-core' }
+mol-cargo = { path = 'crates/mol-cargo', version = "0.1" }
+mol-core = { path = 'crates/mol-core', version = "0.1" }
 
 anyhow = "1"
 async-trait = "0.1"
