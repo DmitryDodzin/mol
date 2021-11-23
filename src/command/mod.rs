@@ -1,44 +1,35 @@
+use std::marker::PhantomData;
 use std::path::PathBuf;
 
 use async_trait::async_trait;
-use clap::Parser;
 
 use mol_core::prelude::*;
 
 mod add;
+mod init;
 mod version;
 
+pub use add::Add;
+pub use init::Init;
+pub use version::Version;
+
 #[derive(Debug)]
-pub struct Context<T: PackageManager> {
+pub struct ExecutableContext<T: PackageManager, V: Versioned + Default> {
   pub dry_run: bool,
   pub package_manager: T,
   pub packages: Vec<(PathBuf, String, String)>,
+  pub phantom_version_syntax: PhantomData<V>,
 }
 
-pub trait IntoExecuteableCommand<T: PackageManager> {
-  fn as_executable(&self) -> Option<&dyn ExecuteableCommand<T>>;
+pub trait IntoExecutableCommand<T: PackageManager, V: Versioned + Default> {
+  fn as_executable(&self) -> Option<&dyn ExecutableCommand<T, V>>;
 }
 
 #[async_trait]
-pub trait ExecuteableCommand<T: PackageManager> {
+pub trait ExecutableCommand<T: PackageManager, V: Versioned + Default> {
   async fn execute(
     &self,
     changesets: &Changesets,
-    context: &Context<T>,
-  ) -> Result<(), failure::Error>;
+    context: &ExecutableContext<T, V>,
+  ) -> anyhow::Result<()>;
 }
-
-pub use add::Add;
-pub use version::Version;
-
-#[derive(Parser, Debug)]
-pub struct Init;
-
-#[derive(Parser, Debug)]
-pub struct Publish;
-
-#[derive(Parser, Debug)]
-pub struct Status;
-
-#[derive(Parser, Debug)]
-pub struct Pre;

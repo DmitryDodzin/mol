@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use std::str::FromStr;
 
+use anyhow::Context;
 use async_trait::async_trait;
 use clap::Parser;
 use dialoguer::{console::Term, Input, MultiSelect, Select};
@@ -9,8 +10,8 @@ use rand::Rng;
 
 use mol_core::prelude::*;
 
-use super::{Context, ExecuteableCommand};
-use crate::COLOR_THEME;
+use super::{ExecutableCommand, ExecutableContext};
+use crate::{ADD_NO_PACKAGES, COLOR_THEME};
 
 #[derive(Parser, Debug)]
 pub struct Add {
@@ -21,36 +22,20 @@ pub struct Add {
   pub packages: Option<Vec<String>>,
   #[clap(long)]
   pub version: Option<String>,
-  #[clap(long)]
-  pub patch: bool,
-  #[clap(long)]
-  pub minor: bool,
-  #[clap(long)]
-  pub major: bool,
   #[clap(short, long)]
   pub message: Option<String>,
 }
 
 impl Add {
-  fn select_version(&self) -> Result<Version<Semantic>, failure::Error> {
+  fn select_version<V: Versioned + Default>(&self) -> anyhow::Result<Version<V>>
+  where
+    <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
+  {
     if let Some(version) = &self.version {
-      return Version::<Semantic>::from_str(version).map_err(|err| err.into());
+      return Ok(Version::<V>::from_str(version)?);
     }
 
-    if self.major || self.minor || self.patch {
-      return Ok(match (self.major, self.minor, self.patch) {
-        (true, _, _) => Version::new(Semantic::major()),
-        (false, true, _) => Version::new(Semantic::minor()),
-        (false, false, true) => Version::new(Semantic::patch()),
-        (false, false, false) => unreachable!(),
-      });
-    }
-
-    let versions = vec![
-      Version::new(Semantic::patch()),
-      Version::new(Semantic::minor()),
-      Version::new(Semantic::major()),
-    ];
+    let versions = Version::<V>::options();
     let version_selection = Select::with_theme(&*COLOR_THEME)
       .with_prompt("version")
       .items(&versions)
@@ -60,10 +45,10 @@ impl Add {
     Ok(versions[version_selection].clone())
   }
 
-  fn select_packages<T: PackageManager>(
+  fn select_packages<T: PackageManager, V: Versioned + Default>(
     &self,
-    context: &Context<T>,
-  ) -> Result<Vec<(PathBuf, String, String)>, failure::Error> {
+    context: &ExecutableContext<T, V>,
+  ) -> anyhow::Result<Vec<(PathBuf, String, String)>> {
     if let Some(packages) = &self.packages {
       let packages = context
         .packages
@@ -92,10 +77,13 @@ impl Add {
     Ok(packages)
   }
 
-  fn get_changeset<T: PackageManager>(
+  fn get_changeset<T: PackageManager, V: Versioned + Default>(
     &self,
-    context: &Context<T>,
-  ) -> Result<Option<Changeset<Semantic>>, failure::Error> {
+    context: &ExecutableContext<T, V>,
+  ) -> anyhow::Result<Option<Changeset<V>>>
+  where
+    <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
+  {
     let packages = self.select_packages(context)?;
 
     if packages.is_empty() {
@@ -115,7 +103,7 @@ impl Add {
       }
     };
 
-    let changeset: Changeset<Semantic> = Changeset {
+    let changeset: Changeset<V> = Changeset {
       packages: packages
         .into_iter()
         .map(|(_, name, _)| (name, version.clone()))
@@ -128,12 +116,16 @@ impl Add {
 }
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync> ExecuteableCommand<T> for Add {
+impl<T: PackageManager + Send + Sync, V: Versioned + Default + Send + Sync> ExecutableCommand<T, V>
+  for Add
+where
+  <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
+{
   async fn execute(
     &self,
     changesets: &Changesets,
-    context: &Context<T>,
-  ) -> Result<(), failure::Error> {
+    context: &ExecutableContext<T, V>,
+  ) -> anyhow::Result<()> {
     if let Some(changeset) = self.get_changeset(context)? {
       let changeset_path = {
         let mut rng = rand::thread_rng();
@@ -147,8 +139,13 @@ impl<T: PackageManager + Send + Sync> ExecuteableCommand<T> for Add {
       if context.dry_run {
         println!("{}", changeset.to_string());
       } else {
-        changeset.save(changeset_path).await?;
+        changeset
+          .save(&changeset_path)
+          .await
+          .with_context(|| format!("Could not save the changset at {:?}", changeset_path))?;
       }
+    } else {
+      println!("{}", &*ADD_NO_PACKAGES);
     }
 
     Ok(())

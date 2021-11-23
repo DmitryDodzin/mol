@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
-use std::hash::Hash;
 use std::path::Path;
 
 use itertools::Itertools;
@@ -9,27 +8,40 @@ use tokio::{fs, io::AsyncWriteExt};
 use crate::bump::PackageBump;
 use crate::version::{Version, Versioned};
 
-pub struct Changelog;
+pub fn fill_output<V: Versioned + Default>(
+  next_version: &str,
+  patches: &HashMap<Version<V>, Vec<String>>,
+) -> String {
+  let mut output = String::new();
 
-fn version_format(s: &str) -> String {
-  let mut c = s.chars();
-  match c.next() {
-    None => String::new(),
-    Some(f) => f.to_uppercase().chain(c).collect(),
+  output.push_str("## ");
+  output.push_str(next_version);
+  output.push('\n');
+
+  for (version, changes) in patches.iter().sorted_by(|(a, _), (b, _)| Ord::cmp(&b, &a)) {
+    output.push('\n');
+    output.push_str(&version.as_changelog_fmt());
+    output.push('\n');
+
+    output.push_str(&changes.join("\n"));
   }
+
+  output
 }
 
+pub struct Changelog;
+
 impl Changelog {
-  pub async fn update_changelog<T: AsRef<Path> + Debug, U: Debug + Versioned + Hash>(
+  pub async fn update_changelog<T: AsRef<Path> + Debug, V: Versioned + Default>(
     changelog_path: T,
     next_version: String,
-    package_bump: &PackageBump<'_, U>,
+    package_bump: &PackageBump<'_, V>,
     dry_run: bool,
   ) -> std::io::Result<()> {
     let package_name = package_bump.name();
 
     // TODO: move to validate
-    if !changelog_path.as_ref().exists() {
+    if !dry_run && !changelog_path.as_ref().exists() {
       fs::write(
         &changelog_path,
         &format!("# {}\n", package_bump.name()).into_bytes(),
@@ -38,7 +50,7 @@ impl Changelog {
     }
 
     if let Some(changesets) = package_bump.changesets() {
-      let mut patches: HashMap<Version<U>, Vec<String>> = HashMap::new();
+      let mut patches: HashMap<Version<V>, Vec<String>> = HashMap::new();
 
       for changset in changesets {
         let mut changeset_summary = String::new();
@@ -67,43 +79,27 @@ impl Changelog {
       }
 
       if dry_run {
-        println!("dry_run - update changelog {:?}", changelog_path);
-      }
+        println!(
+          "dry_run - update changelog {:?}\n{}",
+          changelog_path,
+          fill_output(&next_version, &patches)
+            .split('\n')
+            .map(|val| format!("dry_run: + {}", val))
+            .join("\n")
+        );
+      } else {
+        let changelog = fs::read_to_string(&changelog_path).await?;
+        let mut changelog_lines = changelog.split('\n');
 
-      let changelog = fs::read_to_string(&changelog_path).await?;
-      let mut changelog_lines = changelog.split('\n');
+        if let Some(title) = changelog_lines.next() {
+          let mut output = String::new();
 
-      if let Some(title) = changelog_lines.next() {
-        let mut output = String::new();
-
-        if !dry_run {
           output.push_str(title);
           output.push('\n');
           output.push('\n');
-        }
 
-        output.push_str("## ");
-        output.push_str(&next_version);
-        output.push('\n');
+          output.push_str(&fill_output(&next_version, &patches));
 
-        for (version, changes) in patches.iter().sorted_by(|(a, _), (b, _)| Ord::cmp(&b, &a)) {
-          output.push_str("\n### ");
-          output.push_str(&version_format(&version.to_string()));
-          output.push_str(" Changes\n");
-          output.push('\n');
-
-          output.push_str(&changes.join("\n"));
-        }
-
-        if dry_run {
-          println!(
-            "{}",
-            output
-              .split('\n')
-              .map(|val| format!("dry_run: + {}", val))
-              .join("\n")
-          );
-        } else {
           let mut changelog = fs::File::create(&changelog_path).await?;
 
           changelog.write(output.as_bytes()).await?;

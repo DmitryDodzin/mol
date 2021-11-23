@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::command::Version;
 use clap::Parser;
 
@@ -7,59 +9,36 @@ pub use crate::command::*;
 
 #[derive(Parser, Debug)]
 pub enum Command {
-  Init(Init),
-  /// Add changeset
+  /// Create a new changeset file
   Add(Add),
+  /// Initialize the (default .changsets) directory and basic config
+  Init(Init),
+  /// Consume changesets and update all relevant packages
   Version(Version),
-  Publish(Publish),
-  Status(Status),
 }
 
-impl<T: PackageManager + Send + Sync> IntoExecuteableCommand<T> for Command {
-  fn as_executable(&self) -> Option<&dyn ExecuteableCommand<T>> {
+impl<T: PackageManager + Send + Sync, V: Versioned + Default + Send + Sync>
+  IntoExecutableCommand<T, V> for Command
+where
+  <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
+{
+  fn as_executable(&self) -> Option<&dyn ExecutableCommand<T, V>> {
     match self {
-      Self::Add(add) => Some(add as &dyn ExecuteableCommand<T>),
-      Self::Version(add) => Some(add as &dyn ExecuteableCommand<T>),
-      _ => None,
+      Self::Add(add) => Some(add as &dyn ExecutableCommand<T, V>),
+      Self::Init(init) => Some(init as &dyn ExecutableCommand<T, V>),
+      Self::Version(version) => Some(version as &dyn ExecutableCommand<T, V>),
     }
   }
 }
 
 #[derive(Parser, Debug)]
-pub struct CommandTarget {
-  #[clap(subcommand)]
-  pub target: Command,
-}
-
-#[derive(Parser, Debug)]
-pub enum Root {
-  Mol(CommandTarget),
-  Init(Init),
-  /// Add changeset
-  Add(Add),
-  Version(Version),
-  Publish(Publish),
-  Status(Status),
-}
-
-impl<T: PackageManager + Send + Sync> IntoExecuteableCommand<T> for Root {
-  fn as_executable(&self) -> Option<&dyn ExecuteableCommand<T>> {
-    match self {
-      Self::Add(add) => Some(add as &dyn ExecuteableCommand<T>),
-      Self::Version(add) => Some(add as &dyn ExecuteableCommand<T>),
-      _ => None,
-    }
-  }
-}
-
-#[derive(Parser, Debug)]
-#[clap(version = "0.1.0", author = "Dmitry Dodzin <d.dodzin@gmail.com>")]
+#[clap(name = "cargo-mol", author = "Dmitry Dodzin <d.dodzin@gmail.com>")]
 pub struct Opts {
   /// Command
   #[clap(subcommand)]
-  pub cmd: Root,
+  pub cmd: Command,
 
-  /// Dry the changes
+  /// Run with dry_run no files actually change
   #[clap(long)]
   pub dry_run: bool,
 }

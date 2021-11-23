@@ -10,4 +10,3 @@ edition = "2018"
 async-trait = "0.1"
 itertools = "0.10"
 tokio = { version = "1", features = ["fs", "io-util"] }
-failure = "0.1"

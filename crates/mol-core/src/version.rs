@@ -1,10 +1,23 @@
+use std::hash::Hash;
 use std::str::FromStr;
 
 use crate::error::VersionBumpError;
 
-pub trait Versioned: Clone + FromStr + Ord + ToString {
+fn capitalize(s: &str) -> String {
+  let mut c = s.chars();
+  match c.next() {
+    None => String::new(),
+    Some(f) => f.to_uppercase().chain(c).collect(),
+  }
+}
+
+pub trait Versioned: Clone + Hash + FromStr + Ord + ToString {
   fn options() -> Vec<Self>;
+
   fn apply(&self, current: &str) -> Result<String, VersionBumpError>;
+  fn as_changelog_fmt(&self) -> String {
+    format!("### {} Changes\n", capitalize(&self.to_string()))
+  }
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
@@ -30,6 +43,9 @@ where
   }
   fn apply(&self, current: &str) -> Result<String, VersionBumpError> {
     self.version.apply(current)
+  }
+  fn as_changelog_fmt(&self) -> String {
+    self.version.as_changelog_fmt()
   }
 }
 
