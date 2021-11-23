@@ -78,22 +78,25 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Default + Send + Sync> Exec
       return Ok(());
     }
 
-    for (path, name, version) in &context.packages {
-      if let Some(update) = bump.package(name).version() {
+    for package in &context.packages {
+      if let Some(update) = bump.package(&package.name).version() {
         let next_version = update
-          .apply(version)
-          .with_context(|| format!("Failed updating package {}", &name))?;
+          .apply(&package.version)
+          .with_context(|| format!("Failed updating package {}", package.name))?;
 
         if context.dry_run {
-          println!("dry_run - version bump: {} -> {}", version, next_version);
+          println!(
+            "dry_run - version bump: {} -> {}",
+            package.version, next_version
+          );
         } else {
           context
             .package_manager
-            .apply_version(path, &next_version)
+            .apply_version(&package.path, &next_version)
             .await?;
         }
 
-        if let Some(root_path) = path.parent() {
+        if let Some(root_path) = package.path.parent() {
           let changelog_path = {
             let mut root_path = root_path.to_path_buf();
             root_path.push("CHANGELOG.md");
@@ -103,14 +106,14 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Default + Send + Sync> Exec
           Changelog::update_changelog(
             &changelog_path,
             next_version,
-            &bump.package(name),
+            &bump.package(&package.name),
             context.dry_run,
           )
           .await
           .with_context(|| {
             format!(
               "Could not update the changelog for {} at {:?}",
-              name, changelog_path
+              package.name, changelog_path
             )
           })?;
         }

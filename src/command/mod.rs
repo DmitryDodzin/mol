@@ -1,5 +1,4 @@
 use std::marker::PhantomData;
-use std::path::PathBuf;
 
 use async_trait::async_trait;
 
@@ -17,7 +16,7 @@ pub use version::Version;
 pub struct ExecutableContext<T: PackageManager, V: Versioned + Default> {
   pub dry_run: bool,
   pub package_manager: T,
-  pub packages: Vec<(PathBuf, String, String)>,
+  pub packages: Vec<Package>,
   pub phantom_version_syntax: PhantomData<V>,
 }
 

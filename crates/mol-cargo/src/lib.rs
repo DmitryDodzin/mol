@@ -19,7 +19,7 @@ impl Cargo {
     exists: Arc<DashSet<PathBuf>>,
     globs: GlobSet,
     entry: fs::DirEntry,
-  ) -> std::io::Result<Vec<(PathBuf, String, String)>> {
+  ) -> std::io::Result<Vec<Package>> {
     let mut result = Vec::new();
     let entry_path = entry.path();
 
@@ -56,7 +56,7 @@ impl Cargo {
     exists: Arc<DashSet<PathBuf>>,
     globs: GlobSet,
     mut current_dir: fs::ReadDir,
-  ) -> std::io::Result<Vec<(PathBuf, String, String)>> {
+  ) -> std::io::Result<Vec<Package>> {
     let mut handles = Vec::new();
 
     while let Some(entry) = current_dir.next_entry().await? {
@@ -95,7 +95,7 @@ impl PackageManager for Cargo {
   async fn read_package<T: AsRef<Path> + Send + Sync>(
     &self,
     crate_path: T,
-  ) -> std::io::Result<Vec<(PathBuf, String, String)>> {
+  ) -> std::io::Result<Vec<Package>> {
     let mut result = Vec::new();
     let (crate_path, document) = self.load_document(crate_path).await?;
 
@@ -109,11 +109,11 @@ impl PackageManager for Cargo {
     };
 
     if let (Some(package_name), Some(version)) = (package_name, version) {
-      result.push((
-        crate_path.clone(),
-        package_name.to_owned(),
-        version.to_owned(),
-      ));
+      result.push(Package {
+        path: crate_path.clone(),
+        name: package_name.to_owned(),
+        version: version.to_owned(),
+      });
     }
 
     let workspace = if document.contains_key("workspace") {

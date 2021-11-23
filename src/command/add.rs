@@ -1,4 +1,3 @@
-use std::path::PathBuf;
 use std::str::FromStr;
 
 use anyhow::Context;
@@ -48,12 +47,12 @@ impl Add {
   fn select_packages<T: PackageManager, V: Versioned + Default>(
     &self,
     context: &ExecutableContext<T, V>,
-  ) -> anyhow::Result<Vec<(PathBuf, String, String)>> {
+  ) -> anyhow::Result<Vec<Package>> {
     if let Some(packages) = &self.packages {
       let packages = context
         .packages
         .iter()
-        .filter(|(_, name, _)| packages.contains(name))
+        .filter(|package| packages.contains(&package.name))
         .cloned()
         .collect();
 
@@ -66,8 +65,8 @@ impl Add {
         &context
           .packages
           .iter()
-          .map(|(_, name, _)| name)
-          .collect::<Vec<&String>>(),
+          .map(|package| package.name.clone())
+          .collect::<Vec<String>>(),
       )
       .interact_on(&Term::buffered_stderr())?
       .into_iter()
@@ -106,7 +105,7 @@ impl Add {
     let changeset: Changeset<V> = Changeset {
       packages: packages
         .into_iter()
-        .map(|(_, name, _)| (name, version.clone()))
+        .map(|package| (package.name, version.clone()))
         .collect(),
       message,
     };
