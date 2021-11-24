@@ -64,5 +64,11 @@ You can always preview the changes you are about to add by runnig with --dry-run
 ```bash
 cargo mol --dry-run version
 
-# will print out all the changes that would have happend
+# Will print out all the changes that would have happend
 ```
+
+## Roadmap
+- [ ] Plugins
+- [ ] mol-nodejs (npm/yarn)
+- [ ] mol-pip
+- [ ] mol-maven?
