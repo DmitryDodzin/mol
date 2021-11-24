@@ -19,26 +19,26 @@ Most of the api is ithere cli wizzard or very similar to [changesets](https://gi
 
 Create a new changeset to describe the change you are plannig to add
 ```bash
-cargo mol add -v minor -p packge1 -p package2 -m "I did some changes"
+cargo mol add -v patch -p packge1 -p package2 -m "I did some changes"
 
 # what changed
 # + .changeset/lorem_ipsum.md >
-# + ---
-# + packge1: minor
-# + package2: minor
-# + --- 
-# +
-# + I did some changes
-# +
+#   + ---
+#   + packge1: patch
+#   + package2: patch
+#   + --- 
+#   +
+#   + I did some changes
+#   +
 ```
 
 Now when you want to update all the versions you requested. Packages will be updated by the most severe version that is requested, ie 0.1.4 + (patch + patch + minor) == 0.2.0
 ```bash
-cargo mol version"
+cargo mol version
 
 # what changed
 # - .changeset/lorem_ipsum.md
-# - .changeset/lorem_ipsum2.md
+# - .changeset/lorem_minor.md
 #   ~ CHANGELOG.md >
 #   ~ # package1
 #   ~
@@ -48,7 +48,7 @@ cargo mol version"
 #   +
 #   + - I did some minor changes i did
 #   +
-#   + ### Minor Changes
+#   + ### Patch Changes
 #   +
 #   + - I did some changes
 #   +
@@ -62,7 +62,7 @@ cargo mol version"
 You can always preview the changes you are about to add by runnig with --dry-run before the coomand
 
 ```bash
-cargo mol --dry-run version"
+cargo mol --dry-run version
 
 # will print out all the changes that would have happend
 ```
