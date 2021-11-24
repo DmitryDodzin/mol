@@ -59,8 +59,8 @@ impl Versioned for Semantic {
       .ok_or(VersionBumpError)?;
 
     Ok(match self.r#type {
-      SemanticVersion::Major => format!("{}.{}.{}", major + 1, minor, patch),
-      SemanticVersion::Minor => format!("{}.{}.{}", major, minor + 1, patch),
+      SemanticVersion::Major => format!("{}.{}.{}", major + 1, 0, 0),
+      SemanticVersion::Minor => format!("{}.{}.{}", major, minor + 1, 0),
       SemanticVersion::Patch => format!("{}.{}.{}", major, minor, patch + 1),
     })
   }
@@ -157,32 +157,32 @@ mod tests {
   fn major_apply() {
     let version = Version::new(Semantic::major());
 
-    let bumped = version.apply("0.0.1");
+    let bumped = version.apply("0.4.1");
 
     assert!(bumped.is_ok());
 
-    assert_eq!(bumped.unwrap(), "1.0.1".to_owned())
+    assert_eq!(bumped.unwrap(), "1.0.0".to_owned())
   }
 
   #[test]
   fn minor_apply() {
     let version = Version::new(Semantic::minor());
 
-    let bumped = version.apply("0.0.1");
+    let bumped = version.apply("4.1.1");
 
     assert!(bumped.is_ok());
 
-    assert_eq!(bumped.unwrap(), "0.1.1".to_owned())
+    assert_eq!(bumped.unwrap(), "4.2.0".to_owned())
   }
 
   #[test]
   fn patch_apply() {
     let version = Version::new(Semantic::patch());
 
-    let bumped = version.apply("0.0.1");
+    let bumped = version.apply("0.4.1");
 
     assert!(bumped.is_ok());
 
-    assert_eq!(bumped.unwrap(), "0.0.2".to_owned())
+    assert_eq!(bumped.unwrap(), "0.4.2".to_owned())
   }
 }
