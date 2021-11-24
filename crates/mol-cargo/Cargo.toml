@@ -3,8 +3,10 @@ name = "mol-cargo"
 version = "0.1.0"
 authors = ["Dmitry Dodzin <d.dodzin@gmail.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "MIT"
+description = "Cargo bindings for mol crate"
+repository = "https://github.com/DmitryDodzin/mol"
+readme = "README.md"
 
 [dependencies]
 mol-core = { path = '../mol-core', version = "0.1" }
