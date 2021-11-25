@@ -1,4 +1,6 @@
 ---
+"mol": patch
+"mol-cargo": patch
 "mol-core": patch
 ---
 
