@@ -10,7 +10,15 @@ use crate::changeset::Changeset;
 use crate::semantic::Semantic;
 use crate::version::{Version, Versioned};
 
-pub fn fill_output<V: Versioned>(
+fn capitalize(s: &str) -> String {
+  let mut c = s.chars();
+  match c.next() {
+    None => String::new(),
+    Some(f) => f.to_uppercase().chain(c).collect(),
+  }
+}
+
+fn fill_output<V: Versioned>(
   next_version: &str,
   patches: &HashMap<Version<V>, Vec<String>>,
 ) -> String {
@@ -61,15 +69,6 @@ impl Changelog {
   ) -> std::io::Result<()> {
     let package_name = package_bump.name();
 
-    // TODO: move to validate
-    if !dry_run && !changelog_path.as_ref().exists() {
-      fs::write(
-        &changelog_path,
-        &format!("# {}\n", package_name).into_bytes(),
-      )
-      .await?;
-    }
-
     if let Some(patches) = package_bump
       .changesets()
       .map(|changesets| create_patches(package_name, changesets))
@@ -84,7 +83,10 @@ impl Changelog {
             .join("\n")
         );
       } else {
-        let changelog = fs::read_to_string(&changelog_path).await?;
+        let changelog = fs::read_to_string(&changelog_path)
+          .await
+          .unwrap_or_else(|_| format!("# {}\n", package_name));
+
         let mut changelog_lines = changelog.split('\n');
 
         if let Some(title) = changelog_lines.next() {
@@ -137,17 +139,15 @@ impl<T> AsChangelogFmt for Changeset<T> {
   }
 }
 
-fn capitalize(s: &str) -> String {
-  let mut c = s.chars();
-  match c.next() {
-    None => String::new(),
-    Some(f) => f.to_uppercase().chain(c).collect(),
+impl AsChangelogFmt for Semantic {
+  fn as_changelog_fmt(&self) -> String {
+    capitalize(&self.to_string())
   }
 }
 
-impl AsChangelogFmt for Semantic {
+impl<T: AsChangelogFmt> AsChangelogFmt for Version<T> {
   fn as_changelog_fmt(&self) -> String {
-    format!("### {} Changes\n", capitalize(&self.to_string()))
+    format!("### {} Changes\n", self.version.as_changelog_fmt())
   }
 }
 

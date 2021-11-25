@@ -12,18 +12,12 @@ pub trait Versioned: AsChangelogFmt + Clone + Default + Hash + FromStr + Ord + T
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 pub struct Version<T> {
-  version: T,
+  pub(crate) version: T,
 }
 
 impl<T> Version<T> {
   pub fn new(version: T) -> Self {
     Version { version }
-  }
-}
-
-impl<T: AsChangelogFmt> AsChangelogFmt for Version<T> {
-  fn as_changelog_fmt(&self) -> String {
-    self.version.as_changelog_fmt()
   }
 }
 

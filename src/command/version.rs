@@ -39,7 +39,6 @@ impl Version {
           bump.add(
             Changeset::<V>::parse(&raw_changeset)
               .with_context(|| format!("Unable to parse changeset at {:?}", changeset_path))?,
-            &context.packages.as_package_graph(),
           );
 
           if context.dry_run {
