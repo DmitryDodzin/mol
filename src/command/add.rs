@@ -19,14 +19,14 @@ pub struct Add {
   pub empty: bool,
   #[clap(short, long)]
   pub packages: Option<Vec<String>>,
-  #[clap(long)]
+  #[clap(short, long)]
   pub version: Option<String>,
   #[clap(short, long)]
   pub message: Option<String>,
 }
 
 impl Add {
-  fn select_version<V: Versioned + Default>(&self) -> anyhow::Result<Version<V>>
+  fn select_version<V: Versioned>(&self) -> anyhow::Result<Version<V>>
   where
     <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
   {
@@ -44,7 +44,7 @@ impl Add {
     Ok(versions[version_selection].clone())
   }
 
-  fn select_packages<T: PackageManager, V: Versioned + Default>(
+  fn select_packages<T: PackageManager, V: Versioned>(
     &self,
     context: &ExecutableContext<T, V>,
   ) -> anyhow::Result<Vec<Package>> {
@@ -57,6 +57,10 @@ impl Add {
         .collect();
 
       return Ok(packages);
+    }
+
+    if context.packages.len() == 1 {
+      return Ok(context.packages.clone());
     }
 
     let packages = MultiSelect::with_theme(&*COLOR_THEME)
@@ -76,7 +80,7 @@ impl Add {
     Ok(packages)
   }
 
-  fn get_changeset<T: PackageManager, V: Versioned + Default>(
+  fn get_changeset<T: PackageManager, V: Versioned>(
     &self,
     context: &ExecutableContext<T, V>,
   ) -> anyhow::Result<Option<Changeset<V>>>
@@ -115,8 +119,7 @@ impl Add {
 }
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync, V: Versioned + Default + Send + Sync> ExecutableCommand<T, V>
-  for Add
+impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableCommand<T, V> for Add
 where
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {

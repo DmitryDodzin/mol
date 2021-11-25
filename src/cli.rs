@@ -17,8 +17,8 @@ pub enum Command {
   Version(Version),
 }
 
-impl<T: PackageManager + Send + Sync, V: Versioned + Default + Send + Sync>
-  IntoExecutableCommand<T, V> for Command
+impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> IntoExecutableCommand<T, V>
+  for Command
 where
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {

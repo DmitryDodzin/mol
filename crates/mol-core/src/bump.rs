@@ -1,25 +1,29 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::changeset::Changeset;
+use crate::package::PackageGraph;
 use crate::version::{Version, Versioned};
 
 #[derive(Debug, Default)]
 pub struct Bump<T> {
   changesets: Vec<Changeset<T>>,
   package_update: HashMap<String, Version<T>>,
-  package_changesets: HashMap<String, Vec<usize>>,
+  package_changesets: HashMap<String, HashSet<usize>>,
 }
 
 impl<'a, T: Versioned> Bump<T> {
-  pub fn add(&mut self, changeset: Changeset<T>) {
+  pub fn add(&mut self, changeset: Changeset<T>, _package_graph: &PackageGraph<'_>) {
     let index = self.changesets.len();
     self.changesets.insert(index, changeset);
+    let changeset = &self.changesets[index];
 
-    for (name, version) in &self.changesets[index].packages {
+    for (name, version) in &changeset.packages {
       if let Some(changesets) = self.package_changesets.get_mut(name) {
-        changesets.push(index);
+        changesets.insert(index);
       } else {
-        self.package_changesets.insert(name.clone(), vec![index]);
+        self
+          .package_changesets
+          .insert(name.clone(), vec![index].into_iter().collect());
       }
 
       if let Some(concat_version) = self.package_update.get_mut(name) {
@@ -38,22 +42,6 @@ impl<'a, T: Versioned> Bump<T> {
 
   pub fn package(&'a self, name: &'a str) -> PackageBump<'a, T> {
     PackageBump { name, bump: self }
-  }
-}
-
-impl<T, K> From<K> for Bump<T>
-where
-  T: Default + Versioned,
-  K: Iterator<Item = Changeset<T>>,
-{
-  fn from(items: K) -> Self {
-    let mut bump = Self::default();
-
-    for item in items {
-      bump.add(item);
-    }
-
-    bump
   }
 }
 
@@ -85,31 +73,46 @@ impl<'a, T> PackageBump<'a, T> {
 mod tests {
 
   use super::*;
-  use crate::semantic::Semantic;
+  use crate::prelude::*;
 
   #[test]
   fn add() {
     let mut bump = Bump::default();
 
-    bump.add(Changeset {
-      packages: vec![("mol".to_owned(), Version::new(Semantic::minor()))]
+    let packages = vec![];
+    let graph = packages.as_package_graph();
+
+    bump.add(
+      Changeset {
+        packages: vec![("mol".to_owned(), Version::new(Semantic::minor()))]
+          .into_iter()
+          .collect(),
+        message: "Hi".to_owned(),
+      },
+      &graph,
+    );
+    bump.add(
+      Changeset {
+        packages: vec![
+          ("mol".to_owned(), Version::new(Semantic::patch())),
+          ("mol-core".to_owned(), Version::new(Semantic::major())),
+        ]
         .into_iter()
         .collect(),
-      message: "Hi".to_owned(),
-    });
-    bump.add(Changeset {
-      packages: vec![
-        ("mol".to_owned(), Version::new(Semantic::patch())),
-        ("mol-core".to_owned(), Version::new(Semantic::major())),
-      ]
-      .into_iter()
-      .collect(),
-      message: "Too bad we dont play games".to_owned(),
-    });
+        message: "Too bad we dont play games".to_owned(),
+      },
+      &graph,
+    );
 
     assert_eq!(bump.changesets.len(), 2);
-    assert_eq!(bump.package_changesets.get("mol-core"), Some(&vec![1]));
-    assert_eq!(bump.package_changesets.get("mol"), Some(&vec![0, 1]));
+    assert_eq!(
+      bump.package_changesets.get("mol-core"),
+      Some(&vec![1].into_iter().collect())
+    );
+    assert_eq!(
+      bump.package_changesets.get("mol"),
+      Some(&vec![0, 1].into_iter().collect())
+    );
     assert_eq!(
       bump.package_update.get("mol"),
       Some(&Version::new(Semantic::minor()))
@@ -124,21 +127,40 @@ mod tests {
   fn changesets() {
     let mut bump = Bump::default();
 
-    bump.add(Changeset {
-      packages: vec![("mol".to_owned(), Version::new(Semantic::minor()))]
-        .into_iter()
-        .collect(),
-      message: "Hi".to_owned(),
-    });
-    bump.add(Changeset {
-      packages: vec![
-        ("mol".to_owned(), Version::new(Semantic::major())),
-        ("mol-core".to_owned(), Version::new(Semantic::major())),
-      ]
-      .into_iter()
-      .collect(),
-      message: "Too bad we dont play games".to_owned(),
-    });
+    let packages = vec![
+      Package {
+        path: "".into(),
+        name: "mol-c".to_owned(),
+        version: "0.1.0".to_owned(),
+        dependencies: vec![("mol-core".to_owned(), "0.1.0".to_owned())],
+      },
+      Package {
+        path: "".into(),
+        name: "mol".to_owned(),
+        version: "0.1.0".to_owned(),
+        dependencies: vec![("mol-core".to_owned(), "0.1.0".to_owned())],
+      },
+    ];
+    let graph = packages.as_package_graph();
+
+    bump.add(
+      Changeset {
+        packages: vec![("mol".to_owned(), Version::new(Semantic::minor()))]
+          .into_iter()
+          .collect(),
+        message: "Hi".to_owned(),
+      },
+      &graph,
+    );
+    bump.add(
+      Changeset {
+        packages: vec![("mol-core".to_owned(), Version::new(Semantic::major()))]
+          .into_iter()
+          .collect(),
+        message: "Too bad we dont play games".to_owned(),
+      },
+      &graph,
+    );
 
     let changesets = bump.package("mol").changesets();
 
@@ -146,7 +168,7 @@ mod tests {
 
     let changesets = changesets.unwrap();
 
-    assert_eq!(changesets.len(), 2);
+    assert_eq!(changesets.len(), 1);
     assert_eq!(changesets[0].message, "Hi");
 
     let changesets = bump.package("mol-core").changesets();

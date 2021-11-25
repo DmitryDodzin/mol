@@ -13,7 +13,7 @@ use super::{ExecutableCommand, ExecutableContext};
 pub struct Version;
 
 impl Version {
-  async fn consume_changesets<T: PackageManager, V: Versioned + Default>(
+  async fn consume_changesets<T: PackageManager, V: Versioned>(
     changesets: &Changesets,
     context: &ExecutableContext<T, V>,
   ) -> anyhow::Result<Bump<V>> {
@@ -39,6 +39,7 @@ impl Version {
           bump.add(
             Changeset::<V>::parse(&raw_changeset)
               .with_context(|| format!("Unable to parse changeset at {:?}", changeset_path))?,
+            &context.packages.as_package_graph(),
           );
 
           if context.dry_run {
@@ -59,7 +60,7 @@ impl Version {
 }
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync, V: Versioned + Default + Send + Sync> ExecutableCommand<T, V>
+impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableCommand<T, V>
   for Version
 {
   async fn execute(

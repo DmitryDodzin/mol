@@ -6,17 +6,17 @@ use itertools::Itertools;
 use tokio::{fs, io::AsyncWriteExt};
 
 use crate::bump::PackageBump;
+use crate::changeset::Changeset;
+use crate::semantic::Semantic;
 use crate::version::{Version, Versioned};
 
-pub fn fill_output<V: Versioned + Default>(
+pub fn fill_output<V: Versioned>(
   next_version: &str,
   patches: &HashMap<Version<V>, Vec<String>>,
 ) -> String {
   let mut output = String::new();
 
-  output.push_str("## ");
-  output.push_str(next_version);
-  output.push('\n');
+  output.push_str(&next_version.as_version().as_changelog_fmt());
 
   for (version, changes) in patches.iter().sorted_by(|(a, _), (b, _)| Ord::cmp(&b, &a)) {
     output.push('\n');
@@ -29,10 +29,31 @@ pub fn fill_output<V: Versioned + Default>(
   output
 }
 
+fn create_patches<V: Versioned>(
+  package_name: &str,
+  changesets: Vec<&Changeset<V>>,
+) -> HashMap<Version<V>, Vec<String>> {
+  let mut patches: HashMap<Version<V>, Vec<String>> = HashMap::new();
+
+  for changset in changesets {
+    let changeset_summary = changset.as_changelog_fmt();
+
+    if let Some(version) = changset.packages.get(package_name) {
+      if let Some(changes) = patches.get_mut(version) {
+        changes.push(changeset_summary);
+      } else {
+        patches.insert(version.clone(), vec![changeset_summary]);
+      }
+    }
+  }
+
+  patches
+}
+
 pub struct Changelog;
 
 impl Changelog {
-  pub async fn update_changelog<T: AsRef<Path> + Debug, V: Versioned + Default>(
+  pub async fn update_changelog<T: AsRef<Path> + Debug, V: Versioned>(
     changelog_path: T,
     next_version: String,
     package_bump: &PackageBump<'_, V>,
@@ -44,40 +65,15 @@ impl Changelog {
     if !dry_run && !changelog_path.as_ref().exists() {
       fs::write(
         &changelog_path,
-        &format!("# {}\n", package_bump.name()).into_bytes(),
+        &format!("# {}\n", package_name).into_bytes(),
       )
       .await?;
     }
 
-    if let Some(changesets) = package_bump.changesets() {
-      let mut patches: HashMap<Version<V>, Vec<String>> = HashMap::new();
-
-      for changset in changesets {
-        let mut changeset_summary = String::new();
-
-        let mut parts = changset.message.split('\n');
-
-        if let Some(value) = parts.next() {
-          changeset_summary.push_str("- ");
-          changeset_summary.push_str(value);
-          changeset_summary.push('\n');
-
-          for part in parts {
-            changeset_summary.push_str("  ");
-            changeset_summary.push_str(part);
-            changeset_summary.push('\n');
-          }
-        }
-
-        if let Some(version) = changset.packages.get(package_name) {
-          if let Some(changes) = patches.get_mut(version) {
-            changes.push(changeset_summary);
-          } else {
-            patches.insert(version.clone(), vec![changeset_summary]);
-          }
-        }
-      }
-
+    if let Some(patches) = package_bump
+      .changesets()
+      .map(|changesets| create_patches(package_name, changesets))
+    {
       if dry_run {
         println!(
           "dry_run - update changelog {:?}\n{}",
@@ -112,5 +108,63 @@ impl Changelog {
     }
 
     Ok(())
+  }
+}
+
+pub trait AsChangelogFmt {
+  fn as_changelog_fmt(&self) -> String;
+}
+
+impl<T> AsChangelogFmt for Changeset<T> {
+  fn as_changelog_fmt(&self) -> String {
+    let mut changeset_summary = String::new();
+
+    let mut parts = self.message.split('\n');
+
+    if let Some(value) = parts.next() {
+      changeset_summary.push_str("- ");
+      changeset_summary.push_str(value);
+      changeset_summary.push('\n');
+
+      for part in parts {
+        changeset_summary.push_str("  ");
+        changeset_summary.push_str(part);
+        changeset_summary.push('\n');
+      }
+    }
+
+    changeset_summary
+  }
+}
+
+fn capitalize(s: &str) -> String {
+  let mut c = s.chars();
+  match c.next() {
+    None => String::new(),
+    Some(f) => f.to_uppercase().chain(c).collect(),
+  }
+}
+
+impl AsChangelogFmt for Semantic {
+  fn as_changelog_fmt(&self) -> String {
+    format!("### {} Changes\n", capitalize(&self.to_string()))
+  }
+}
+
+struct ChangelogVersion(String);
+
+impl AsChangelogFmt for ChangelogVersion {
+  fn as_changelog_fmt(&self) -> String {
+    format!("## {}\n", self.0)
+  }
+}
+
+trait ChangelogStrFmt {
+  fn as_version(&self) -> ChangelogVersion;
+}
+
+impl ChangelogStrFmt for &str {
+  fn as_version(&self) -> ChangelogVersion {
+    ChangelogVersion(self.to_string())
   }
 }

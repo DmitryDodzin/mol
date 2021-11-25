@@ -13,19 +13,19 @@ pub use init::Init;
 pub use version::Version;
 
 #[derive(Debug)]
-pub struct ExecutableContext<T: PackageManager, V: Versioned + Default> {
+pub struct ExecutableContext<T: PackageManager, V: Versioned> {
   pub dry_run: bool,
   pub package_manager: T,
   pub packages: Vec<Package>,
   pub phantom_version_syntax: PhantomData<V>,
 }
 
-pub trait IntoExecutableCommand<T: PackageManager, V: Versioned + Default> {
+pub trait IntoExecutableCommand<T: PackageManager, V: Versioned> {
   fn as_executable(&self) -> Option<&dyn ExecutableCommand<T, V>>;
 }
 
 #[async_trait]
-pub trait ExecutableCommand<T: PackageManager, V: Versioned + Default> {
+pub trait ExecutableCommand<T: PackageManager, V: Versioned> {
   async fn execute(
     &self,
     changesets: &Changesets,

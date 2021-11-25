@@ -29,11 +29,7 @@ lazy_static! {
     console::style("Changesets folder already initialized").yellow();
 }
 
-async fn handle_command<
-  U: PackageManager,
-  V: Versioned + Default,
-  T: IntoExecutableCommand<U, V> + Debug,
->(
+async fn handle_command<U: PackageManager, V: Versioned, T: IntoExecutableCommand<U, V> + Debug>(
   changesets: &Changesets,
   context: &ExecutableContext<U, V>,
   command: T,
@@ -47,7 +43,7 @@ async fn handle_command<
   Ok(())
 }
 
-pub async fn exec<T: Default + PackageManager + Send + Sync, V: Versioned + Default + Send + Sync>(
+pub async fn exec<T: Default + PackageManager + Send + Sync, V: Versioned + Send + Sync>(
 ) -> anyhow::Result<()>
 where
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
