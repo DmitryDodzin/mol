@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::path::PathBuf;
 
 use anyhow::Context;
 use async_trait::async_trait;
@@ -13,10 +14,9 @@ use super::{ExecutableCommand, ExecutableContext};
 pub struct Version;
 
 impl Version {
-  async fn consume_changesets<T: PackageManager, V: Versioned>(
+  async fn consume_changesets<V: Versioned>(
     changesets: &Changesets,
-    context: &ExecutableContext<T, V>,
-  ) -> anyhow::Result<Bump<V>> {
+  ) -> anyhow::Result<(Vec<PathBuf>, Bump<V>)> {
     let mut bump = Bump::default();
     let mut changeset_files_paths = Vec::new();
 
@@ -41,20 +41,12 @@ impl Version {
               .with_context(|| format!("Unable to parse changeset at {:?}", changeset_path))?,
           );
 
-          if context.dry_run {
-            println!("dry_run - delete: {:?}", changeset_path);
-          } else {
-            fs::remove_file(&changeset_path)
-              .await
-              .with_context(|| format!("Unable to remove the changeset at {:?}", changeset_path))?;
-          }
-
           changeset_files_paths.push(changeset_path);
         }
       }
     }
 
-    Ok(bump)
+    Ok((changeset_files_paths, bump))
   }
 }
 
@@ -67,7 +59,7 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
     changesets: &Changesets,
     context: &ExecutableContext<T, V>,
   ) -> anyhow::Result<()> {
-    let bump = Self::consume_changesets(changesets, context).await?;
+    let (changeset_paths, bump) = Self::consume_changesets::<V>(changesets).await?;
 
     if bump.is_empty() {
       println!(
@@ -117,6 +109,16 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
             )
           })?;
         }
+      }
+    }
+
+    for changeset_path in changeset_paths {
+      if context.dry_run {
+        println!("dry_run - delete: {:?}", changeset_path);
+      } else {
+        fs::remove_file(&changeset_path)
+          .await
+          .with_context(|| format!("Unable to remove the changeset at {:?}", changeset_path))?;
       }
     }
 
