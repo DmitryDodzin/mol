@@ -8,6 +8,8 @@ use crate::error::VersionBumpError;
 pub trait Versioned: AsChangelogFmt + Clone + Default + Hash + FromStr + Ord + ToString {
   fn options() -> Vec<Self>;
 
+  fn mask<'a>(mask: &str, version: &'a str) -> &'a str;
+
   fn apply(&self, current: &str) -> Result<String, VersionBumpError>;
 }
 
@@ -26,6 +28,9 @@ impl<T> Versioned for Version<T>
 where
   T: Versioned,
 {
+  fn mask<'a>(mask: &str, version: &'a str) -> &'a str {
+    T::mask(mask, version)
+  }
   fn options() -> Vec<Self> {
     T::options()
       .into_iter()

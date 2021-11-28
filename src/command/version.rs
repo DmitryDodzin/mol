@@ -12,7 +12,10 @@ use mol_core::prelude::*;
 use super::{ExecutableCommand, ExecutableContext};
 
 #[derive(Parser, Debug)]
-pub struct Version;
+pub struct Version {
+  #[clap(long)]
+  pub no_build: bool,
+}
 
 impl Version {
   async fn consume_changesets<V: Versioned>(
@@ -105,7 +108,7 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
               "dry_run - dependecy version bump: {} {} -> {}",
               name,
               version,
-              &updated[name.as_str()][..version.len()],
+              V::mask(version, &updated[name.as_str()])
             );
           } else {
             context
@@ -113,7 +116,7 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
               .apply_dependency_version(
                 &package.path,
                 name,
-                &updated[name.as_str()][..version.len()],
+                V::mask(version, &updated[name.as_str()]),
               )
               .await?;
           }
@@ -143,7 +146,7 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
       }
     }
 
-    if !context.dry_run {
+    if !context.dry_run && !self.no_build {
       context.package_manager.run_build(".").await?;
     }
 
