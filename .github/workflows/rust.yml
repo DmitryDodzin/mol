@@ -16,7 +16,23 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build
+    - name: ⚡ Cargo Cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.cargo
+        key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-${{ hashFiles('Cargo.toml') }}
+          ${{ runner.os }}-cargo
+    - name: ⚡ Cargo Cache
+      uses: actions/cache@v1
+      with:
+        path: target
+        key: ${{ runner.os }}-cargo-target-${{ hashFiles('Cargo.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-target-${{ hashFiles('Cargo.toml') }}
+          ${{ runner.os }}-cargo-target
+    - name: 🔨 Build
       run: cargo build --verbose --workspace
-    - name: Run tests
+    - name: 🔎 Test
       run: cargo test --verbose --workspace
