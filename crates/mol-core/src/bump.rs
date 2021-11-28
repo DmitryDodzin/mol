@@ -1,7 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::changeset::Changeset;
-
 use crate::version::{Version, Versioned};
 
 #[derive(Debug, Default)]
@@ -118,40 +117,18 @@ mod tests {
   fn changesets() {
     let mut bump = Bump::default();
 
-    // let packages = vec![
-    //   Package {
-    //     path: "".into(),
-    //     name: "mol-c".to_owned(),
-    //     version: "0.1.0".to_owned(),
-    //     dependencies: vec![("mol-core".to_owned(), "0.1.0".to_owned())],
-    //   },
-    //   Package {
-    //     path: "".into(),
-    //     name: "mol".to_owned(),
-    //     version: "0.1.0".to_owned(),
-    //     dependencies: vec![("mol-core".to_owned(), "0.1.0".to_owned())],
-    //   },
-    // ];
-    // let graph = packages.as_package_graph();
-
-    bump.add(
-      Changeset {
-        packages: vec![("mol".to_owned(), Version::new(Semantic::minor()))]
-          .into_iter()
-          .collect(),
-        message: "Hi".to_owned(),
-      },
-      // &graph,
-    );
-    bump.add(
-      Changeset {
-        packages: vec![("mol-core".to_owned(), Version::new(Semantic::major()))]
-          .into_iter()
-          .collect(),
-        message: "Too bad we dont play games".to_owned(),
-      },
-      // &graph,
-    );
+    bump.add(Changeset {
+      packages: vec![("mol".to_owned(), Version::new(Semantic::minor()))]
+        .into_iter()
+        .collect(),
+      message: "Hi".to_owned(),
+    });
+    bump.add(Changeset {
+      packages: vec![("mol-core".to_owned(), Version::new(Semantic::major()))]
+        .into_iter()
+        .collect(),
+      message: "Too bad we dont play games".to_owned(),
+    });
 
     let changesets = bump.package("mol").changesets();
 
