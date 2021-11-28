@@ -119,10 +119,6 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
           }
         }
 
-        if !context.dry_run {
-          context.package_manager.run_build(&package.path).await?;
-        }
-
         if let Some(root_path) = package.path.parent() {
           let changelog_path = {
             let mut root_path = root_path.to_path_buf();
@@ -145,6 +141,10 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
           })?;
         }
       }
+    }
+
+    if !context.dry_run {
+      context.package_manager.run_build(".").await?;
     }
 
     for changeset_path in changeset_paths {
