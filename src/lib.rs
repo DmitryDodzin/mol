@@ -1,5 +1,4 @@
 use std::fmt::Debug;
-use std::marker::PhantomData;
 use std::str::FromStr;
 
 use clap::Parser;
@@ -12,7 +11,7 @@ mod cli;
 mod command;
 
 use crate::{
-  cli::Opts,
+  cli::{Command, Opts},
   command::{ExecutableContext, IntoExecutableCommand},
 };
 
@@ -29,19 +28,11 @@ lazy_static! {
     console::style("Changesets folder already initialized").yellow();
 }
 
-pub async fn handle_command<
-  U: PackageManager,
-  V: Versioned + Default,
-  T: IntoExecutableCommand<U, V> + Debug,
->(
+async fn handle_command<U: PackageManager, V: Versioned, T: IntoExecutableCommand<U, V> + Debug>(
   changesets: &Changesets,
   context: &ExecutableContext<U, V>,
   command: T,
 ) -> anyhow::Result<()> {
-  if !changesets.validate() {
-    println!("{}", *INIT_REQ_PROMPT);
-  }
-
   if let Some(exeutable) = command.as_executable() {
     exeutable.execute(changesets, context).await?;
   } else {
@@ -51,7 +42,7 @@ pub async fn handle_command<
   Ok(())
 }
 
-pub async fn exec<T: Default + PackageManager + Send + Sync, V: Versioned + Default + Send + Sync>(
+pub async fn exec<T: Default + PackageManager + Send + Sync, V: Versioned + Send + Sync + 'static>(
 ) -> anyhow::Result<()>
 where
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
@@ -67,14 +58,22 @@ where
 
   let package_manager = T::default();
 
-  let context = ExecutableContext {
+  let context: ExecutableContext<T, V> = ExecutableContext {
     dry_run: opts.dry_run,
     packages: package_manager.read_package("Cargo.toml").await?,
     package_manager,
-    phantom_version_syntax: PhantomData::<V>,
   };
 
-  handle_command(&changesets, &context, opts.cmd).await?;
+  match opts.cmd {
+    Command::Init(_) => handle_command(&changesets, &context, opts.cmd).await?,
+    command => {
+      if !changesets.validate() {
+        println!("{}", *INIT_REQ_PROMPT);
+      }
+
+      handle_command(&changesets, &context, command).await?
+    }
+  }
 
   Ok(())
 }

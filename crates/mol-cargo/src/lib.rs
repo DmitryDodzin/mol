@@ -15,11 +15,11 @@ pub struct Cargo;
 
 impl Cargo {
   #[async_recursion]
-  async fn check_dir(
+  async fn check_dir<V: Versioned + Send + Sync + 'static>(
     exists: Arc<DashSet<PathBuf>>,
     globs: GlobSet,
     entry: fs::DirEntry,
-  ) -> std::io::Result<Vec<(PathBuf, String, String)>> {
+  ) -> std::io::Result<Vec<Package<V>>> {
     let mut result = Vec::new();
     let entry_path = entry.path();
 
@@ -52,11 +52,11 @@ impl Cargo {
   }
 
   #[async_recursion]
-  async fn check_read_dir(
+  async fn check_read_dir<V: Versioned + Send + Sync + 'static>(
     exists: Arc<DashSet<PathBuf>>,
     globs: GlobSet,
     mut current_dir: fs::ReadDir,
-  ) -> std::io::Result<Vec<(PathBuf, String, String)>> {
+  ) -> std::io::Result<Vec<Package<V>>> {
     let mut handles = Vec::new();
 
     while let Some(entry) = current_dir.next_entry().await? {
@@ -92,10 +92,10 @@ impl Cargo {
 
 #[async_trait]
 impl PackageManager for Cargo {
-  async fn read_package<T: AsRef<Path> + Send + Sync>(
+  async fn read_package<T: AsRef<Path> + Send + Sync, V: Versioned + Send + Sync + 'static>(
     &self,
     crate_path: T,
-  ) -> std::io::Result<Vec<(PathBuf, String, String)>> {
+  ) -> std::io::Result<Vec<Package<V>>> {
     let mut result = Vec::new();
     let (crate_path, document) = self.load_document(crate_path).await?;
 
@@ -108,12 +108,32 @@ impl PackageManager for Cargo {
       (None, None)
     };
 
+    let mut dependencies = Vec::new();
+
+    // TODO: support [dependencies.xyz] patterns
+    if let Some(deps) = document["dependencies"].as_table() {
+      for (key, value) in deps.iter() {
+        if value.is_str() {
+          dependencies.push((
+            key.to_owned(),
+            value.as_str().unwrap_or_default().to_owned(),
+          ));
+        } else if value.is_table() || value.is_inline_table() {
+          dependencies.push((
+            key.to_owned(),
+            value["version"].as_str().unwrap_or_default().to_owned(),
+          ));
+        }
+      }
+    }
+
     if let (Some(package_name), Some(version)) = (package_name, version) {
-      result.push((
-        crate_path.clone(),
-        package_name.to_owned(),
-        version.to_owned(),
-      ));
+      result.push(Package {
+        path: crate_path.clone(),
+        name: package_name.to_owned(),
+        version: version.into(),
+        dependencies,
+      });
     }
 
     let workspace = if document.contains_key("workspace") {

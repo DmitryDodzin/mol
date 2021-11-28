@@ -12,16 +12,16 @@ use super::{ExecutableCommand, ExecutableContext};
 pub struct Init;
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync, V: Versioned + Default + Send + Sync> ExecutableCommand<T, V>
-  for Init
-{
+impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableCommand<T, V> for Init {
   async fn execute(
     &self,
     changesets: &Changesets,
-    _context: &ExecutableContext<T, V>,
+    context: &ExecutableContext<T, V>,
   ) -> anyhow::Result<()> {
     if !changesets.validate() {
-      changesets.initialize().await?;
+      if !context.dry_run {
+        changesets.initialize().await?;
+      }
     } else {
       println!("{}", *INIT_EXISTS_PROMPT);
     }

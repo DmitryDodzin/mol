@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::path::PathBuf;
 
 use anyhow::Context;
 use async_trait::async_trait;
@@ -13,10 +14,9 @@ use super::{ExecutableCommand, ExecutableContext};
 pub struct Version;
 
 impl Version {
-  async fn consume_changesets<T: PackageManager, V: Versioned + Default>(
+  async fn consume_changesets<V: Versioned>(
     changesets: &Changesets,
-    context: &ExecutableContext<T, V>,
-  ) -> anyhow::Result<Bump<V>> {
+  ) -> anyhow::Result<(Vec<PathBuf>, Bump<V>)> {
     let mut bump = Bump::default();
     let mut changeset_files_paths = Vec::new();
 
@@ -41,25 +41,17 @@ impl Version {
               .with_context(|| format!("Unable to parse changeset at {:?}", changeset_path))?,
           );
 
-          if context.dry_run {
-            println!("dry_run - delete: {:?}", changeset_path);
-          } else {
-            fs::remove_file(&changeset_path)
-              .await
-              .with_context(|| format!("Unable to remove the changeset at {:?}", changeset_path))?;
-          }
-
           changeset_files_paths.push(changeset_path);
         }
       }
     }
 
-    Ok(bump)
+    Ok((changeset_files_paths, bump))
   }
 }
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync, V: Versioned + Default + Send + Sync> ExecutableCommand<T, V>
+impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableCommand<T, V>
   for Version
 {
   async fn execute(
@@ -67,7 +59,7 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Default + Send + Sync> Exec
     changesets: &Changesets,
     context: &ExecutableContext<T, V>,
   ) -> anyhow::Result<()> {
-    let bump = Self::consume_changesets(changesets, context).await?;
+    let (changeset_paths, bump) = Self::consume_changesets::<V>(changesets).await?;
 
     if bump.is_empty() {
       println!(
@@ -78,22 +70,25 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Default + Send + Sync> Exec
       return Ok(());
     }
 
-    for (path, name, version) in &context.packages {
-      if let Some(update) = bump.package(name).version() {
+    for package in &context.packages {
+      if let Some(update) = bump.package(&package.name).version() {
         let next_version = update
-          .apply(version)
-          .with_context(|| format!("Failed updating package {}", &name))?;
+          .apply(&package.version.value)
+          .with_context(|| format!("Failed updating package {}", package.name))?;
 
         if context.dry_run {
-          println!("dry_run - version bump: {} -> {}", version, next_version);
+          println!(
+            "dry_run - version bump: {} -> {}",
+            package.version.value, next_version
+          );
         } else {
           context
             .package_manager
-            .apply_version(path, &next_version)
+            .apply_version(&package.path, &next_version)
             .await?;
         }
 
-        if let Some(root_path) = path.parent() {
+        if let Some(root_path) = package.path.parent() {
           let changelog_path = {
             let mut root_path = root_path.to_path_buf();
             root_path.push("CHANGELOG.md");
@@ -102,18 +97,28 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Default + Send + Sync> Exec
 
           Changelog::update_changelog(
             &changelog_path,
-            next_version,
-            &bump.package(name),
+            next_version.into(),
+            &bump.package(&package.name),
             context.dry_run,
           )
           .await
           .with_context(|| {
             format!(
               "Could not update the changelog for {} at {:?}",
-              name, changelog_path
+              package.name, changelog_path
             )
           })?;
         }
+      }
+    }
+
+    for changeset_path in changeset_paths {
+      if context.dry_run {
+        println!("dry_run - delete: {:?}", changeset_path);
+      } else {
+        fs::remove_file(&changeset_path)
+          .await
+          .with_context(|| format!("Unable to remove the changeset at {:?}", changeset_path))?;
       }
     }
 

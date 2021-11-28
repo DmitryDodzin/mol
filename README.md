@@ -69,6 +69,7 @@ cargo mol --dry-run version
 
 ## Roadmap
 - [ ] Plugins
+- [ ] Dependency Updates
 - [ ] mol-nodejs (npm/yarn)
 - [ ] mol-pip
 - [ ] mol-maven?

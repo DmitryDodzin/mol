@@ -1,28 +1,19 @@
 use std::hash::Hash;
+use std::marker::PhantomData;
 use std::str::FromStr;
 
+use crate::changelog::AsChangelogFmt;
 use crate::error::VersionBumpError;
 
-fn capitalize(s: &str) -> String {
-  let mut c = s.chars();
-  match c.next() {
-    None => String::new(),
-    Some(f) => f.to_uppercase().chain(c).collect(),
-  }
-}
-
-pub trait Versioned: Clone + Hash + FromStr + Ord + ToString {
+pub trait Versioned: AsChangelogFmt + Clone + Default + Hash + FromStr + Ord + ToString {
   fn options() -> Vec<Self>;
 
   fn apply(&self, current: &str) -> Result<String, VersionBumpError>;
-  fn as_changelog_fmt(&self) -> String {
-    format!("### {} Changes\n", capitalize(&self.to_string()))
-  }
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq, Ord, PartialOrd)]
 pub struct Version<T> {
-  version: T,
+  pub(crate) version: T,
 }
 
 impl<T> Version<T> {
@@ -44,9 +35,6 @@ where
   fn apply(&self, current: &str) -> Result<String, VersionBumpError> {
     self.version.apply(current)
   }
-  fn as_changelog_fmt(&self) -> String {
-    self.version.as_changelog_fmt()
-  }
 }
 
 impl<T> FromStr for Version<T>
@@ -67,5 +55,23 @@ where
 {
   fn to_string(&self) -> String {
     self.version.to_string()
+  }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct VersionValue<T> {
+  pub value: String,
+  r#type: PhantomData<T>,
+}
+
+impl<T, U> From<U> for VersionValue<T>
+where
+  U: ToString,
+{
+  fn from(value: U) -> Self {
+    VersionValue {
+      value: value.to_string(),
+      r#type: PhantomData::<T>,
+    }
   }
 }

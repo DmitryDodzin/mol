@@ -22,14 +22,14 @@ impl Error for ChangesetParseError {}
 pub struct ChangelogParseError(String);
 
 impl From<String> for ChangelogParseError {
-  // add code here
+  // TODO: add code here
   fn from(value: String) -> Self {
     ChangelogParseError(value)
   }
 }
 
 impl Display for ChangelogParseError {
-  // add code here
+  // TODO: add code here
   fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
     write!(fmt, "Could not parse changelog: {}", self.0)
   }
@@ -47,7 +47,7 @@ impl From<std::io::Error> for ExplorerError {
 }
 
 impl Display for ExplorerError {
-  // add code here
+  // TODO: add code here
   fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
     write!(fmt, "ExplorerError")
   }
@@ -59,14 +59,14 @@ impl Error for ExplorerError {}
 pub struct VersionParseError(String);
 
 impl From<String> for VersionParseError {
-  // add code here
+  // TODO: add code here
   fn from(value: String) -> Self {
     VersionParseError(value)
   }
 }
 
 impl Display for VersionParseError {
-  // add code here
+  // TODO: add code here
   fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
     write!(
       fmt,
@@ -82,7 +82,7 @@ impl Error for VersionParseError {}
 pub struct VersionBumpError;
 
 impl Display for VersionBumpError {
-  // add code here
+  // TODO: add code here
   fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
     write!(fmt, "VersionBumpError")
   }
