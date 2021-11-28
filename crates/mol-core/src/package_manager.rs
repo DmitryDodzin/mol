@@ -3,13 +3,14 @@ use std::path::Path;
 use async_trait::async_trait;
 
 use crate::package::Package;
+use crate::version::Versioned;
 
 #[async_trait]
 pub trait PackageManager {
-  async fn read_package<T: AsRef<Path> + Send + Sync>(
+  async fn read_package<T: AsRef<Path> + Send + Sync, V: Versioned + Send + Sync + 'static>(
     &self,
     crate_path: T,
-  ) -> std::io::Result<Vec<Package>>;
+  ) -> std::io::Result<Vec<Package<V>>>;
   async fn apply_version<T: AsRef<Path> + Send + Sync>(
     &self,
     crate_path: T,

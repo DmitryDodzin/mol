@@ -8,7 +8,7 @@ use tokio::{fs, io::AsyncWriteExt};
 use crate::bump::PackageBump;
 use crate::changeset::Changeset;
 use crate::semantic::Semantic;
-use crate::version::{Version, Versioned};
+use crate::version::{Version, VersionValue, Versioned};
 
 fn capitalize(s: &str) -> String {
   let mut c = s.chars();
@@ -19,12 +19,12 @@ fn capitalize(s: &str) -> String {
 }
 
 fn fill_output<V: Versioned>(
-  next_version: &str,
+  next_version: &VersionValue<V>,
   patches: &HashMap<Version<V>, Vec<String>>,
 ) -> String {
   let mut output = String::new();
 
-  output.push_str(&next_version.as_version().as_changelog_fmt());
+  output.push_str(&next_version.as_changelog_fmt());
 
   for (version, changes) in patches.iter().sorted_by(|(a, _), (b, _)| Ord::cmp(&b, &a)) {
     output.push('\n');
@@ -63,7 +63,7 @@ pub struct Changelog;
 impl Changelog {
   pub async fn update_changelog<T: AsRef<Path> + Debug, V: Versioned>(
     changelog_path: T,
-    next_version: String,
+    next_version: VersionValue<V>,
     package_bump: &PackageBump<'_, V>,
     dry_run: bool,
   ) -> std::io::Result<()> {
@@ -151,20 +151,8 @@ impl<T: AsChangelogFmt> AsChangelogFmt for Version<T> {
   }
 }
 
-struct ChangelogVersion(String);
-
-impl AsChangelogFmt for ChangelogVersion {
+impl<T> AsChangelogFmt for VersionValue<T> {
   fn as_changelog_fmt(&self) -> String {
-    format!("## {}\n", self.0)
-  }
-}
-
-trait ChangelogStrFmt {
-  fn as_version(&self) -> ChangelogVersion;
-}
-
-impl ChangelogStrFmt for &str {
-  fn as_version(&self) -> ChangelogVersion {
-    ChangelogVersion(self.to_string())
+    format!("## {}\n", self.value)
   }
 }

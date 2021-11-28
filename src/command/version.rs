@@ -73,13 +73,13 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
     for package in &context.packages {
       if let Some(update) = bump.package(&package.name).version() {
         let next_version = update
-          .apply(&package.version)
+          .apply(&package.version.value)
           .with_context(|| format!("Failed updating package {}", package.name))?;
 
         if context.dry_run {
           println!(
             "dry_run - version bump: {} -> {}",
-            package.version, next_version
+            package.version.value, next_version
           );
         } else {
           context
@@ -97,7 +97,7 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
 
           Changelog::update_changelog(
             &changelog_path,
-            next_version,
+            next_version.into(),
             &bump.package(&package.name),
             context.dry_run,
           )

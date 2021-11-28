@@ -6,4 +6,4 @@ pub use crate::error::{ChangesetParseError, ExplorerError, VersionParseError};
 pub use crate::package::{AsPackageGraph, Package, PackageGraph};
 pub use crate::package_manager::PackageManager;
 pub use crate::semantic::Semantic;
-pub use crate::version::{Version, Versioned};
+pub use crate::version::{Version, VersionValue, Versioned};

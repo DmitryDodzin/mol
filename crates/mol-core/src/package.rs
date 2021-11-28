@@ -3,26 +3,31 @@ use std::path::PathBuf;
 
 use itertools::Itertools;
 
+use crate::version::{VersionValue, Versioned};
+
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Package {
+pub struct Package<T: Versioned> {
   pub path: PathBuf,
   pub name: String,
-  pub version: String,
+  pub version: VersionValue<T>,
   pub dependencies: Vec<(String, String)>,
 }
 
-pub trait AsPackageGraph {
-  fn as_package_graph(&self) -> PackageGraph<'_>;
+pub trait AsPackageGraph<T: Versioned> {
+  fn as_package_graph(&self) -> PackageGraph<'_, T>;
 }
 
 #[derive(Debug, PartialEq)]
-pub struct PackageGraph<'a> {
-  edges: Vec<(&'a str, &'a Package)>,
-  nodes: Vec<&'a Package>,
+pub struct PackageGraph<'a, T: Versioned> {
+  edges: Vec<(&'a str, &'a Package<T>)>,
+  nodes: Vec<&'a Package<T>>,
 }
 
-impl<'a> PackageGraph<'a> {
-  pub fn child_changes(&self, name: &'a str) -> Vec<&'a Package> {
+impl<'a, T> PackageGraph<'a, T>
+where
+  T: Versioned,
+{
+  pub fn child_changes(&self, name: &'a str) -> Vec<&'a Package<T>> {
     self
       .edges
       .iter()
@@ -31,8 +36,8 @@ impl<'a> PackageGraph<'a> {
       .collect()
   }
 
-  pub fn update_order(&self) -> Vec<&'a Package> {
-    let name_map: HashMap<&str, &'a Package> = self
+  pub fn update_order(&self) -> Vec<&'a Package<T>> {
+    let name_map: HashMap<&str, &'a Package<T>> = self
       .nodes
       .iter()
       .map(|package| (package.name.as_str(), *package))
@@ -68,10 +73,13 @@ impl<'a> PackageGraph<'a> {
   }
 }
 
-impl AsPackageGraph for Vec<Package> {
-  fn as_package_graph(&self) -> PackageGraph<'_> {
-    let nodes: Vec<&Package> = self.iter().collect();
-    let edges: Vec<(&str, &Package)> = self.iter().fold(vec![], |mut acc, package| {
+impl<T> AsPackageGraph<T> for Vec<Package<T>>
+where
+  T: Versioned,
+{
+  fn as_package_graph(&self) -> PackageGraph<'_, T> {
+    let nodes: Vec<&Package<T>> = self.iter().collect();
+    let edges: Vec<(&str, &Package<T>)> = self.iter().fold(vec![], |mut acc, package| {
       acc.extend(
         package
           .dependencies
@@ -89,26 +97,27 @@ impl AsPackageGraph for Vec<Package> {
 mod tests {
 
   use super::*;
+  use crate::semantic::Semantic;
 
   #[test]
   fn as_package_graph() {
-    let packages = vec![
+    let packages: Vec<Package<Semantic>> = vec![
       Package {
         path: "".into(),
         name: "foo".to_owned(),
-        version: "1.0.0".to_owned(),
+        version: "1.0.0".into(),
         dependencies: vec![],
       },
       Package {
         path: "".into(),
         name: "bar".to_owned(),
-        version: "1.0.0".to_owned(),
+        version: "1.0.0".into(),
         dependencies: vec![("foo".to_owned(), "1".to_owned())],
       },
       Package {
         path: "".into(),
         name: "baz".to_owned(),
-        version: "1.0.0".to_owned(),
+        version: "1.0.0".into(),
         dependencies: vec![("foo".to_owned(), "1".to_owned())],
       },
     ];
@@ -126,23 +135,23 @@ mod tests {
 
   #[test]
   fn update_order() {
-    let packages = vec![
+    let packages: Vec<Package<Semantic>> = vec![
       Package {
         path: "".into(),
         name: "foo".to_owned(),
-        version: "1.0.0".to_owned(),
+        version: "1.0.0".into(),
         dependencies: vec![],
       },
       Package {
         path: "".into(),
         name: "bar".to_owned(),
-        version: "1.0.0".to_owned(),
+        version: "1.0.0".into(),
         dependencies: vec![("foo".to_owned(), "1".to_owned())],
       },
       Package {
         path: "".into(),
         name: "baz".to_owned(),
-        version: "1.0.0".to_owned(),
+        version: "1.0.0".into(),
         dependencies: vec![("foo".to_owned(), "1".to_owned())],
       },
     ];
@@ -160,19 +169,19 @@ mod tests {
       Package {
         path: "".into(),
         name: "foo".to_owned(),
-        version: "1.0.0".to_owned(),
+        version: "1.0.0".into(),
         dependencies: vec![],
       },
       Package {
         path: "".into(),
         name: "bar".to_owned(),
-        version: "1.0.0".to_owned(),
+        version: "1.0.0".into(),
         dependencies: vec![("foo".to_owned(), "1".to_owned())],
       },
       Package {
         path: "".into(),
         name: "baz".to_owned(),
-        version: "1.0.0".to_owned(),
+        version: "1.0.0".into(),
         dependencies: vec![("foo".to_owned(), "1".to_owned())],
       },
     ];
@@ -183,7 +192,7 @@ mod tests {
 
     assert_eq!(
       child_changes,
-      packages[1..].iter().collect::<Vec<&Package>>()
+      packages[1..].iter().collect::<Vec<&Package<Semantic>>>()
     );
   }
 }

@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use async_trait::async_trait;
 
 use mol_core::prelude::*;
@@ -16,8 +14,7 @@ pub use version::Version;
 pub struct ExecutableContext<T: PackageManager, V: Versioned> {
   pub dry_run: bool,
   pub package_manager: T,
-  pub packages: Vec<Package>,
-  pub phantom_version_syntax: PhantomData<V>,
+  pub packages: Vec<Package<V>>,
 }
 
 pub trait IntoExecutableCommand<T: PackageManager, V: Versioned> {

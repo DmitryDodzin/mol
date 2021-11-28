@@ -15,11 +15,11 @@ pub struct Cargo;
 
 impl Cargo {
   #[async_recursion]
-  async fn check_dir(
+  async fn check_dir<V: Versioned + Send + Sync + 'static>(
     exists: Arc<DashSet<PathBuf>>,
     globs: GlobSet,
     entry: fs::DirEntry,
-  ) -> std::io::Result<Vec<Package>> {
+  ) -> std::io::Result<Vec<Package<V>>> {
     let mut result = Vec::new();
     let entry_path = entry.path();
 
@@ -52,11 +52,11 @@ impl Cargo {
   }
 
   #[async_recursion]
-  async fn check_read_dir(
+  async fn check_read_dir<V: Versioned + Send + Sync + 'static>(
     exists: Arc<DashSet<PathBuf>>,
     globs: GlobSet,
     mut current_dir: fs::ReadDir,
-  ) -> std::io::Result<Vec<Package>> {
+  ) -> std::io::Result<Vec<Package<V>>> {
     let mut handles = Vec::new();
 
     while let Some(entry) = current_dir.next_entry().await? {
@@ -92,10 +92,10 @@ impl Cargo {
 
 #[async_trait]
 impl PackageManager for Cargo {
-  async fn read_package<T: AsRef<Path> + Send + Sync>(
+  async fn read_package<T: AsRef<Path> + Send + Sync, V: Versioned + Send + Sync + 'static>(
     &self,
     crate_path: T,
-  ) -> std::io::Result<Vec<Package>> {
+  ) -> std::io::Result<Vec<Package<V>>> {
     let mut result = Vec::new();
     let (crate_path, document) = self.load_document(crate_path).await?;
 
@@ -131,7 +131,7 @@ impl PackageManager for Cargo {
       result.push(Package {
         path: crate_path.clone(),
         name: package_name.to_owned(),
-        version: version.to_owned(),
+        version: version.into(),
         dependencies,
       });
     }

@@ -47,7 +47,7 @@ impl Add {
   fn select_packages<T: PackageManager, V: Versioned>(
     &self,
     context: &ExecutableContext<T, V>,
-  ) -> anyhow::Result<Vec<Package>> {
+  ) -> anyhow::Result<Vec<Package<V>>> {
     if let Some(packages) = &self.packages {
       let packages = context
         .packages

@@ -1,4 +1,5 @@
 use std::hash::Hash;
+use std::marker::PhantomData;
 use std::str::FromStr;
 
 use crate::changelog::AsChangelogFmt;
@@ -10,7 +11,7 @@ pub trait Versioned: AsChangelogFmt + Clone + Default + Hash + FromStr + Ord + T
   fn apply(&self, current: &str) -> Result<String, VersionBumpError>;
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq, Ord, PartialOrd)]
 pub struct Version<T> {
   pub(crate) version: T,
 }
@@ -18,17 +19,6 @@ pub struct Version<T> {
 impl<T> Version<T> {
   pub fn new(version: T) -> Self {
     Version { version }
-  }
-}
-
-impl<T> Default for Version<T>
-where
-  T: Versioned,
-{
-  fn default() -> Self {
-    Version {
-      version: Default::default(),
-    }
   }
 }
 
@@ -65,5 +55,23 @@ where
 {
   fn to_string(&self) -> String {
     self.version.to_string()
+  }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct VersionValue<T> {
+  pub value: String,
+  r#type: PhantomData<T>,
+}
+
+impl<T, U> From<U> for VersionValue<T>
+where
+  U: ToString,
+{
+  fn from(value: U) -> Self {
+    VersionValue {
+      value: value.to_string(),
+      r#type: PhantomData::<T>,
+    }
   }
 }

@@ -1,5 +1,4 @@
 use std::fmt::Debug;
-use std::marker::PhantomData;
 use std::str::FromStr;
 
 use clap::Parser;
@@ -43,7 +42,7 @@ async fn handle_command<U: PackageManager, V: Versioned, T: IntoExecutableComman
   Ok(())
 }
 
-pub async fn exec<T: Default + PackageManager + Send + Sync, V: Versioned + Send + Sync>(
+pub async fn exec<T: Default + PackageManager + Send + Sync, V: Versioned + Send + Sync + 'static>(
 ) -> anyhow::Result<()>
 where
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
@@ -59,11 +58,10 @@ where
 
   let package_manager = T::default();
 
-  let context = ExecutableContext {
+  let context: ExecutableContext<T, V> = ExecutableContext {
     dry_run: opts.dry_run,
     packages: package_manager.read_package("Cargo.toml").await?,
     package_manager,
-    phantom_version_syntax: PhantomData::<V>,
   };
 
   match opts.cmd {
