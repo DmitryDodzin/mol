@@ -5,7 +5,7 @@ use async_recursion::async_recursion;
 use async_trait::async_trait;
 use dashmap::DashSet;
 use globset::{Glob, GlobSet, GlobSetBuilder};
-use tokio::fs;
+use tokio::{fs, process::Command};
 use toml_edit::{value, Document};
 
 use mol_core::prelude::*;
@@ -168,6 +168,22 @@ impl PackageManager for Cargo {
     }
 
     Ok(result)
+  }
+
+  async fn run_build<T: AsRef<Path> + Send + Sync>(&self, crate_path: T) -> std::io::Result<()> {
+    if let Ok(canon_path) = dunce::canonicalize(crate_path) {
+      if let Some(directory) = canon_path.parent() {
+        Command::new("cargo")
+          .arg("build")
+          .current_dir(directory)
+          .spawn()
+          .expect("cargo command failed to start")
+          .wait()
+          .await?;
+      }
+    }
+
+    Ok(())
   }
 
   async fn apply_version<T: AsRef<Path> + Send + Sync>(

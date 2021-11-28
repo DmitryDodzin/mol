@@ -61,6 +61,8 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
   ) -> anyhow::Result<()> {
     let (changeset_paths, bump) = Self::consume_changesets::<V>(changesets).await?;
 
+    let package_graph = context.packages.as_package_graph();
+
     if bump.is_empty() {
       println!(
         "Sorry but no changesets found in {:?}",
@@ -70,7 +72,7 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
       return Ok(());
     }
 
-    for package in &context.packages {
+    for package in package_graph.update_order() {
       if let Some(update) = bump.package(&package.name).version() {
         let next_version = update
           .apply(&package.version.value)
@@ -86,6 +88,8 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
             .package_manager
             .apply_version(&package.path, &next_version)
             .await?;
+
+          context.package_manager.run_build(&package.path).await?;
         }
 
         if let Some(root_path) = package.path.parent() {
