@@ -12,7 +12,11 @@ pub trait PackageManager {
     crate_path: T,
   ) -> std::io::Result<Vec<Package<V>>>;
 
-  async fn run_build<T: AsRef<Path> + Send + Sync>(&self, crate_path: T) -> std::io::Result<()>;
+  async fn run_build<T: AsRef<Path> + Send + Sync>(
+    &self,
+    crate_path: T,
+    build_args: Vec<String>,
+  ) -> std::io::Result<()>;
 
   async fn apply_version<T: AsRef<Path> + Send + Sync>(
     &self,

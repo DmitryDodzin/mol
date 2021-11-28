@@ -170,10 +170,15 @@ impl PackageManager for Cargo {
     Ok(result)
   }
 
-  async fn run_build<T: AsRef<Path> + Send + Sync>(&self, crate_path: T) -> std::io::Result<()> {
+  async fn run_build<T: AsRef<Path> + Send + Sync>(
+    &self,
+    crate_path: T,
+    build_args: Vec<String>,
+  ) -> std::io::Result<()> {
     if let Ok(canon_path) = dunce::canonicalize(crate_path) {
       Command::new("cargo")
         .arg("build")
+        .args(build_args)
         .current_dir(canon_path)
         .spawn()
         .expect("cargo command failed to start")
