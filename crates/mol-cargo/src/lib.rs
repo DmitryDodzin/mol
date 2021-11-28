@@ -201,4 +201,27 @@ impl PackageManager for Cargo {
 
     Ok(())
   }
+
+  async fn apply_dependency_version<T: AsRef<Path> + Send + Sync>(
+    &self,
+    crate_path: T,
+    name: &str,
+    version: &str,
+  ) -> std::io::Result<()> {
+    let (crate_path, mut document) = self.load_document(crate_path).await?;
+
+    if document.contains_key("dependencies") {
+      let dep = &document["dependencies"][name];
+
+      if dep.is_inline_table() {
+        document["dependencies"][name]["version"] = value(version);
+      } else if dep.is_str() {
+        document["dependencies"][name] = value(version);
+      }
+    }
+
+    fs::write(&crate_path, document.to_string()).await?;
+
+    Ok(())
+  }
 }

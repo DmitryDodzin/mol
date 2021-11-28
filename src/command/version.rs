@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fmt::Debug;
 use std::path::PathBuf;
 
@@ -72,11 +73,15 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
       return Ok(());
     }
 
+    let mut updated = HashMap::new();
+
     for package in package_graph.update_order() {
       if let Some(update) = bump.package(&package.name).version() {
         let next_version = update
           .apply(&package.version.value)
           .with_context(|| format!("Failed updating package {}", package.name))?;
+
+        updated.insert(package.name.as_str(), next_version.clone());
 
         if context.dry_run {
           println!(
@@ -88,7 +93,33 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
             .package_manager
             .apply_version(&package.path, &next_version)
             .await?;
+        }
 
+        for (name, version) in package
+          .dependencies
+          .iter()
+          .filter(|(name, _)| updated.contains_key(name.as_str()))
+        {
+          if context.dry_run {
+            println!(
+              "dry_run - dependecy version bump: {} {} -> {}",
+              name,
+              version,
+              &updated[name.as_str()][..version.len()],
+            );
+          } else {
+            context
+              .package_manager
+              .apply_dependency_version(
+                &package.path,
+                name,
+                &updated[name.as_str()][..version.len()],
+              )
+              .await?;
+          }
+        }
+
+        if !context.dry_run {
           context.package_manager.run_build(&package.path).await?;
         }
 

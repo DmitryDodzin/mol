@@ -19,4 +19,11 @@ pub trait PackageManager {
     crate_path: T,
     version: &str,
   ) -> std::io::Result<()>;
+
+  async fn apply_dependency_version<T: AsRef<Path> + Send + Sync>(
+    &self,
+    crate_path: T,
+    name: &str,
+    version: &str,
+  ) -> std::io::Result<()>;
 }
