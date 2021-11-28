@@ -1,4 +1,3 @@
-use crate::INIT_EXISTS_PROMPT;
 use std::fmt::Debug;
 
 use async_trait::async_trait;
@@ -7,6 +6,7 @@ use clap::Parser;
 use mol_core::prelude::*;
 
 use super::{ExecutableCommand, ExecutableContext};
+use crate::INIT_EXISTS_PROMPT;
 
 #[derive(Parser, Debug)]
 pub struct Init;

@@ -4,10 +4,12 @@ use mol_core::prelude::*;
 
 mod add;
 mod init;
+mod publish;
 mod version;
 
 pub use add::Add;
 pub use init::Init;
+pub use publish::Publish;
 pub use version::Version;
 
 #[derive(Debug)]

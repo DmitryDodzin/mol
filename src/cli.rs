@@ -1,9 +1,9 @@
 use std::str::FromStr;
 
-use crate::command::Version;
+use crate::command::Publish;
 use clap::Parser;
 
-pub use mol_core::prelude::*;
+pub use mol_core::prelude::{PackageManager, Versioned};
 
 pub use crate::command::*;
 
@@ -15,6 +15,8 @@ pub enum Command {
   Init(Init),
   /// Consume changesets and update all relevant packages
   Version(Version),
+  /// Publish
+  Publish(Publish),
 }
 
 impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> IntoExecutableCommand<T, V>
@@ -27,6 +29,7 @@ where
       Self::Add(add) => Some(add as &dyn ExecutableCommand<T, V>),
       Self::Init(init) => Some(init as &dyn ExecutableCommand<T, V>),
       Self::Version(version) => Some(version as &dyn ExecutableCommand<T, V>),
+      Self::Publish(publish) => Some(publish as &dyn ExecutableCommand<T, V>),
     }
   }
 }
