@@ -16,10 +16,12 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
   async fn execute(
     &self,
     changesets: &Changesets,
-    _context: &ExecutableContext<T, V>,
+    context: &ExecutableContext<T, V>,
   ) -> anyhow::Result<()> {
     if !changesets.validate() {
-      changesets.initialize().await?;
+      if !context.dry_run {
+        changesets.initialize().await?;
+      }
     } else {
       println!("{}", *INIT_EXISTS_PROMPT);
     }
