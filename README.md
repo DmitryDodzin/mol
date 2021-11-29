@@ -2,7 +2,7 @@
 
 # Mol
 
-Mol - מו"ל  (Motzi Laor) is a versioning and publishig toolset with much inspiration from [atlasian/changesets](https://github.com/atlassian/changesets) but with no specific coupling to any package mananger or versioning scheme.
+Mol - מו"ל  (Motzi Laor) is a versioning and publishig toolset with much inspiration from [atlassian/changesets](https://github.com/atlassian/changesets) but with no specific coupling to any package mananger or versioning scheme.
 
 ## cargo-mol
 
