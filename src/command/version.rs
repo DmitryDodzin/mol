@@ -100,24 +100,24 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
             .await?;
         }
 
-        for (name, version) in package.dependencies.iter().filter(|(name, version)| {
-          updated.contains_key(name.as_str()) && V::r#match(version, &updated[name.as_str()])
-        }) {
+        for (name, version, updated_version) in package
+          .dependencies
+          .iter()
+          .filter(|(name, _)| updated.contains_key(name.as_str()))
+          .filter(|(name, version)| V::r#match(version, &updated[name.as_str()]))
+          .map(|(name, version)| (name, version, &updated[name.as_str()]))
+        {
           if context.dry_run {
             println!(
               "dry_run - dependecy version bump: {} {} -> {}",
               name,
               version,
-              V::mask(version, &updated[name.as_str()])
+              V::mask(version, updated_version)
             );
           } else {
             context
               .package_manager
-              .apply_dependency_version(
-                &package.path,
-                name,
-                V::mask(version, &updated[name.as_str()]),
-              )
+              .apply_dependency_version(&package.path, name, V::mask(version, updated_version))
               .await?;
           }
         }
