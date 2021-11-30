@@ -34,6 +34,15 @@ impl Semantic {
 }
 
 impl Versioned for Semantic {
+  // TODO: add mask validation
+  fn mask<'a>(mask: &str, version: &'a str) -> &'a str {
+    &version[..mask.len()]
+  }
+
+  fn r#match(mask: &str, version: &str) -> bool {
+    Self::mask(mask, version) == mask
+  }
+
   fn options() -> Vec<Self> {
     vec![Self::patch(), Self::minor(), Self::major()]
   }

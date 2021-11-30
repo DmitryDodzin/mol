@@ -5,7 +5,7 @@ use async_recursion::async_recursion;
 use async_trait::async_trait;
 use dashmap::DashSet;
 use globset::{Glob, GlobSet, GlobSetBuilder};
-use tokio::fs;
+use tokio::{fs, process::Command};
 use toml_edit::{value, Document};
 
 use mol_core::prelude::*;
@@ -170,6 +170,25 @@ impl PackageManager for Cargo {
     Ok(result)
   }
 
+  async fn run_build<T: AsRef<Path> + Send + Sync>(
+    &self,
+    crate_path: T,
+    build_args: Vec<String>,
+  ) -> std::io::Result<()> {
+    if let Ok(canon_path) = dunce::canonicalize(crate_path) {
+      Command::new("cargo")
+        .arg("build")
+        .args(build_args)
+        .current_dir(canon_path)
+        .spawn()
+        .expect("cargo command failed to start")
+        .wait()
+        .await?;
+    }
+
+    Ok(())
+  }
+
   async fn apply_version<T: AsRef<Path> + Send + Sync>(
     &self,
     crate_path: T,
@@ -179,6 +198,29 @@ impl PackageManager for Cargo {
 
     if document.contains_key("package") {
       document["package"]["version"] = value(version);
+    }
+
+    fs::write(&crate_path, document.to_string()).await?;
+
+    Ok(())
+  }
+
+  async fn apply_dependency_version<T: AsRef<Path> + Send + Sync>(
+    &self,
+    crate_path: T,
+    name: &str,
+    version: &str,
+  ) -> std::io::Result<()> {
+    let (crate_path, mut document) = self.load_document(crate_path).await?;
+
+    if document.contains_key("dependencies") {
+      let dep = &document["dependencies"][name];
+
+      if dep.is_inline_table() {
+        document["dependencies"][name]["version"] = value(version);
+      } else if dep.is_str() {
+        document["dependencies"][name] = value(version);
+      }
     }
 
     fs::write(&crate_path, document.to_string()).await?;

@@ -68,6 +68,7 @@ where
     scores
       .into_iter()
       .sorted_by_key(|(_, score)| -*score)
+      .filter(|(name, _)| name_map.contains_key(name))
       .map(|(name, _)| name_map[name])
       .collect()
   }

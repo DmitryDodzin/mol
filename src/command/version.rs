@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fmt::Debug;
 use std::path::PathBuf;
 
@@ -11,7 +12,12 @@ use mol_core::prelude::*;
 use super::{ExecutableCommand, ExecutableContext};
 
 #[derive(Parser, Debug)]
-pub struct Version;
+pub struct Version {
+  #[clap(long)]
+  pub no_build: bool,
+  #[clap(long)]
+  pub build_args: Option<Vec<String>>,
+}
 
 impl Version {
   async fn consume_changesets<V: Versioned>(
@@ -61,6 +67,8 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
   ) -> anyhow::Result<()> {
     let (changeset_paths, bump) = Self::consume_changesets::<V>(changesets).await?;
 
+    let package_graph = context.packages.as_package_graph();
+
     if bump.is_empty() {
       println!(
         "Sorry but no changesets found in {:?}",
@@ -70,11 +78,15 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
       return Ok(());
     }
 
-    for package in &context.packages {
+    let mut updated = HashMap::new();
+
+    for package in package_graph.update_order() {
       if let Some(update) = bump.package(&package.name).version() {
         let next_version = update
           .apply(&package.version.value)
           .with_context(|| format!("Failed updating package {}", package.name))?;
+
+        updated.insert(package.name.as_str(), next_version.clone());
 
         if context.dry_run {
           println!(
@@ -86,6 +98,28 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
             .package_manager
             .apply_version(&package.path, &next_version)
             .await?;
+        }
+
+        for (name, version, updated_version) in package
+          .dependencies
+          .iter()
+          .filter(|(name, _)| updated.contains_key(name.as_str()))
+          .filter(|(name, version)| V::r#match(version, &updated[name.as_str()]))
+          .map(|(name, version)| (name, version, &updated[name.as_str()]))
+        {
+          if context.dry_run {
+            println!(
+              "dry_run - dependecy version bump: {} {} -> {}",
+              name,
+              version,
+              V::mask(version, updated_version)
+            );
+          } else {
+            context
+              .package_manager
+              .apply_dependency_version(&package.path, name, V::mask(version, updated_version))
+              .await?;
+          }
         }
 
         if let Some(root_path) = package.path.parent() {
@@ -110,6 +144,13 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
           })?;
         }
       }
+    }
+
+    if !context.dry_run && !self.no_build {
+      context
+        .package_manager
+        .run_build(".", self.build_args.clone().unwrap_or_default())
+        .await?;
     }
 
     for changeset_path in changeset_paths {
