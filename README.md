@@ -13,7 +13,7 @@ cargo install mol
 cargo mol --help
 ```
 
-Most of the api is ithere cli wizzard or very similar to [changesets](https://github.com/atlassian/changesets)
+Most of the api is either cli wizard or very similar to [changesets](https://github.com/atlassian/changesets)
 
 ### 101 Commands
 
