@@ -10,6 +10,8 @@ pub trait Versioned: AsChangelogFmt + Clone + Default + Hash + FromStr + Ord + T
 
   fn mask<'a>(mask: &str, version: &'a str) -> &'a str;
 
+  fn r#match(mask: &str, version: &str) -> bool;
+
   fn apply(&self, current: &str) -> Result<String, VersionBumpError>;
 }
 
@@ -30,6 +32,9 @@ where
 {
   fn mask<'a>(mask: &str, version: &'a str) -> &'a str {
     T::mask(mask, version)
+  }
+  fn r#match(mask: &str, version: &str) -> bool {
+    T::r#match(mask, version)
   }
   fn options() -> Vec<Self> {
     T::options()
