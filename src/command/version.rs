@@ -104,7 +104,7 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
           .dependencies
           .iter()
           .filter(|(name, _)| updated.contains_key(name.as_str()))
-          .filter(|(name, version)| V::r#match(version, &updated[name.as_str()]))
+          .filter(|(name, version)| !V::r#match(version, &updated[name.as_str()]))
           .map(|(name, version)| (name, version, &updated[name.as_str()]))
         {
           if context.dry_run {
