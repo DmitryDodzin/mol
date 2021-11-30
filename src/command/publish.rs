@@ -25,14 +25,16 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
     let graph = context.packages.as_package_graph();
 
     for package in &graph.update_order() {
-      context
-        .package_manager
-        .run_publish(
-          &package.path,
-          self.publish_args.clone().unwrap_or_default(),
-          context.dry_run,
-        )
-        .await?;
+      if let Some(root_path) = package.path.parent() {
+        context
+          .package_manager
+          .run_publish(
+            root_path,
+            self.publish_args.clone().unwrap_or_default(),
+            context.dry_run,
+          )
+          .await?;
+      }
     }
 
     Ok(())

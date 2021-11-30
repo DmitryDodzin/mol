@@ -220,7 +220,7 @@ impl PackageManager for Cargo {
       publish_args.iter().map(Deref::deref).collect()
     };
 
-    self.run_command("build", crate_path, args).await
+    self.run_command("publish", crate_path, args).await
   }
 
   async fn apply_version<T: AsRef<Path> + Send + Sync>(
