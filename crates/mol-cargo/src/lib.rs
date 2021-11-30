@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -75,6 +76,26 @@ impl Cargo {
     }
 
     Ok(result)
+  }
+
+  async fn run_command<T: AsRef<Path> + Send + Sync>(
+    &self,
+    command: &str,
+    crate_path: T,
+    args: Vec<&str>,
+  ) -> std::io::Result<()> {
+    if let Ok(canon_path) = dunce::canonicalize(crate_path) {
+      Command::new("cargo")
+        .current_dir(canon_path)
+        .arg(command)
+        .args(args)
+        .spawn()
+        .expect("cargo command failed to start")
+        .wait()
+        .await?;
+    }
+
+    Ok(())
   }
 
   async fn load_document<T: AsRef<Path>>(
@@ -175,18 +196,31 @@ impl PackageManager for Cargo {
     crate_path: T,
     build_args: Vec<String>,
   ) -> std::io::Result<()> {
-    if let Ok(canon_path) = dunce::canonicalize(crate_path) {
-      Command::new("cargo")
-        .arg("build")
-        .args(build_args)
-        .current_dir(canon_path)
-        .spawn()
-        .expect("cargo command failed to start")
-        .wait()
-        .await?;
-    }
+    self
+      .run_command(
+        "build",
+        crate_path,
+        build_args.iter().map(Deref::deref).collect(),
+      )
+      .await
+  }
 
-    Ok(())
+  async fn run_publish<T: AsRef<Path> + Send + Sync>(
+    &self,
+    crate_path: T,
+    publish_args: Vec<String>,
+    dry_run: bool,
+  ) -> std::io::Result<()> {
+    let args = if dry_run {
+      vec!["--dry-run"]
+        .into_iter()
+        .chain(publish_args.iter().map(Deref::deref))
+        .collect()
+    } else {
+      publish_args.iter().map(Deref::deref).collect()
+    };
+
+    self.run_command("build", crate_path, args).await
   }
 
   async fn apply_version<T: AsRef<Path> + Send + Sync>(

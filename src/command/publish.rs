@@ -2,7 +2,6 @@ use std::fmt::Debug;
 
 use async_trait::async_trait;
 use clap::Parser;
-use tokio::process::Command;
 
 use mol_core::prelude::*;
 
@@ -26,27 +25,14 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
     let graph = context.packages.as_package_graph();
 
     for package in &graph.update_order() {
-      if let Ok(canon_path) = dunce::canonicalize(&package.path) {
-        if let Some(directory) = canon_path.parent() {
-          let mut cmd = Command::new("cargo");
-
-          cmd.current_dir(directory).arg("publish");
-
-          if context.dry_run {
-            cmd.arg("--dry-run");
-          }
-
-          if let Some(args) = &self.publish_args {
-            cmd.args(args);
-          }
-
-          cmd
-            .spawn()
-            .expect("cargo command failed to start")
-            .wait()
-            .await?;
-        }
-      }
+      context
+        .package_manager
+        .run_publish(
+          &package.path,
+          self.publish_args.clone().unwrap_or_default(),
+          context.dry_run,
+        )
+        .await?;
     }
 
     Ok(())
