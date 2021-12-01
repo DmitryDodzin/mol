@@ -1,5 +1,5 @@
 ---
-"mol": minor
+"mol": patch
 ---
 
 chore: join changesets into context
