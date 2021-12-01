@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::fmt::Debug;
+use std::ffi::OsStr;
 use std::path::PathBuf;
 
 use anyhow::Context;
@@ -38,6 +38,10 @@ impl Version {
 
       if let Some(ext) = changeset_path.extension() {
         if ext == "md" {
+          if Some(OsStr::new("README.md")) == changeset_path.file_name() {
+            continue;
+          }
+
           let raw_changeset = fs::read_to_string(&changeset_path)
             .await
             .with_context(|| format!("Unable to read the changeset at {:?}", changeset_path))?;
