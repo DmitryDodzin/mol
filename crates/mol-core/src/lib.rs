@@ -5,6 +5,7 @@ pub mod changesets;
 pub mod error;
 pub mod package;
 pub mod package_manager;
+pub mod plugin;
 pub mod prelude;
 pub mod semantic;
 pub mod version;

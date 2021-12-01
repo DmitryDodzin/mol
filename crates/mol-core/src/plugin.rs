@@ -1,0 +1,80 @@
+use std::any::Any;
+use std::ffi::OsStr;
+use std::pin::Pin;
+
+use anyhow::Context;
+use libloading::{Library, Symbol};
+
+#[macro_export]
+macro_rules! declare_plugin {
+  ($plugin_type:ty, $constructor:path) => {
+    #[no_mangle]
+    pub extern "C" fn _plugin_create() -> *mut $crate::plugin::Plugin {
+      // make sure the constructor is the correct type.
+      let constructor: fn() -> $plugin_type = $constructor;
+
+      let object = constructor();
+      let boxed: Box<$crate::plugin::Plugin> = Box::new(object);
+      Box::into_raw(boxed)
+    }
+  };
+}
+
+pub trait Plugin: Any + Send + Sync {
+  /// Name of the plugin
+  fn name(&self) -> &'static str;
+}
+
+pub struct PluginManager {
+  plugins: Vec<Box<dyn Plugin>>,
+  loaded_libraries: Vec<Library>,
+}
+
+impl PluginManager {
+  pub fn new() -> PluginManager {
+    PluginManager {
+      plugins: Vec::new(),
+      loaded_libraries: Vec::new(),
+    }
+  }
+
+  pub unsafe fn load_plugin<P: AsRef<OsStr>>(&mut self, filename: P) -> anyhow::Result<()> {
+    type PluginCreate = unsafe fn() -> *mut dyn Plugin;
+
+    let lib = Library::new(filename.as_ref()).with_context(|| "Unable to load the plugin")?;
+
+    let lib_pin = Pin::new(&lib);
+
+    let constructor: Symbol<PluginCreate> = lib
+      .get(b"_plugin_create")
+      .with_context(|| "The `_plugin_create` symbol wasn't found.")?;
+    let boxed_raw = constructor();
+
+    let plugin = Box::from_raw(boxed_raw);
+    println!("Loaded Plugin: {}", plugin.name());
+    self.plugins.push(plugin);
+
+    drop(lib_pin);
+    self.loaded_libraries.push(lib);
+
+    Ok(())
+  }
+
+  pub fn unload(&mut self) {
+    for plugin in self.plugins.drain(..) {
+      drop(plugin);
+    }
+
+    for lib in self.loaded_libraries.drain(..) {
+      drop(lib);
+    }
+  }
+}
+
+impl Drop for PluginManager {
+  fn drop(&mut self) {
+    if !self.plugins.is_empty() || !self.loaded_libraries.is_empty() {
+      self.unload();
+    }
+  }
+}
