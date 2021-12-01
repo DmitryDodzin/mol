@@ -12,8 +12,8 @@ pub use init::Init;
 pub use publish::Publish;
 pub use version::Version;
 
-#[derive(Debug)]
 pub struct ExecutableContext<T: PackageManager, V: Versioned> {
+  pub changesets: Changesets,
   pub dry_run: bool,
   pub package_manager: T,
   pub packages: Vec<Package<V>>,
@@ -25,9 +25,5 @@ pub trait IntoExecutableCommand<T: PackageManager, V: Versioned> {
 
 #[async_trait]
 pub trait ExecutableCommand<T: PackageManager, V: Versioned> {
-  async fn execute(
-    &self,
-    changesets: &Changesets,
-    context: &ExecutableContext<T, V>,
-  ) -> anyhow::Result<()>;
+  async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()>;
 }

@@ -18,7 +18,7 @@ pub struct Add {
   #[clap(long)]
   pub empty: bool,
   #[clap(short, long)]
-  pub packages: Option<Vec<String>>,
+  pub packages: Vec<String>,
   #[clap(short, long)]
   pub version: Option<String>,
   #[clap(short, long)]
@@ -48,11 +48,11 @@ impl Add {
     &self,
     context: &ExecutableContext<T, V>,
   ) -> anyhow::Result<Vec<Package<V>>> {
-    if let Some(packages) = &self.packages {
+    if !self.packages.is_empty() {
       let packages = context
         .packages
         .iter()
-        .filter(|package| packages.contains(&package.name))
+        .filter(|package| self.packages.contains(&package.name))
         .cloned()
         .collect();
 
@@ -123,15 +123,11 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
 where
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {
-  async fn execute(
-    &self,
-    changesets: &Changesets,
-    context: &ExecutableContext<T, V>,
-  ) -> anyhow::Result<()> {
+  async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
     if let Some(changeset) = self.get_changeset(context)? {
       let changeset_path = {
         let mut rng = rand::thread_rng();
-        let mut path = changesets.directory.clone();
+        let mut path = context.changesets.directory.clone();
 
         path.push(format!("{}-{}.md", rng.gen::<Word>(), rng.gen::<Word>()));
 

@@ -9,6 +9,8 @@ use super::{ExecutableCommand, ExecutableContext};
 
 #[derive(Parser, Debug)]
 pub struct Publish {
+  #[clap(short, long)]
+  pub packages: Vec<String>,
   #[clap(long)]
   pub publish_args: Vec<String>,
 }
@@ -17,14 +19,20 @@ pub struct Publish {
 impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableCommand<T, V>
   for Publish
 {
-  async fn execute(
-    &self,
-    _changesets: &Changesets,
-    context: &ExecutableContext<T, V>,
-  ) -> anyhow::Result<()> {
+  async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
     let graph = context.packages.as_package_graph();
 
-    for package in &graph.update_order() {
+    let packages = if self.packages.is_empty() {
+      graph.update_order()
+    } else {
+      graph
+        .update_order()
+        .into_iter()
+        .filter(|package| self.packages.contains(&package.name))
+        .collect()
+    };
+
+    for package in &packages {
       if let Some(root_path) = package.path.parent() {
         context
           .package_manager

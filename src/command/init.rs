@@ -13,14 +13,10 @@ pub struct Init;
 
 #[async_trait]
 impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableCommand<T, V> for Init {
-  async fn execute(
-    &self,
-    changesets: &Changesets,
-    context: &ExecutableContext<T, V>,
-  ) -> anyhow::Result<()> {
-    if !changesets.validate() {
+  async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
+    if !context.changesets.validate() {
       if !context.dry_run {
-        changesets.initialize().await?;
+        context.changesets.initialize().await?;
       }
     } else {
       println!("{}", *INIT_EXISTS_PROMPT);
