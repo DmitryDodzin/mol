@@ -1,6 +1,5 @@
 use std::any::Any;
 use std::ffi::OsStr;
-use std::pin::Pin;
 
 use anyhow::Context;
 use libloading::{Library, Symbol};
@@ -30,6 +29,12 @@ pub struct PluginManager {
   loaded_libraries: Vec<Library>,
 }
 
+impl Default for PluginManager {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl PluginManager {
   pub fn new() -> PluginManager {
     PluginManager {
@@ -38,12 +43,21 @@ impl PluginManager {
     }
   }
 
+  /// # Safety
+  ///
+  /// This function opens a compiled cylib should not be called on cylib that doe's not implement declare_plugin! macro
   pub unsafe fn load_plugin<P: AsRef<OsStr>>(&mut self, filename: P) -> anyhow::Result<()> {
     type PluginCreate = unsafe fn() -> *mut dyn Plugin;
 
-    let lib = Library::new(filename.as_ref()).with_context(|| "Unable to load the plugin")?;
+    let lib = {
+      let lib = Library::new(filename.as_ref()).with_context(|| "Unable to load the plugin")?;
 
-    let lib_pin = Pin::new(&lib);
+      self.loaded_libraries.push(lib);
+      match self.loaded_libraries.last() {
+        Some(lib) => lib,
+        None => unreachable!(),
+      }
+    };
 
     let constructor: Symbol<PluginCreate> = lib
       .get(b"_plugin_create")
@@ -52,10 +66,8 @@ impl PluginManager {
 
     let plugin = Box::from_raw(boxed_raw);
     println!("Loaded Plugin: {}", plugin.name());
-    self.plugins.push(plugin);
 
-    drop(lib_pin);
-    self.loaded_libraries.push(lib);
+    self.plugins.push(plugin);
 
     Ok(())
   }

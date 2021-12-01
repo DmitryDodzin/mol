@@ -17,6 +17,7 @@ pub struct ExecutableContext<T: PackageManager, V: Versioned> {
   pub dry_run: bool,
   pub package_manager: T,
   pub packages: Vec<Package<V>>,
+  pub plugin_manager: PluginManager,
 }
 
 pub trait IntoExecutableCommand<T: PackageManager, V: Versioned> {

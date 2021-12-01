@@ -55,12 +55,19 @@ where
 
   let package_manager = T::default();
 
-  let context: ExecutableContext<T, V> = ExecutableContext {
+  let mut context: ExecutableContext<T, V> = ExecutableContext {
     changesets: Changesets::default(),
     dry_run: opts.dry_run,
     packages: package_manager.read_package("Cargo.toml").await?,
     package_manager,
+    plugin_manager: PluginManager::new(),
   };
+
+  for plugin in &opts.plugins {
+    unsafe {
+      context.plugin_manager.load_plugin(&plugin)?;
+    }
+  }
 
   match opts.cmd {
     Command::Init(_) => handle_command(&context, opts.cmd).await?,

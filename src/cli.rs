@@ -44,4 +44,8 @@ pub struct Opts {
   /// Run with dry_run no files actually change
   #[clap(long)]
   pub dry_run: bool,
+
+  /// Plugin paths
+  #[clap(long)]
+  pub plugins: Vec<String>,
 }
