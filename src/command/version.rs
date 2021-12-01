@@ -16,7 +16,7 @@ pub struct Version {
   #[clap(long)]
   pub no_build: bool,
   #[clap(long)]
-  pub build_args: Option<Vec<String>>,
+  pub build_args: Vec<String>,
 }
 
 impl Version {
@@ -60,19 +60,15 @@ impl Version {
 impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableCommand<T, V>
   for Version
 {
-  async fn execute(
-    &self,
-    changesets: &Changesets,
-    context: &ExecutableContext<T, V>,
-  ) -> anyhow::Result<()> {
-    let (changeset_paths, bump) = Self::consume_changesets::<V>(changesets).await?;
+  async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
+    let (changeset_paths, bump) = Self::consume_changesets::<V>(&context.changesets).await?;
 
     let package_graph = context.packages.as_package_graph();
 
     if bump.is_empty() {
       println!(
         "Sorry but no changesets found in {:?}",
-        changesets.directory
+        context.changesets.directory
       );
 
       return Ok(());
@@ -149,7 +145,7 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
     if !context.dry_run && !self.no_build {
       context
         .package_manager
-        .run_build(".", self.build_args.clone().unwrap_or_default())
+        .run_build(".", self.build_args.clone())
         .await?;
     }
 

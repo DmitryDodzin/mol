@@ -29,12 +29,11 @@ lazy_static! {
 }
 
 async fn handle_command<U: PackageManager, V: Versioned, T: IntoExecutableCommand<U, V> + Debug>(
-  changesets: &Changesets,
   context: &ExecutableContext<U, V>,
   command: T,
 ) -> anyhow::Result<()> {
   if let Some(exeutable) = command.as_executable() {
-    exeutable.execute(changesets, context).await?;
+    exeutable.execute(context).await?;
   } else {
     println!("{:?}", command);
   }
@@ -54,24 +53,23 @@ where
     Opts::parse_from(args)
   };
 
-  let changesets = Changesets::default();
-
   let package_manager = T::default();
 
   let context: ExecutableContext<T, V> = ExecutableContext {
+    changesets: Changesets::default(),
     dry_run: opts.dry_run,
     packages: package_manager.read_package("Cargo.toml").await?,
     package_manager,
   };
 
   match opts.cmd {
-    Command::Init(_) => handle_command(&changesets, &context, opts.cmd).await?,
+    Command::Init(_) => handle_command(&context, opts.cmd).await?,
     command => {
-      if !changesets.validate() {
+      if !context.changesets.validate() {
         println!("{}", *INIT_REQ_PROMPT);
       }
 
-      handle_command(&changesets, &context, command).await?
+      handle_command(&context, command).await?
     }
   }
 

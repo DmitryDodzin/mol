@@ -18,6 +18,13 @@ pub trait PackageManager {
     build_args: Vec<String>,
   ) -> std::io::Result<()>;
 
+  async fn run_publish<T: AsRef<Path> + Send + Sync>(
+    &self,
+    crate_path: T,
+    publish_args: Vec<String>,
+    dry_run: bool,
+  ) -> std::io::Result<()>;
+
   async fn apply_version<T: AsRef<Path> + Send + Sync>(
     &self,
     crate_path: T,
