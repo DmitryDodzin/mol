@@ -10,7 +10,7 @@ use super::{ExecutableCommand, ExecutableContext};
 #[derive(Parser, Debug)]
 pub struct Publish {
   #[clap(long)]
-  pub publish_args: Option<Vec<String>>,
+  pub publish_args: Vec<String>,
 }
 
 #[async_trait]
@@ -28,11 +28,7 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
       if let Some(root_path) = package.path.parent() {
         context
           .package_manager
-          .run_publish(
-            root_path,
-            self.publish_args.clone().unwrap_or_default(),
-            context.dry_run,
-          )
+          .run_publish(root_path, self.publish_args.clone(), context.dry_run)
           .await?;
       }
     }

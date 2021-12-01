@@ -16,7 +16,7 @@ pub struct Version {
   #[clap(long)]
   pub no_build: bool,
   #[clap(long)]
-  pub build_args: Option<Vec<String>>,
+  pub build_args: Vec<String>,
 }
 
 impl Version {
@@ -149,7 +149,7 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
     if !context.dry_run && !self.no_build {
       context
         .package_manager
-        .run_build(".", self.build_args.clone().unwrap_or_default())
+        .run_build(".", self.build_args.clone())
         .await?;
     }
 
