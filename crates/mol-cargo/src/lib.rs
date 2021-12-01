@@ -113,6 +113,10 @@ impl Cargo {
 
 #[async_trait]
 impl PackageManager for Cargo {
+  fn default_path() -> &'static str {
+    "Cargo.toml"
+  }
+
   async fn read_package<T: AsRef<Path> + Send + Sync, V: Versioned + Send + Sync + 'static>(
     &self,
     crate_path: T,

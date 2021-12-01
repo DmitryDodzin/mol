@@ -13,3 +13,5 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 mol-core = { path = '../mol-core', version = "0.2"}
+
+git2 = "0.13"

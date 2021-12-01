@@ -7,6 +7,8 @@ use crate::version::Versioned;
 
 #[async_trait]
 pub trait PackageManager {
+  fn default_path() -> &'static str;
+
   async fn read_package<T: AsRef<Path> + Send + Sync, V: Versioned + Send + Sync + 'static>(
     &self,
     crate_path: T,

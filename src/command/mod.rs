@@ -20,6 +20,26 @@ pub struct ExecutableContext<T: PackageManager, V: Versioned> {
   pub plugin_manager: PluginManager,
 }
 
+impl<T, V> ExecutableContext<T, V>
+where
+  T: PackageManager + Default + Send + Sync,
+  V: Versioned + Send + Sync + 'static,
+{
+  pub async fn new(dry_run: bool) -> anyhow::Result<Self> {
+    let package_manager = T::default();
+
+    let packages = package_manager.read_package(T::default_path()).await?;
+
+    Ok(ExecutableContext {
+      changesets: Changesets::default(),
+      dry_run,
+      package_manager,
+      packages,
+      plugin_manager: PluginManager::default(),
+    })
+  }
+}
+
 pub trait IntoExecutableCommand<T: PackageManager, V: Versioned> {
   fn as_executable(&self) -> Option<&dyn ExecutableCommand<T, V>>;
 }

@@ -28,9 +28,9 @@ lazy_static! {
     console::style("Changesets folder already initialized").yellow();
 }
 
-async fn handle_command<U: PackageManager, V: Versioned, T: IntoExecutableCommand<U, V> + Debug>(
-  context: &ExecutableContext<U, V>,
-  command: T,
+async fn handle_command<T: PackageManager, V: Versioned, U: IntoExecutableCommand<T, V> + Debug>(
+  context: &ExecutableContext<T, V>,
+  command: U,
 ) -> anyhow::Result<()> {
   if let Some(exeutable) = command.as_executable() {
     exeutable.execute(context).await?;
@@ -41,7 +41,7 @@ async fn handle_command<U: PackageManager, V: Versioned, T: IntoExecutableComman
   Ok(())
 }
 
-pub async fn exec<T: Default + PackageManager + Send + Sync, V: Versioned + Send + Sync + 'static>(
+pub async fn exec<T: PackageManager + Default + Send + Sync, V: Versioned + Send + Sync + 'static>(
 ) -> anyhow::Result<()>
 where
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
@@ -53,15 +53,7 @@ where
     Opts::parse_from(args)
   };
 
-  let package_manager = T::default();
-
-  let mut context: ExecutableContext<T, V> = ExecutableContext {
-    changesets: Changesets::default(),
-    dry_run: opts.dry_run,
-    packages: package_manager.read_package("Cargo.toml").await?,
-    package_manager,
-    plugin_manager: PluginManager::new(),
-  };
+  let mut context = ExecutableContext::<T, V>::new(opts.dry_run).await?;
 
   for plugin in &opts.plugins {
     unsafe {
