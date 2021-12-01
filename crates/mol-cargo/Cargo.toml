@@ -1,6 +1,6 @@
 [package]
 name = "mol-cargo"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Dmitry Dodzin <d.dodzin@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -9,7 +9,7 @@ repository = "https://github.com/DmitryDodzin/mol"
 readme = "README.md"
 
 [dependencies]
-mol-core = { path = '../mol-core', version = "0.1" }
+mol-core = { path = '../mol-core', version = "0.2"}
 
 async-recursion = "0.3"
 async-trait = "0.1"
