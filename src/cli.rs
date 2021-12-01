@@ -15,7 +15,7 @@ pub enum Command {
   Init(Init),
   /// Consume changesets and update all relevant packages
   Version(Version),
-  /// Publish
+  /// Publish the new versions of all the pacakges that were updated by mol version
   Publish(Publish),
 }
 
