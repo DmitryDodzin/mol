@@ -89,3 +89,18 @@ impl Display for VersionBumpError {
 }
 
 impl Error for VersionBumpError {}
+
+#[derive(Debug)]
+pub enum PluginLoadError {
+  IncompatibleVersion,
+}
+
+impl Display for PluginLoadError {
+  fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+    match self {
+      PluginLoadError::IncompatibleVersion => write!(fmt, "Incompatible Plugin Version"),
+    }
+  }
+}
+
+impl Error for PluginLoadError {}

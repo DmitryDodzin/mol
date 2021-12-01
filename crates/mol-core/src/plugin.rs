@@ -1,12 +1,25 @@
 use std::any::Any;
-use std::ffi::OsStr;
+use std::ffi::{CString, OsStr};
+use std::os::raw::c_char;
 
 use anyhow::Context;
 use libloading::{Library, Symbol};
 
+use crate::error::PluginLoadError;
+use crate::semantic::Semantic;
+use crate::version::Versioned;
+use crate::CORE_VERSION;
+
 #[macro_export]
 macro_rules! declare_plugin {
   ($plugin_type:ty, $constructor:path) => {
+    #[no_mangle]
+    pub extern "C" fn _plugin_version() -> *mut std::os::raw::c_char {
+      std::ffi::CString::new(&*$crate::CORE_VERSION)
+        .expect("CString::new failed")
+        .into_raw()
+    }
+
     #[no_mangle]
     pub extern "C" fn _plugin_create() -> *mut $crate::plugin::Plugin {
       // make sure the constructor is the correct type.
@@ -47,6 +60,7 @@ impl PluginManager {
   ///
   /// This function opens a compiled cylib should not be called on cylib that doe's not implement declare_plugin! macro
   pub unsafe fn load_plugin<P: AsRef<OsStr>>(&mut self, filename: P) -> anyhow::Result<()> {
+    type PluginVersion = unsafe fn() -> *mut c_char;
     type PluginCreate = unsafe fn() -> *mut dyn Plugin;
 
     let lib = {
@@ -58,6 +72,16 @@ impl PluginManager {
         None => unreachable!(),
       }
     };
+
+    let version_getter: Symbol<PluginVersion> = lib
+      .get(b"_plugin_version")
+      .with_context(|| "The `_plugin_version` symbol wasn't found.")?;
+
+    let version = CString::from_raw(version_getter()).into_string()?;
+
+    if Semantic::mask("*.*", &version) != Semantic::mask("*.*", CORE_VERSION) {
+      return Err(PluginLoadError::IncompatibleVersion.into());
+    }
 
     let constructor: Symbol<PluginCreate> = lib
       .get(b"_plugin_create")

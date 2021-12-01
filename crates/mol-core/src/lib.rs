@@ -9,3 +9,5 @@ pub mod plugin;
 pub mod prelude;
 pub mod semantic;
 pub mod version;
+
+pub const CORE_VERSION: &str = env!("CARGO_PKG_VERSION");
