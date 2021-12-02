@@ -2,18 +2,15 @@ name: Dependencies
 
 on:
   pull_request:
+    branches: [ main ]
     paths:
       - '**/Cargo.toml'
       - 'deny.toml'
   push:
+    branches: [ main ]
     paths:
       - '**/Cargo.toml'
       - 'deny.toml'
-    branches-ignore:
-      - 'dependabot/**'
-      - staging-squash-merge.tmp
-  schedule:
-    - cron: "0 0 * * 0"
 
 env:
   CARGO_TERM_COLOR: always
