@@ -1,6 +1,7 @@
 use std::any::Any;
 use std::ffi::{CString, OsStr};
 use std::os::raw::c_char;
+use std::path::Path;
 
 use anyhow::Context;
 use libloading::{Library, Symbol};
@@ -35,17 +36,25 @@ macro_rules! declare_plugin {
 pub trait Plugin: Any + Send + Sync {
   /// Name of the plugin
   fn name(&self) -> &'static str;
+
+  /// Initialization
+  fn on_init(&mut self) {
+    println!("Loaded Plugin: {}", self.name());
+  }
+
+  fn pre_command(&self, _changesets_path: &Path, _package_path: &Path) {}
+
+  fn post_command(&self, _changesets_path: &Path, _package_path: &Path) {}
+
+  /// Drop
+  fn on_drop(&mut self) {
+    println!("Unloaded Plugin: {}", self.name());
+  }
 }
 
 pub struct PluginManager {
   plugins: Vec<Box<dyn Plugin>>,
   loaded_libraries: Vec<Library>,
-}
-
-impl Default for PluginManager {
-  fn default() -> Self {
-    Self::new()
-  }
 }
 
 impl PluginManager {
@@ -88,8 +97,9 @@ impl PluginManager {
       .with_context(|| "The `_mol_create` symbol wasn't found.")?;
     let boxed_raw = constructor();
 
-    let plugin = Box::from_raw(boxed_raw);
-    println!("Loaded Plugin: {}", plugin.name());
+    let mut plugin = Box::from_raw(boxed_raw);
+
+    plugin.on_init();
 
     self.plugins.push(plugin);
 
@@ -97,13 +107,40 @@ impl PluginManager {
   }
 
   pub fn unload(&mut self) {
-    for plugin in self.plugins.drain(..) {
+    for mut plugin in self.plugins.drain(..) {
+      plugin.on_drop();
       drop(plugin);
     }
 
     for lib in self.loaded_libraries.drain(..) {
-      drop(lib);
+      if let Err(err) = lib.close() {
+        println!("Unable to close lib with error: {:?}", err);
+      }
     }
+  }
+}
+
+impl Plugin for PluginManager {
+  fn name(&self) -> &'static str {
+    "plugin_manager"
+  }
+
+  fn pre_command(&self, changesets_path: &Path, package_path: &Path) {
+    for plugin in &self.plugins {
+      plugin.pre_command(changesets_path, package_path);
+    }
+  }
+
+  fn post_command(&self, changesets_path: &Path, package_path: &Path) {
+    for plugin in &self.plugins {
+      plugin.post_command(changesets_path, package_path);
+    }
+  }
+}
+
+impl Default for PluginManager {
+  fn default() -> Self {
+    Self::new()
   }
 }
 

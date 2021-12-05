@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::path::PathBuf;
 use std::str::FromStr;
 
 use clap::Parser;
@@ -32,11 +33,20 @@ async fn handle_command<T: PackageManager, V: Versioned, U: IntoExecutableComman
   context: &ExecutableContext<T, V>,
   command: U,
 ) -> anyhow::Result<()> {
+  let root_path: PathBuf = ".".into();
+  context
+    .plugin_manager
+    .pre_command(&context.changesets.directory, &root_path);
+
   if let Some(exeutable) = command.as_executable() {
     exeutable.execute(context).await?;
   } else {
     println!("{:?}", command);
   }
+
+  context
+    .plugin_manager
+    .post_command(&context.changesets.directory, &root_path);
 
   Ok(())
 }
