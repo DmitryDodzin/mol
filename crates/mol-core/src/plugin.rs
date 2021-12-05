@@ -8,14 +8,15 @@ use libloading::{Library, Symbol};
 use crate::error::PluginLoadError;
 use crate::semantic::Semantic;
 use crate::version::Versioned;
-use crate::CORE_VERSION;
+
+pub const CORE_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[macro_export]
 macro_rules! declare_plugin {
   ($plugin_type:ty, $constructor:path) => {
     #[no_mangle]
     pub extern "C" fn _plugin_version() -> *mut std::os::raw::c_char {
-      std::ffi::CString::new(&*$crate::CORE_VERSION)
+      std::ffi::CString::new(&*$crate::plugin::CORE_VERSION)
         .expect("CString::new failed")
         .into_raw()
     }
@@ -58,7 +59,7 @@ impl PluginManager {
 
   /// # Safety
   ///
-  /// This function opens a compiled cylib should not be called on cylib that doe's not implement declare_plugin! macro
+  /// This function opens a compiled cdylib and thus should not be called on cdylib that doesn't implement declare_plugin! macro
   pub unsafe fn load_plugin<P: AsRef<OsStr>>(&mut self, filename: P) -> anyhow::Result<()> {
     type PluginVersion = unsafe fn() -> *mut c_char;
     type PluginCreate = unsafe fn() -> *mut dyn Plugin;
