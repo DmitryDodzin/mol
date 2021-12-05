@@ -15,15 +15,14 @@ pub const CORE_VERSION: &str = env!("CARGO_PKG_VERSION");
 macro_rules! declare_plugin {
   ($plugin_type:ty, $constructor:path) => {
     #[no_mangle]
-    pub extern "C" fn _plugin_version() -> *mut std::os::raw::c_char {
+    pub extern "C" fn _mol_core_version() -> *mut std::os::raw::c_char {
       std::ffi::CString::new(&*$crate::plugin::CORE_VERSION)
         .expect("CString::new failed")
         .into_raw()
     }
 
     #[no_mangle]
-    pub extern "C" fn _plugin_create() -> *mut $crate::plugin::Plugin {
-      // make sure the constructor is the correct type.
+    pub extern "C" fn _mol_create() -> *mut $crate::plugin::Plugin {
       let constructor: fn() -> $plugin_type = $constructor;
 
       let object = constructor();
@@ -75,8 +74,8 @@ impl PluginManager {
     };
 
     let version_getter: Symbol<PluginVersion> = lib
-      .get(b"_plugin_version")
-      .with_context(|| "The `_plugin_version` symbol wasn't found.")?;
+      .get(b"_mol_core_version")
+      .with_context(|| "The `_mol_core_version` symbol wasn't found.")?;
 
     let version = CString::from_raw(version_getter()).into_string()?;
 
@@ -85,8 +84,8 @@ impl PluginManager {
     }
 
     let constructor: Symbol<PluginCreate> = lib
-      .get(b"_plugin_create")
-      .with_context(|| "The `_plugin_create` symbol wasn't found.")?;
+      .get(b"_mol_create")
+      .with_context(|| "The `_mol_create` symbol wasn't found.")?;
     let boxed_raw = constructor();
 
     let plugin = Box::from_raw(boxed_raw);
