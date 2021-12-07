@@ -1,6 +1,6 @@
 use std::fmt::Debug;
-use std::path::PathBuf;
 use std::str::FromStr;
+use std::sync::Arc;
 
 use clap::Parser;
 use dialoguer::{console, theme::ColorfulTheme};
@@ -33,20 +33,11 @@ async fn handle_command<T: PackageManager, V: Versioned, U: IntoExecutableComman
   context: &ExecutableContext<T, V>,
   command: U,
 ) -> anyhow::Result<()> {
-  let root_path: PathBuf = ".".into();
-  context
-    .plugin_manager
-    .pre_command(&context.changesets.directory, &root_path);
-
   if let Some(exeutable) = command.as_executable() {
     exeutable.execute(context).await?;
   } else {
     println!("{:?}", command);
   }
-
-  context
-    .plugin_manager
-    .post_command(&context.changesets.directory, &root_path);
 
   Ok(())
 }
@@ -63,13 +54,19 @@ where
     Opts::parse_from(args)
   };
 
-  let mut context = ExecutableContext::<T, V>::new(opts.dry_run).await?;
+  let mut plugin_manager = PluginManager::default();
 
   for plugin in &opts.plugins {
     unsafe {
-      context.plugin_manager.load_plugin(&plugin)?;
+      plugin_manager.load(&plugin)?;
     }
   }
+
+  for plugin in &plugin_manager.plugins {
+    println!("{:?}", plugin.name());
+  }
+
+  let context = ExecutableContext::<T, V>::new(Arc::new(plugin_manager), opts.dry_run).await?;
 
   match opts.cmd {
     Command::Init(_) => handle_command(&context, opts.cmd).await?,

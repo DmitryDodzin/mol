@@ -15,3 +15,6 @@ async-trait = "0.1"
 itertools = "0.10"
 libloading = "0.7"
 tokio = { version = "1", features = ["fs", "io-util"] }
+
+[build-dependencies]
+rustc_version = "0.4"

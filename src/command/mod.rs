@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use async_trait::async_trait;
 
 use mol_core::prelude::*;
@@ -17,7 +19,7 @@ pub struct ExecutableContext<T: PackageManager, V: Versioned> {
   pub dry_run: bool,
   pub package_manager: T,
   pub packages: Vec<Package<V>>,
-  pub plugin_manager: PluginManager,
+  pub plugins: Arc<PluginManager>,
 }
 
 impl<T, V> ExecutableContext<T, V>
@@ -25,7 +27,7 @@ where
   T: PackageManager + Default + Send + Sync,
   V: Versioned + Send + Sync + 'static,
 {
-  pub async fn new(dry_run: bool) -> anyhow::Result<Self> {
+  pub async fn new(plugins: Arc<PluginManager>, dry_run: bool) -> anyhow::Result<Self> {
     let package_manager = T::default();
 
     let packages = package_manager.read_package(T::default_path()).await?;
@@ -35,7 +37,7 @@ where
       dry_run,
       package_manager,
       packages,
-      plugin_manager: PluginManager::default(),
+      plugins,
     })
   }
 }
@@ -47,4 +49,17 @@ pub trait IntoExecutableCommand<T: PackageManager, V: Versioned> {
 #[async_trait]
 pub trait ExecutableCommand<T: PackageManager, V: Versioned> {
   async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()>;
+}
+
+unsafe impl<T, V> Send for ExecutableContext<T, V>
+where
+  T: PackageManager + Send + Sync,
+  V: Versioned + Send + Sync,
+{
+}
+unsafe impl<T, V> Sync for ExecutableContext<T, V>
+where
+  T: PackageManager + Send + Sync,
+  V: Versioned + Send + Sync,
+{
 }
