@@ -1,3 +1,4 @@
+use std::alloc::System;
 use std::fmt::Debug;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -10,6 +11,9 @@ use mol_core::prelude::*;
 
 mod cli;
 mod command;
+
+#[global_allocator]
+static ALLOCATOR: System = System;
 
 use crate::{
   cli::{Command, Opts},
@@ -78,6 +82,8 @@ where
       handle_command(&context, command).await?
     }
   }
+
+  println!("Done! 🚀");
 
   Ok(())
 }

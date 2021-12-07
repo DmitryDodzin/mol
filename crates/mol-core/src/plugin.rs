@@ -3,11 +3,24 @@ use std::rc::Rc;
 
 use libloading::Library;
 
+use crate::error::PluginLoadError;
+
 pub static CORE_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub static RUSTC_VERSION: &str = env!("RUSTC_VERSION");
 
 pub trait Plugin {
   fn name(&self) -> &str;
+}
+
+pub struct PluginProxy {
+  plugin: Box<dyn Plugin>,
+  _lib: Rc<Library>,
+}
+
+impl Plugin for PluginProxy {
+  fn name(&self) -> &str {
+    self.plugin.name()
+  }
 }
 
 #[repr(C)]
@@ -55,17 +68,6 @@ macro_rules! declare_plugin {
   };
 }
 
-pub struct PluginProxy {
-  plugin: Box<dyn Plugin>,
-  _lib: Rc<Library>,
-}
-
-impl Plugin for PluginProxy {
-  fn name(&self) -> &str {
-    self.plugin.name()
-  }
-}
-
 #[derive(Default)]
 pub struct PluginManager {
   pub plugins: Vec<PluginProxy>,
@@ -77,27 +79,22 @@ impl PluginManager {
   ///
   /// This function opens a compiled cdylib and thus should not be called on cdylib that doesn't implement declare_plugin! macro
   pub unsafe fn load<P: AsRef<OsStr>>(&mut self, library_path: P) -> anyhow::Result<()> {
-    // load the library into memory
     let library = Rc::new(Library::new(library_path)?);
 
-    // get a pointer to the plugin_declaration symbol.
     let decl = library
       .get::<*mut PluginDeclaration>(b"plugin_declaration\0")?
       .read();
 
     // version checks to prevent accidental ABI incompatibilities
     if decl.rustc_version != RUSTC_VERSION || decl.core_version != CORE_VERSION {
-      println!("Rust versions incompatible");
-      // return Err(io::Error::new(io::ErrorKind::Other, "Version mismatch"));
+      return Err(PluginLoadError::IncompatibleVersion.into());
     }
 
     let mut registrar = PluginRegistrar::new(Rc::clone(&library));
 
     (decl.register)(&mut registrar);
 
-    // add all loaded plugins to the functions map
     self.plugins.extend(registrar.plugins);
-    // and make sure ExternalFunctions keeps a reference to the library
     self.libraries.push(library);
 
     Ok(())

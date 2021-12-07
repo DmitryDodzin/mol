@@ -6,6 +6,11 @@ pub struct GitExt;
 
 impl Plugin for GitExt {
   fn name(&self) -> &str {
+    match git2::Repository::open(".") {
+      Ok(repo) => println!("{:?}", repo.state()),
+      Err(err) => println!("{:?}", err),
+    }
+
     env!("CARGO_PKG_NAME")
   }
 }
