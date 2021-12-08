@@ -83,6 +83,8 @@ where
     }
   }
 
+  drop(context);
+
   println!("Done! 🚀");
 
   Ok(())

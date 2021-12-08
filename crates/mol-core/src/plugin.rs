@@ -8,8 +8,21 @@ use crate::error::PluginLoadError;
 pub static CORE_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub static RUSTC_VERSION: &str = env!("RUSTC_VERSION");
 
+pub trait ToBox {
+  fn to_box(self) -> Box<Self>
+  where
+    Self: Sized,
+  {
+    Box::new(self)
+  }
+}
+
 pub trait Plugin {
   fn name(&self) -> &str;
+
+  fn on_load(&mut self) {}
+
+  fn on_unload(&mut self) {}
 }
 
 pub struct PluginProxy {
@@ -20,6 +33,14 @@ pub struct PluginProxy {
 impl Plugin for PluginProxy {
   fn name(&self) -> &str {
     self.plugin.name()
+  }
+
+  fn on_load(&mut self) {
+    self.plugin.on_load()
+  }
+
+  fn on_unload(&mut self) {
+    self.plugin.on_unload()
   }
 }
 
@@ -36,14 +57,17 @@ impl PluginRegistrar {
       plugins: Default::default(),
     }
   }
-}
 
-impl PluginRegistrar {
+  fn consume(self) -> Vec<PluginProxy> {
+    self.plugins
+  }
+
   pub fn register(&mut self, plugin: Box<dyn Plugin>) {
-    let proxy = PluginProxy {
+    let mut proxy = PluginProxy {
       plugin,
       _lib: Rc::clone(&self.lib),
     };
+    proxy.on_load();
     self.plugins.push(proxy);
   }
 }
@@ -94,9 +118,21 @@ impl PluginManager {
 
     (decl.register)(&mut registrar);
 
-    self.plugins.extend(registrar.plugins);
+    self.plugins.extend(registrar.consume());
     self.libraries.push(library);
 
     Ok(())
+  }
+}
+
+impl Drop for PluginManager {
+  fn drop(&mut self) {
+    for mut plugin in self.plugins.drain(..) {
+      plugin.on_unload();
+    }
+
+    for library in self.libraries.drain(..) {
+      drop(library);
+    }
   }
 }

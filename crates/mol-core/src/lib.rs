@@ -9,3 +9,7 @@ pub mod plugin;
 pub mod prelude;
 pub mod semantic;
 pub mod version;
+
+lazy_static::lazy_static! {
+  pub static ref DEFAULT_PACKAGE_DIR: std::path::PathBuf = ".".into();
+}

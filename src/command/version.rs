@@ -149,7 +149,7 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
     if !context.dry_run && !self.no_build {
       context
         .package_manager
-        .run_build(".", self.build_args.clone())
+        .run_build(DEFAULT_PACKAGE_DIR.as_path(), self.build_args.clone())
         .await?;
     }
 

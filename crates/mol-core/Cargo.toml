@@ -8,12 +8,18 @@ description = "Core Libraray for mol crate"
 repository = "https://github.com/DmitryDodzin/mol"
 readme = "README.md"
 
+[features]
+default = []
+derive = ['mol-derive']
 
 [dependencies]
+mol-derive = { path = '../mol-derive', version = "0.1", optional = true}
+
 anyhow = "1"
 async-trait = "0.1"
 itertools = "0.10"
 libloading = "0.7"
+lazy_static = "1"
 tokio = { version = "1", features = ["fs", "io-util"] }
 
 [build-dependencies]
