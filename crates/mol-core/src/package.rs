@@ -49,7 +49,7 @@ where
       .map(|package| (package.name.as_str(), 0))
       .collect();
 
-    let scores: HashMap<&'a str, isize> =
+    let mut scores: HashMap<&'a str, isize> =
       self.edges.iter().fold(base, |mut acc, (parent, package)| {
         let value = acc
           .get(&*package.name)
@@ -64,6 +64,13 @@ where
 
         acc
       });
+
+    for (edge, target) in &self.edges {
+      let value = scores.get(&*target.name).copied().unwrap_or(0);
+      if let Some(score) = scores.get_mut(&*edge) {
+        *score += value;
+      }
+    }
 
     scores
       .into_iter()
@@ -162,6 +169,43 @@ mod tests {
     let update_order = graph.update_order();
 
     assert_eq!(update_order[0], &packages[0]);
+  }
+
+  #[test]
+  fn update_order_deep() {
+    let packages: Vec<Package<Semantic>> = vec![
+      Package {
+        path: "".into(),
+        name: "pre_foo".to_owned(),
+        version: "1.0.0".into(),
+        dependencies: vec![],
+      },
+      Package {
+        path: "".into(),
+        name: "foo".to_owned(),
+        version: "1.0.0".into(),
+        dependencies: vec![("pre_foo".to_owned(), "1".to_owned())],
+      },
+      Package {
+        path: "".into(),
+        name: "bar".to_owned(),
+        version: "1.0.0".into(),
+        dependencies: vec![("foo".to_owned(), "1".to_owned())],
+      },
+      Package {
+        path: "".into(),
+        name: "baz".to_owned(),
+        version: "1.0.0".into(),
+        dependencies: vec![("foo".to_owned(), "1".to_owned())],
+      },
+    ];
+
+    let graph = packages.as_package_graph();
+
+    let update_order = graph.update_order();
+
+    let packages_ref: Vec<&Package<Semantic>> = packages.iter().collect();
+    assert_eq!(update_order[..2], packages_ref[..2]);
   }
 
   #[test]
