@@ -8,15 +8,6 @@ use crate::error::PluginLoadError;
 pub static CORE_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub static RUSTC_VERSION: &str = env!("RUSTC_VERSION");
 
-pub trait ToBox {
-  fn to_box(self) -> Box<Self>
-  where
-    Self: Sized,
-  {
-    Box::new(self)
-  }
-}
-
 pub trait Plugin {
   fn name(&self) -> &str;
 
