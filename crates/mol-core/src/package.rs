@@ -36,6 +36,16 @@ where
       .collect()
   }
 
+  fn stagger_scores(&self, scores: &mut HashMap<&'a str, isize>) {
+    for (edge, target) in &self.edges {
+      if let Some(value) = scores.get(&*target.name).copied() {
+        if let Some(score) = scores.get_mut(&*edge) {
+          *score += value;
+        }
+      }
+    }
+  }
+
   pub fn update_order(&self) -> Vec<&'a Package<T>> {
     let name_map: HashMap<&str, &'a Package<T>> = self
       .nodes
@@ -65,11 +75,8 @@ where
         acc
       });
 
-    for (edge, target) in &self.edges {
-      let value = scores.get(&*target.name).copied().unwrap_or(0);
-      if let Some(score) = scores.get_mut(&*edge) {
-        *score += value;
-      }
+    for _ in 0..self.nodes.len() {
+      self.stagger_scores(&mut scores);
     }
 
     scores
