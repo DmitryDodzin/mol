@@ -22,6 +22,7 @@ pub struct Version {
 impl Version {
   async fn consume_changesets<V: Versioned>(
     changesets: &Changesets,
+    package_graph: &PackageGraph<'_, V>,
   ) -> anyhow::Result<(Vec<PathBuf>, Bump<V>)> {
     let mut bump = Bump::default();
     let mut changeset_files_paths = Vec::new();
@@ -49,6 +50,7 @@ impl Version {
           bump.add(
             Changeset::<V>::parse(&raw_changeset)
               .with_context(|| format!("Unable to parse changeset at {:?}", changeset_path))?,
+            package_graph,
           );
 
           changeset_files_paths.push(changeset_path);
@@ -65,9 +67,9 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
   for Version
 {
   async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
-    let (changeset_paths, bump) = Self::consume_changesets::<V>(&context.changesets).await?;
-
     let package_graph = context.packages.as_package_graph();
+    let (changeset_paths, bump) =
+      Self::consume_changesets::<V>(&context.changesets, &package_graph).await?;
 
     if bump.is_empty() {
       println!(
