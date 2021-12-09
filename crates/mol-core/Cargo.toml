@@ -13,7 +13,7 @@ default = []
 derive = ['mol-derive']
 
 [dependencies]
-mol-derive = { path = '../mol-derive', version = "0.1", optional = true}
+mol-derive = { path = '../mol-derive', version = "0.0", optional = true}
 
 anyhow = "1"
 async-trait = "0.1"
