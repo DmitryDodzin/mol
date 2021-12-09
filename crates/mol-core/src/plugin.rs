@@ -14,6 +14,22 @@ pub trait Plugin {
   fn on_load(&mut self) {}
 
   fn on_unload(&mut self) {}
+
+  fn pre_add(&self) {}
+
+  fn post_add(&self) {}
+
+  fn pre_init(&self) {}
+
+  fn post_init(&self) {}
+
+  fn pre_publish(&self) {}
+
+  fn post_publish(&self) {}
+
+  fn pre_version(&self) {}
+
+  fn post_version(&self) {}
 }
 
 pub struct PluginProxy {
@@ -32,6 +48,38 @@ impl Plugin for PluginProxy {
 
   fn on_unload(&mut self) {
     self.plugin.on_unload()
+  }
+
+  fn pre_add(&self) {
+    self.plugin.pre_add()
+  }
+
+  fn post_add(&self) {
+    self.plugin.post_add()
+  }
+
+  fn pre_init(&self) {
+    self.plugin.pre_init()
+  }
+
+  fn post_init(&self) {
+    self.plugin.post_init()
+  }
+
+  fn pre_publish(&self) {
+    self.plugin.pre_publish()
+  }
+
+  fn post_publish(&self) {
+    self.plugin.post_publish()
+  }
+
+  fn pre_version(&self) {
+    self.plugin.pre_version()
+  }
+
+  fn post_version(&self) {
+    self.plugin.post_version()
   }
 }
 
@@ -124,6 +172,60 @@ impl Drop for PluginManager {
 
     for library in self.libraries.drain(..) {
       drop(library);
+    }
+  }
+}
+
+impl Plugin for PluginManager {
+  fn name(&self) -> &str {
+    "PluginManager"
+  }
+
+  fn pre_add(&self) {
+    for plugin in &self.plugins {
+      plugin.pre_add()
+    }
+  }
+
+  fn post_add(&self) {
+    for plugin in &self.plugins {
+      plugin.post_add()
+    }
+  }
+
+  fn pre_init(&self) {
+    for plugin in &self.plugins {
+      plugin.pre_init()
+    }
+  }
+
+  fn post_init(&self) {
+    for plugin in &self.plugins {
+      plugin.post_init()
+    }
+  }
+
+  fn pre_publish(&self) {
+    for plugin in &self.plugins {
+      plugin.pre_publish()
+    }
+  }
+
+  fn post_publish(&self) {
+    for plugin in &self.plugins {
+      plugin.post_publish()
+    }
+  }
+
+  fn pre_version(&self) {
+    for plugin in &self.plugins {
+      plugin.pre_version()
+    }
+  }
+
+  fn post_version(&self) {
+    for plugin in &self.plugins {
+      plugin.post_version()
     }
   }
 }

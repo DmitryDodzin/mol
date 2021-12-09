@@ -66,10 +66,6 @@ where
     }
   }
 
-  for plugin in &plugin_manager.plugins {
-    println!("{:?}", plugin.name());
-  }
-
   let context = ExecutableContext::<T, V>::new(Arc::new(plugin_manager), opts.dry_run).await?;
 
   match opts.cmd {
