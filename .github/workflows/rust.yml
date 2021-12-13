@@ -61,7 +61,7 @@ jobs:
       - name: 🔧 Toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly
           override: true
       - name: ⚡ Installs cargo-udeps
         run: cargo install --force cargo-udeps
