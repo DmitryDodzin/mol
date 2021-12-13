@@ -52,7 +52,7 @@ impl Cargo {
         return Cargo::check_read_dir(exists, globs, fs::read_dir(&link_value).await?).await;
       }
 
-      if globs.is_match(entry.path()) && file_type.is_file() && entry.file_name() == "Cargo.toml" {
+      if globs.is_match(entry_path) && file_type.is_file() && entry.file_name() == "Cargo.toml" {
         result.extend(Cargo.read_package(entry.path()).await?);
       }
     }
