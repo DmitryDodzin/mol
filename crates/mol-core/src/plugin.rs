@@ -1,6 +1,8 @@
 use std::ffi::OsStr;
+use std::path::Path;
 use std::rc::Rc;
 
+use anyhow::Context;
 use libloading::Library;
 
 use crate::changesets::Changesets;
@@ -10,6 +12,7 @@ pub static CORE_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub static RUSTC_VERSION: &str = env!("RUSTC_VERSION");
 
 pub struct PluginContext<'a> {
+  pub root_dir: &'a Path,
   pub dry_run: bool,
   pub config: &'a Changesets,
 }
@@ -17,16 +20,16 @@ pub struct PluginContext<'a> {
 pub trait Plugin {
   fn name(&self) -> &str;
 
-  fn on_load(&mut self) {}
+  fn on_load(&mut self, _context: &PluginContext) {}
 
   fn on_unload(&mut self) {}
 
-  fn pre_command(&self, command: &str, _context: &PluginContext) {
-    println!("Pre: {}", command);
+  fn pre_command(&self, _command: &str, _context: &PluginContext) -> anyhow::Result<()> {
+    Ok(())
   }
 
-  fn post_command(&self, command: &str, _context: &PluginContext) {
-    println!("Post: {}", command);
+  fn post_command(&self, _command: &str, _context: &PluginContext) -> anyhow::Result<()> {
+    Ok(())
   }
 }
 
@@ -40,19 +43,19 @@ impl Plugin for PluginProxy {
     self.plugin.name()
   }
 
-  fn on_load(&mut self) {
-    self.plugin.on_load()
+  fn on_load(&mut self, context: &PluginContext) {
+    self.plugin.on_load(context)
   }
 
   fn on_unload(&mut self) {
     self.plugin.on_unload()
   }
 
-  fn pre_command(&self, command: &str, context: &PluginContext) {
+  fn pre_command(&self, command: &str, context: &PluginContext) -> anyhow::Result<()> {
     self.plugin.pre_command(command, context)
   }
 
-  fn post_command(&self, command: &str, context: &PluginContext) {
+  fn post_command(&self, command: &str, context: &PluginContext) -> anyhow::Result<()> {
     self.plugin.post_command(command, context)
   }
 }
@@ -76,11 +79,10 @@ impl PluginRegistrar {
   }
 
   pub fn register(&mut self, plugin: Box<dyn Plugin>) {
-    let mut proxy = PluginProxy {
+    let proxy = PluginProxy {
       plugin,
       _lib: Rc::clone(&self.lib),
     };
-    proxy.on_load();
     self.plugins.push(proxy);
   }
 }
@@ -115,7 +117,11 @@ impl PluginManager {
   /// # Safety
   ///
   /// This function opens a compiled cdylib and thus should not be called on cdylib that doesn't implement declare_plugin! macro
-  pub unsafe fn load<P: AsRef<OsStr>>(&mut self, library_path: P) -> anyhow::Result<()> {
+  pub unsafe fn load<P: AsRef<OsStr>>(
+    &mut self,
+    library_path: P,
+    context: &PluginContext,
+  ) -> anyhow::Result<()> {
     let library = Rc::new(Library::new(library_path)?);
 
     let decl = library
@@ -131,12 +137,22 @@ impl PluginManager {
 
     (decl.register)(&mut registrar);
 
-    self.plugins.extend(registrar.consume());
+    let mut plugins = registrar.consume();
+
+    for plugin in &mut plugins {
+      plugin.on_load(context);
+    }
+
+    self.plugins.extend(plugins);
     self.libraries.push(library);
 
     Ok(())
   }
 }
+
+unsafe impl Send for PluginManager {}
+
+unsafe impl Sync for PluginManager {}
 
 impl Drop for PluginManager {
   fn drop(&mut self) {
@@ -155,15 +171,23 @@ impl Plugin for PluginManager {
     "PluginManager"
   }
 
-  fn pre_command(&self, command: &str, context: &PluginContext) {
+  fn pre_command(&self, command: &str, context: &PluginContext) -> anyhow::Result<()> {
     for plugin in &self.plugins {
-      plugin.pre_command(command, context)
+      plugin
+        .pre_command(command, context)
+        .with_context(|| format!("{}: faliure at pre-command, plugin", plugin.name()))?;
     }
+
+    Ok(())
   }
 
-  fn post_command(&self, command: &str, context: &PluginContext) {
+  fn post_command(&self, command: &str, context: &PluginContext) -> anyhow::Result<()> {
     for plugin in &self.plugins {
-      plugin.post_command(command, context)
+      plugin
+        .post_command(command, context)
+        .with_context(|| format!("{}: faliure at post-command", plugin.name()))?;
     }
+
+    Ok(())
   }
 }

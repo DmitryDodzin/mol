@@ -39,10 +39,11 @@ async fn handle_command<
   U: IntoExecutableCommand<T, V> + Debug,
 >(
   context: &ExecutableContext<T, V>,
+  plugin_manager: Arc<PluginManager>,
   command: U,
 ) -> anyhow::Result<()> {
   if let Some(exeutable) = command.as_executable() {
-    exeutable.execute(context).await?;
+    exeutable.execute(context, plugin_manager).await?;
   } else {
     println!("{:?}", command);
   }
@@ -64,24 +65,26 @@ where
     Opts::parse_from(args)
   };
 
+  let context = ExecutableContext::<T, V>::new(DEFAULT_PACKAGE_DIR.clone(), opts.dry_run).await?;
+
   let mut plugin_manager = PluginManager::default();
 
   for plugin in &opts.plugins {
     unsafe {
-      plugin_manager.load(&plugin)?;
+      plugin_manager.load(&plugin, &context.as_plugin())?;
     }
   }
 
-  let context = ExecutableContext::<T, V>::new(Arc::new(plugin_manager), opts.dry_run).await?;
+  let plugin_manager = Arc::new(plugin_manager);
 
   match opts.cmd {
-    Command::Init(_) => handle_command(&context, opts.cmd).await?,
+    Command::Init(_) => handle_command(&context, plugin_manager, opts.cmd).await?,
     command => {
       if !context.changesets.validate() {
         println!("{}", *INIT_REQ_PROMPT);
       }
 
-      handle_command(&context, command).await?
+      handle_command(&context, plugin_manager, command).await?
     }
   }
 

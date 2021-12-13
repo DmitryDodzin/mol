@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use anyhow::Context;
 use async_trait::async_trait;
@@ -66,8 +67,12 @@ impl Version {
 impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync> ExecutableCommand<T, V>
   for Version
 {
-  async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
-    context.plugins.pre_command("version", &context.as_plugin());
+  async fn execute(
+    &self,
+    context: &ExecutableContext<T, V>,
+    plugins: Arc<PluginManager>,
+  ) -> anyhow::Result<()> {
+    plugins.pre_command("version", &context.as_plugin())?;
 
     let package_graph = context.packages.as_package_graph();
     let (changeset_paths, bump) =
@@ -153,7 +158,7 @@ impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync> Executable
     if !context.dry_run && !self.no_build {
       context
         .package_manager
-        .run_build(DEFAULT_PACKAGE_DIR.as_path(), self.build_args.clone())
+        .run_build(&context.root_dir, self.build_args.clone())
         .await?;
     }
 
@@ -167,9 +172,7 @@ impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync> Executable
       }
     }
 
-    context
-      .plugins
-      .post_command("version", &context.as_plugin());
+    plugins.post_command("version", &context.as_plugin())?;
 
     Ok(())
   }

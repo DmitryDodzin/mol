@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use std::sync::Arc;
 
 use anyhow::Context;
 use async_trait::async_trait;
@@ -128,8 +129,12 @@ where
   V: VersionEditor + Send + Sync,
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {
-  async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
-    context.plugins.pre_command("add", &context.as_plugin());
+  async fn execute(
+    &self,
+    context: &ExecutableContext<T, V>,
+    plugins: Arc<PluginManager>,
+  ) -> anyhow::Result<()> {
+    plugins.pre_command("add", &context.as_plugin())?;
 
     if let Some(changeset) = self.get_changeset(context)? {
       let changeset_path = {
@@ -153,7 +158,7 @@ where
       println!("{}", &*ADD_NO_PACKAGES);
     }
 
-    context.plugins.post_command("add", &context.as_plugin());
+    plugins.post_command("add", &context.as_plugin())?;
 
     Ok(())
   }

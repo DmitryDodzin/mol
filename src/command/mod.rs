@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -19,7 +20,7 @@ pub struct ExecutableContext<T: PackageManager, V: VersionEditor> {
   pub dry_run: bool,
   pub package_manager: T,
   pub packages: Vec<Package<V>>,
-  pub plugins: Arc<PluginManager>,
+  pub root_dir: PathBuf,
 }
 
 impl<T, V> ExecutableContext<T, V>
@@ -31,6 +32,7 @@ where
     PluginContext {
       dry_run: self.dry_run,
       config: &self.changesets,
+      root_dir: &self.root_dir,
     }
   }
 }
@@ -40,7 +42,7 @@ where
   T: PackageManager + Default + Send + Sync,
   V: VersionEditor + Send + Sync + 'static,
 {
-  pub async fn new(plugins: Arc<PluginManager>, dry_run: bool) -> anyhow::Result<Self> {
+  pub async fn new(root_dir: PathBuf, dry_run: bool) -> anyhow::Result<Self> {
     let package_manager = T::default();
 
     let packages = package_manager.read_package(T::default_path()).await?;
@@ -50,7 +52,7 @@ where
       dry_run,
       package_manager,
       packages,
-      plugins,
+      root_dir,
     })
   }
 }
@@ -61,7 +63,11 @@ pub trait IntoExecutableCommand<T: PackageManager, V: VersionEditor> {
 
 #[async_trait]
 pub trait ExecutableCommand<T: PackageManager, V: VersionEditor> {
-  async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()>;
+  async fn execute(
+    &self,
+    context: &ExecutableContext<T, V>,
+    plugins: Arc<PluginManager>,
+  ) -> anyhow::Result<()>;
 }
 
 unsafe impl<T, V> Send for ExecutableContext<T, V>

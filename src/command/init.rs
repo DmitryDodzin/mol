@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use clap::Parser;
@@ -14,14 +15,18 @@ pub struct Init;
 impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync> ExecutableCommand<T, V>
   for Init
 {
-  async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
-    context.plugins.pre_command("init", &context.as_plugin());
+  async fn execute(
+    &self,
+    context: &ExecutableContext<T, V>,
+    plugins: Arc<PluginManager>,
+  ) -> anyhow::Result<()> {
+    plugins.pre_command("init", &context.as_plugin())?;
 
     if !context.dry_run {
       context.changesets.initialize().await?;
     }
 
-    context.plugins.post_command("init", &context.as_plugin());
+    plugins.post_command("init", &context.as_plugin())?;
 
     Ok(())
   }
