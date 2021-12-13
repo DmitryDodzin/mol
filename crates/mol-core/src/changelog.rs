@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
+use std::hash::Hash;
 use std::path::Path;
 
 use itertools::Itertools;
@@ -8,7 +9,7 @@ use tokio::{fs, io::AsyncWriteExt};
 use crate::bump::PackageBump;
 use crate::changeset::Changeset;
 use crate::semantic::Semantic;
-use crate::version::{Version, VersionValue, Versioned};
+use crate::version::{Version, VersionMod, Versioned};
 
 fn capitalize(s: &str) -> String {
   let mut c = s.chars();
@@ -18,9 +19,9 @@ fn capitalize(s: &str) -> String {
   }
 }
 
-fn fill_output<V: Versioned>(
-  next_version: &VersionValue<V>,
-  patches: &HashMap<Version<V>, Vec<String>>,
+fn fill_output<V: AsChangelogFmt + Versioned + Ord>(
+  next_version: &Version<V>,
+  patches: &HashMap<VersionMod<V>, Vec<String>>,
 ) -> String {
   let mut output = String::new();
 
@@ -37,11 +38,14 @@ fn fill_output<V: Versioned>(
   output
 }
 
-fn create_patches<V: Versioned>(
+fn create_patches<V>(
   package_name: &str,
   changesets: Vec<&Changeset<V>>,
-) -> HashMap<Version<V>, Vec<String>> {
-  let mut patches: HashMap<Version<V>, Vec<String>> = HashMap::new();
+) -> HashMap<VersionMod<V>, Vec<String>>
+where
+  V: AsChangelogFmt + Clone + Hash + Ord + Versioned,
+{
+  let mut patches: HashMap<VersionMod<V>, Vec<String>> = HashMap::new();
 
   for changset in changesets {
     let changeset_summary = changset.as_changelog_fmt();
@@ -61,12 +65,16 @@ fn create_patches<V: Versioned>(
 pub struct Changelog;
 
 impl Changelog {
-  pub async fn update_changelog<T: AsRef<Path> + Debug, V: Versioned>(
+  pub async fn update_changelog<T, V>(
     changelog_path: T,
-    next_version: VersionValue<V>,
+    next_version: Version<V>,
     package_bump: &PackageBump<'_, V>,
     dry_run: bool,
-  ) -> std::io::Result<()> {
+  ) -> std::io::Result<()>
+  where
+    T: AsRef<Path> + Debug,
+    V: AsChangelogFmt + Clone + Hash + Ord + Versioned,
+  {
     let package_name = package_bump.name();
 
     if let Some(patches) = package_bump
@@ -113,7 +121,7 @@ impl Changelog {
   }
 }
 
-pub trait AsChangelogFmt {
+pub trait AsChangelogFmt: Sized {
   fn as_changelog_fmt(&self) -> String;
 }
 
@@ -145,13 +153,13 @@ impl AsChangelogFmt for Semantic {
   }
 }
 
-impl<T: AsChangelogFmt> AsChangelogFmt for Version<T> {
+impl<T: AsChangelogFmt> AsChangelogFmt for VersionMod<T> {
   fn as_changelog_fmt(&self) -> String {
     format!("### {} Changes\n", self.version.as_changelog_fmt())
   }
 }
 
-impl<T> AsChangelogFmt for VersionValue<T> {
+impl<T> AsChangelogFmt for Version<T> {
   fn as_changelog_fmt(&self) -> String {
     format!("## {}\n", self.value)
   }

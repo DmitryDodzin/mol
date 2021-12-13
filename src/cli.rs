@@ -3,7 +3,7 @@ use std::str::FromStr;
 use crate::command::Publish;
 use clap::Parser;
 
-pub use mol_core::prelude::{PackageManager, Versioned};
+pub use mol_core::prelude::{PackageManager, VersionEditor};
 
 pub use crate::command::*;
 
@@ -19,7 +19,7 @@ pub enum Command {
   Publish(Publish),
 }
 
-impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> IntoExecutableCommand<T, V>
+impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync> IntoExecutableCommand<T, V>
   for Command
 where
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
@@ -44,4 +44,8 @@ pub struct Opts {
   /// Run with dry_run no files actually change
   #[clap(long)]
   pub dry_run: bool,
+
+  /// Plugin paths
+  #[clap(long)]
+  pub plugins: Vec<String>,
 }

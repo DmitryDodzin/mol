@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use clap::Parser;
@@ -16,10 +17,16 @@ pub struct Publish {
 }
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableCommand<T, V>
+impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync> ExecutableCommand<T, V>
   for Publish
 {
-  async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
+  async fn execute(
+    &self,
+    context: &ExecutableContext<T, V>,
+    plugins: Arc<PluginManager>,
+  ) -> anyhow::Result<()> {
+    plugins.pre_command("publish", &context.as_plugin())?;
+
     let graph = context.packages.as_package_graph();
 
     let packages = if self.packages.is_empty() {
@@ -40,6 +47,8 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
           .await?;
       }
     }
+
+    plugins.post_command("publish", &context.as_plugin())?;
 
     Ok(())
   }

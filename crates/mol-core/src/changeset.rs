@@ -6,11 +6,11 @@ use itertools::Itertools;
 use tokio::{fs::File, io::AsyncWriteExt};
 
 use crate::error::ChangesetParseError;
-use crate::version::{Version, Versioned};
+use crate::version::{VersionMod, Versioned};
 
 #[derive(Debug, Default)]
 pub struct Changeset<T> {
-  pub packages: HashMap<String, Version<T>>,
+  pub packages: HashMap<String, VersionMod<T>>,
   pub message: String,
 }
 
@@ -41,7 +41,10 @@ impl<T> Changeset<T> {
   }
 }
 
-impl<T: Versioned> Changeset<T> {
+impl<T> Changeset<T>
+where
+  T: FromStr + Ord + Versioned,
+{
   pub fn parse(value: &str) -> Result<Self, <Self as FromStr>::Err> {
     Changeset::from_str(value)
   }
@@ -76,7 +79,7 @@ where
             2 => {
               let (package, version) = (
                 Self::parse_package_name(change_value[0]),
-                Version::from_str(change_value[1]),
+                VersionMod::from_str(change_value[1]),
               );
 
               if let Ok(version) = version {
@@ -98,7 +101,10 @@ where
   }
 }
 
-impl<T: Versioned> ToString for Changeset<T> {
+impl<T> ToString for Changeset<T>
+where
+  T: Versioned + Ord + ToString,
+{
   fn to_string(&self) -> String {
     let mut output = vec![];
 
@@ -138,7 +144,7 @@ Do cool stuff
 
     assert_eq!(
       changeset.packages,
-      vec![("mol".to_string(), Version::new(Semantic::minor()))]
+      vec![("mol".to_string(), VersionMod::new(Semantic::minor()))]
         .into_iter()
         .collect()
     );
@@ -162,8 +168,8 @@ Do cool stuff
     assert_eq!(
       changeset.packages,
       vec![
-        ("mol".to_string(), Version::new(Semantic::minor())),
-        ("mol-core".to_string(), Version::new(Semantic::major()))
+        ("mol".to_string(), VersionMod::new(Semantic::minor())),
+        ("mol-core".to_string(), VersionMod::new(Semantic::major()))
       ]
       .into_iter()
       .collect()
@@ -173,7 +179,7 @@ Do cool stuff
   #[test]
   fn to_str() {
     let changeset = Changeset {
-      packages: vec![("mol".to_owned(), Version::new(Semantic::minor()))]
+      packages: vec![("mol".to_owned(), VersionMod::new(Semantic::minor()))]
         .into_iter()
         .collect(),
       message: "Do cool stuff".to_string(),
@@ -194,8 +200,8 @@ Do cool stuff
   fn to_str_multiple() {
     let changeset = Changeset {
       packages: vec![
-        ("mol".to_owned(), Version::new(Semantic::minor())),
-        ("mol-core".to_owned(), Version::new(Semantic::major())),
+        ("mol".to_owned(), VersionMod::new(Semantic::minor())),
+        ("mol-core".to_owned(), VersionMod::new(Semantic::major())),
       ]
       .into_iter()
       .collect(),

@@ -113,6 +113,10 @@ impl Cargo {
 
 #[async_trait]
 impl PackageManager for Cargo {
+  fn default_path() -> &'static str {
+    "Cargo.toml"
+  }
+
   async fn read_package<T: AsRef<Path> + Send + Sync, V: Versioned + Send + Sync + 'static>(
     &self,
     crate_path: T,
@@ -131,19 +135,21 @@ impl PackageManager for Cargo {
 
     let mut dependencies = Vec::new();
 
-    // TODO: support [dependencies.xyz] patterns
-    if let Some(deps) = document["dependencies"].as_table() {
-      for (key, value) in deps.iter() {
-        if value.is_str() {
-          dependencies.push((
-            key.to_owned(),
-            value.as_str().unwrap_or_default().to_owned(),
-          ));
-        } else if value.is_table() || value.is_inline_table() {
-          dependencies.push((
-            key.to_owned(),
-            value["version"].as_str().unwrap_or_default().to_owned(),
-          ));
+    if document.contains_key("dependencies") {
+      // TODO: support [dependencies.xyz] patterns
+      if let Some(deps) = document["dependencies"].as_table() {
+        for (key, value) in deps.iter() {
+          if value.is_str() {
+            dependencies.push((
+              key.to_owned(),
+              value.as_str().unwrap_or_default().to_owned(),
+            ));
+          } else if value.is_table() || value.is_inline_table() {
+            dependencies.push((
+              key.to_owned(),
+              value["version"].as_str().unwrap_or_default().to_owned(),
+            ));
+          }
         }
       }
     }

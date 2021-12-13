@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use std::sync::Arc;
 
 use anyhow::Context;
 use async_trait::async_trait;
@@ -26,15 +27,16 @@ pub struct Add {
 }
 
 impl Add {
-  fn select_version<V: Versioned>(&self) -> anyhow::Result<Version<V>>
+  fn select_version<V>(&self) -> anyhow::Result<VersionMod<V>>
   where
+    V: VersionEditor,
     <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
   {
     if let Some(version) = &self.version {
-      return Ok(Version::<V>::from_str(version)?);
+      return Ok(VersionMod::<V>::from_str(version)?);
     }
 
-    let versions = Version::<V>::options();
+    let versions = VersionMod::<V>::options();
     let version_selection = Select::with_theme(&*COLOR_THEME)
       .with_prompt("version")
       .items(&versions)
@@ -44,7 +46,7 @@ impl Add {
     Ok(versions[version_selection].clone())
   }
 
-  fn select_packages<T: PackageManager, V: Versioned>(
+  fn select_packages<T: PackageManager, V: VersionEditor>(
     &self,
     context: &ExecutableContext<T, V>,
   ) -> anyhow::Result<Vec<Package<V>>> {
@@ -80,11 +82,13 @@ impl Add {
     Ok(packages)
   }
 
-  fn get_changeset<T: PackageManager, V: Versioned>(
+  fn get_changeset<T, V>(
     &self,
     context: &ExecutableContext<T, V>,
   ) -> anyhow::Result<Option<Changeset<V>>>
   where
+    T: PackageManager,
+    V: VersionEditor,
     <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
   {
     let packages = self.select_packages(context)?;
@@ -119,11 +123,19 @@ impl Add {
 }
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableCommand<T, V> for Add
+impl<T, V> ExecutableCommand<T, V> for Add
 where
+  T: PackageManager + Send + Sync,
+  V: VersionEditor + Send + Sync,
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {
-  async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
+  async fn execute(
+    &self,
+    context: &ExecutableContext<T, V>,
+    plugins: Arc<PluginManager>,
+  ) -> anyhow::Result<()> {
+    plugins.pre_command("add", &context.as_plugin())?;
+
     if let Some(changeset) = self.get_changeset(context)? {
       let changeset_path = {
         let mut rng = rand::thread_rng();
@@ -145,6 +157,8 @@ where
     } else {
       println!("{}", &*ADD_NO_PACKAGES);
     }
+
+    plugins.post_command("add", &context.as_plugin())?;
 
     Ok(())
   }

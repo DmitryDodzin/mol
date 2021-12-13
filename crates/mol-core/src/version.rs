@@ -5,30 +5,43 @@ use std::str::FromStr;
 use crate::changelog::AsChangelogFmt;
 use crate::error::VersionBumpError;
 
-pub trait Versioned: AsChangelogFmt + Clone + Default + Hash + FromStr + Ord + ToString {
+pub trait VersionEditor:
+  AsChangelogFmt + Versioned + Clone + Default + Hash + FromStr + Ord
+{
   fn options() -> Vec<Self>;
 
   fn mask<'a>(mask: &str, version: &'a str) -> &'a str;
 
   fn r#match(mask: &str, version: &str) -> bool;
+}
 
+pub trait Versioned: ToString {
   fn apply(&self, current: &str) -> Result<String, VersionBumpError>;
 }
 
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq, Ord, PartialOrd)]
-pub struct Version<T> {
+pub struct VersionMod<T> {
   pub(crate) version: T,
 }
 
-impl<T> Version<T> {
+impl<T> VersionMod<T> {
   pub fn new(version: T) -> Self {
-    Version { version }
+    VersionMod { version }
   }
 }
 
-impl<T> Versioned for Version<T>
+impl<T> Versioned for VersionMod<T>
 where
   T: Versioned,
+{
+  fn apply(&self, current: &str) -> Result<String, VersionBumpError> {
+    self.version.apply(current)
+  }
+}
+
+impl<T> VersionEditor for VersionMod<T>
+where
+  T: VersionEditor,
 {
   fn mask<'a>(mask: &str, version: &'a str) -> &'a str {
     T::mask(mask, version)
@@ -42,24 +55,21 @@ where
       .map(|version| Self { version })
       .collect()
   }
-  fn apply(&self, current: &str) -> Result<String, VersionBumpError> {
-    self.version.apply(current)
-  }
 }
 
-impl<T> FromStr for Version<T>
+impl<T> FromStr for VersionMod<T>
 where
   T: FromStr,
 {
   type Err = T::Err;
   fn from_str(value: &str) -> Result<Self, Self::Err> {
-    Ok(Version {
+    Ok(VersionMod {
       version: T::from_str(value)?,
     })
   }
 }
 
-impl<T> ToString for Version<T>
+impl<T> ToString for VersionMod<T>
 where
   T: ToString,
 {
@@ -69,17 +79,17 @@ where
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct VersionValue<T> {
+pub struct Version<T: ?Sized> {
   pub value: String,
   r#type: PhantomData<T>,
 }
 
-impl<T, U> From<U> for VersionValue<T>
+impl<T, U> From<U> for Version<T>
 where
   U: ToString,
 {
   fn from(value: U) -> Self {
-    VersionValue {
+    Version {
       value: value.to_string(),
       r#type: PhantomData::<T>,
     }

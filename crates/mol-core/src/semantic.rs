@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use crate::error::{VersionBumpError, VersionParseError};
-use crate::version::Versioned;
+use crate::version::{VersionEditor, Versioned};
 
 #[derive(Copy, Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 enum SemanticVersion {
@@ -34,19 +34,6 @@ impl Semantic {
 }
 
 impl Versioned for Semantic {
-  // TODO: add mask validation
-  fn mask<'a>(mask: &str, version: &'a str) -> &'a str {
-    &version[..mask.len()]
-  }
-
-  fn r#match(mask: &str, version: &str) -> bool {
-    Self::mask(mask, version) == mask
-  }
-
-  fn options() -> Vec<Self> {
-    vec![Self::patch(), Self::minor(), Self::major()]
-  }
-
   fn apply(&self, current: &str) -> Result<String, VersionBumpError> {
     let mut current = current.split('.');
 
@@ -72,6 +59,21 @@ impl Versioned for Semantic {
       SemanticVersion::Minor => format!("{}.{}.{}", major, minor + 1, 0),
       SemanticVersion::Patch => format!("{}.{}.{}", major, minor, patch + 1),
     })
+  }
+}
+
+impl VersionEditor for Semantic {
+  // TODO: add mask validation
+  fn mask<'a>(mask: &str, version: &'a str) -> &'a str {
+    &version[..mask.len()]
+  }
+
+  fn r#match(mask: &str, version: &str) -> bool {
+    Self::mask(mask, version) == mask
+  }
+
+  fn options() -> Vec<Self> {
+    vec![Self::patch(), Self::minor(), Self::major()]
   }
 }
 
@@ -114,24 +116,24 @@ impl ToString for Semantic {
 mod tests {
 
   use super::*;
-  use crate::version::{Version, Versioned};
+  use crate::version::{VersionMod, Versioned};
 
   #[test]
   fn from_str() {
     let strings = vec!["patch", "minor", "minor", "major"];
 
-    let versions: Vec<Version<Semantic>> = strings
+    let versions: Vec<VersionMod<Semantic>> = strings
       .iter()
-      .filter_map(|item| Version::from_str(item).ok())
+      .filter_map(|item| VersionMod::from_str(item).ok())
       .collect();
 
     assert_eq!(
       versions,
       vec![
-        Version::new(Semantic::patch()),
-        Version::new(Semantic::minor()),
-        Version::new(Semantic::minor()),
-        Version::new(Semantic::major()),
+        VersionMod::new(Semantic::patch()),
+        VersionMod::new(Semantic::minor()),
+        VersionMod::new(Semantic::minor()),
+        VersionMod::new(Semantic::major()),
       ]
     );
   }
@@ -139,10 +141,10 @@ mod tests {
   #[test]
   fn to_str() {
     let versions = vec![
-      Version::new(Semantic::patch()),
-      Version::new(Semantic::minor()),
-      Version::new(Semantic::minor()),
-      Version::new(Semantic::major()),
+      VersionMod::new(Semantic::patch()),
+      VersionMod::new(Semantic::minor()),
+      VersionMod::new(Semantic::minor()),
+      VersionMod::new(Semantic::major()),
     ];
 
     let strings: Vec<String> = versions.iter().map(|item| item.to_string()).collect();
@@ -153,7 +155,7 @@ mod tests {
   // TODO: this
   // #[test]
   // fn canary_apply() {
-  //   let version = Version::new(Semantic::major());
+  //   let version = VersionMod::new(Semantic::major());
 
   //   let bumped = version.apply("0.0.1-alpha.0");
 
@@ -164,7 +166,7 @@ mod tests {
 
   #[test]
   fn major_apply() {
-    let version = Version::new(Semantic::major());
+    let version = VersionMod::new(Semantic::major());
 
     let bumped = version.apply("0.4.1");
 
@@ -175,7 +177,7 @@ mod tests {
 
   #[test]
   fn minor_apply() {
-    let version = Version::new(Semantic::minor());
+    let version = VersionMod::new(Semantic::minor());
 
     let bumped = version.apply("4.1.1");
 
@@ -186,7 +188,7 @@ mod tests {
 
   #[test]
   fn patch_apply() {
-    let version = Version::new(Semantic::patch());
+    let version = VersionMod::new(Semantic::patch());
 
     let bumped = version.apply("0.4.1");
 

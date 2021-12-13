@@ -1,5 +1,7 @@
+use std::alloc::System;
 use std::fmt::Debug;
 use std::str::FromStr;
+use std::sync::Arc;
 
 use clap::Parser;
 use dialoguer::{console, theme::ColorfulTheme};
@@ -9,6 +11,9 @@ use mol_core::prelude::*;
 
 mod cli;
 mod command;
+
+#[global_allocator]
+static ALLOCATOR: System = System;
 
 use crate::{
   cli::{Command, Opts},
@@ -28,12 +33,17 @@ lazy_static! {
     console::style("Changesets folder already initialized").yellow();
 }
 
-async fn handle_command<U: PackageManager, V: Versioned, T: IntoExecutableCommand<U, V> + Debug>(
-  context: &ExecutableContext<U, V>,
-  command: T,
+async fn handle_command<
+  T: PackageManager,
+  V: VersionEditor,
+  U: IntoExecutableCommand<T, V> + Debug,
+>(
+  context: &ExecutableContext<T, V>,
+  plugin_manager: Arc<PluginManager>,
+  command: U,
 ) -> anyhow::Result<()> {
   if let Some(exeutable) = command.as_executable() {
-    exeutable.execute(context).await?;
+    exeutable.execute(context, plugin_manager).await?;
   } else {
     println!("{:?}", command);
   }
@@ -41,8 +51,10 @@ async fn handle_command<U: PackageManager, V: Versioned, T: IntoExecutableComman
   Ok(())
 }
 
-pub async fn exec<T: Default + PackageManager + Send + Sync, V: Versioned + Send + Sync + 'static>(
-) -> anyhow::Result<()>
+pub async fn exec<
+  T: PackageManager + Default + Send + Sync,
+  V: VersionEditor + Send + Sync + 'static,
+>() -> anyhow::Result<()>
 where
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {
@@ -53,23 +65,26 @@ where
     Opts::parse_from(args)
   };
 
-  let package_manager = T::default();
+  let context = ExecutableContext::<T, V>::new(DEFAULT_PACKAGE_DIR.clone(), opts.dry_run).await?;
 
-  let context: ExecutableContext<T, V> = ExecutableContext {
-    changesets: Changesets::default(),
-    dry_run: opts.dry_run,
-    packages: package_manager.read_package("Cargo.toml").await?,
-    package_manager,
-  };
+  let mut plugin_manager = PluginManager::default();
+
+  for plugin in &opts.plugins {
+    unsafe {
+      plugin_manager.load(&plugin, &context.as_plugin())?;
+    }
+  }
+
+  let plugin_manager = Arc::new(plugin_manager);
 
   match opts.cmd {
-    Command::Init(_) => handle_command(&context, opts.cmd).await?,
+    Command::Init(_) => handle_command(&context, plugin_manager, opts.cmd).await?,
     command => {
       if !context.changesets.validate() {
         println!("{}", *INIT_REQ_PROMPT);
       }
 
-      handle_command(&context, command).await?
+      handle_command(&context, plugin_manager, command).await?
     }
   }
 

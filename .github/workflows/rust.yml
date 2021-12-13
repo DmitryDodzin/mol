@@ -10,13 +10,11 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  ci:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
-    - name: ⚡ Cargo Cache
+    - name: 🔥 Cargo Cache
       uses: actions/cache@v1
       with:
         path: ~/.cargo
@@ -24,7 +22,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-${{ hashFiles('Cargo.toml') }}
           ${{ runner.os }}-cargo
-    - name: ⚡ Cargo Cache
+    - name: 🔥 Cargo Cache
       uses: actions/cache@v1
       with:
         path: target
@@ -32,16 +30,26 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-target-${{ hashFiles('Cargo.toml') }}
           ${{ runner.os }}-cargo-target
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        components: rustfmt, clippy
+        override: true
     - name: 🔨 Build
       run: cargo build --verbose --workspace
+    - name: 📎 Fmt
+      run: cargo fmt -- --check
+    - name: 📎 Clippy
+      run: cargo clippy --workspace
     - name: 🔎 Test
       run: cargo test --verbose --workspace
-
+    
   check-unused-dependencies:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - name: 🔥 Cargo Cache
+        uses: actions/cache@v2
         with:
           path: |
             ~/.cargo/bin/
@@ -50,13 +58,12 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-check-unused-dependencies-${{ hashFiles('**/Cargo.toml') }}
-      - uses: actions-rs/toolchain@v1
+      - name: 🔧 Toolchain
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
           override: true
-      - name: Installs cargo-udeps
+      - name: ⚡ Installs cargo-udeps
         run: cargo install --force cargo-udeps
-      - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - name: Run cargo udeps
+      - name: ⚡ Run cargo udeps
         run: cargo udeps
