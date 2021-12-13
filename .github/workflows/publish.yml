@@ -28,7 +28,7 @@ jobs:
         toolchain: stable
         override: true
     - name: Install Mol
-      run: cargo install mol
+      run: cargo install --path .
     - name: Version
       run: cargo mol version
     - name: Add & Commit
