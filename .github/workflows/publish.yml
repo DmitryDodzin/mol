@@ -37,4 +37,4 @@ jobs:
         message: Version Packages
         branch: mol/release
         branch_mode: create
-        push: 'origin --force'
+        push: '--force --set-upstream origin mol/release'
