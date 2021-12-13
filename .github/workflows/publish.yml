@@ -35,4 +35,4 @@ jobs:
       uses: EndBug/add-and-commit@v7.5.0
       with:
         message: Version Packages
-        push: 'origin mol/release --force'
+        push: 'origin ---set-upstream mol/release --force'
