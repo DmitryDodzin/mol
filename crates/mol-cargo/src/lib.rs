@@ -192,8 +192,6 @@ impl PackageManager for Cargo {
 
       let exists = Arc::new(DashSet::new());
 
-      println!("{:?}", crate_path);
-
       result.extend(
         Cargo::check_read_dir(
           exists,
