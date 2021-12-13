@@ -36,4 +36,5 @@ jobs:
       with:
         message: Version Packages
         branch: mol/release
+        branch_mode: create
         push: 'origin --set-upstream --force'
