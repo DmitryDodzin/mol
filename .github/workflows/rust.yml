@@ -3,7 +3,14 @@ name: Rust
 on:
   push:
     branches: [ main ]
+    paths:
+      - '*.toml'
+      - 'src/**/*'
+      - 'crates/**/*'
   pull_request:
+      - '*.toml'
+      - 'src/**/*'
+      - 'crates/**/*'
     branches: [ main ]
 
 env:
