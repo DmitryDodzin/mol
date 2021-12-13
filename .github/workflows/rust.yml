@@ -10,7 +10,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -33,33 +33,16 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
+        components: rustfmt, clippy
         override: true
     - name: 🔨 Build
       run: cargo build --verbose --workspace
-    - name: 🔎 Test
-      run: cargo test --verbose --workspace
-
-  check:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: 🔥 Cargo Cache
-      uses: actions/cache@v1
-      with:
-        path: ~/.cargo
-        key: ${{ runner.os }}-check-cargo-${{ hashFiles('Cargo.toml') }}
-        restore-keys: |
-          ${{ runner.os }}-check-cargo-${{ hashFiles('Cargo.toml') }}
-          ${{ runner.os }}-check-cargo
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        components: rustfmt, clippy
-        override: true
     - name: 📎 Fmt
       run: cargo fmt -- --check
     - name: 📎 Clippy
       run: cargo clippy --workspace
+    - name: 🔎 Test
+      run: cargo test --verbose --workspace
     
   check-unused-dependencies:
     runs-on: ubuntu-latest
