@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use anyhow::Context;
 use async_trait::async_trait;
 
 use mol_core::prelude::*;
@@ -45,7 +46,12 @@ where
   pub async fn new(root_dir: PathBuf, dry_run: bool) -> anyhow::Result<Self> {
     let package_manager = T::default();
 
-    let packages = package_manager.read_package(T::default_path()).await?;
+    let package_path = T::default_path();
+
+    let packages = package_manager
+      .read_package(package_path)
+      .await
+      .with_context(|| format!("Could not open read pacakges at dir {}", package_path))?;
 
     Ok(ExecutableContext {
       changesets: Changesets::default(),

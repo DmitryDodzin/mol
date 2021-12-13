@@ -175,7 +175,7 @@ impl Plugin for PluginManager {
     for plugin in &self.plugins {
       plugin
         .pre_command(command, context)
-        .with_context(|| format!("{}: faliure at pre-command, plugin", plugin.name()))?;
+        .with_context(|| format!("Faliure at pre-command for {} plugin", plugin.name()))?;
     }
 
     Ok(())
@@ -185,7 +185,7 @@ impl Plugin for PluginManager {
     for plugin in &self.plugins {
       plugin
         .post_command(command, context)
-        .with_context(|| format!("{}: faliure at post-command", plugin.name()))?;
+        .with_context(|| format!("Faliure at post-command for {} plugin", plugin.name()))?;
     }
 
     Ok(())
