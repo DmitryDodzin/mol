@@ -44,16 +44,16 @@ impl Cargo {
 
     if let Ok(file_type) = entry.file_type().await {
       if file_type.is_dir() {
-        return Cargo::check_read_dir(exists, globs, fs::read_dir(&entry_path).await?).await;
+        return Cargo::check_read_dir(exists, globs, fs::read_dir(entry.path()).await?).await;
       }
 
       if file_type.is_symlink() {
-        let entry_path = fs::read_link(&entry_path).await?;
-        return Cargo::check_read_dir(exists, globs, fs::read_dir(&entry_path).await?).await;
+        let link_value = fs::read_link(entry.path()).await?;
+        return Cargo::check_read_dir(exists, globs, fs::read_dir(&link_value).await?).await;
       }
 
       if globs.is_match(entry.path()) && file_type.is_file() && entry.file_name() == "Cargo.toml" {
-        result.extend(Cargo.read_package(&entry_path).await?);
+        result.extend(Cargo.read_package(entry.path()).await?);
       }
     }
 
