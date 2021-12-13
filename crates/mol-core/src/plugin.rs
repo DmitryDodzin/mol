@@ -157,13 +157,13 @@ impl Plugin for PluginManager {
 
   fn pre_command(&self, command: &str, context: &PluginContext) {
     for plugin in &self.plugins {
-      plugin.pre_command(command, &context)
+      plugin.pre_command(command, context)
     }
   }
 
   fn post_command(&self, command: &str, context: &PluginContext) {
     for plugin in &self.plugins {
-      plugin.post_command(command, &context)
+      plugin.post_command(command, context)
     }
   }
 }

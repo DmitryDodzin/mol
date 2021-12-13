@@ -27,11 +27,10 @@ where
   T: PackageManager,
   V: VersionEditor,
 {
-  pub fn as_plugin<'a>(&'a self) -> PluginContext<'a> {
+  pub fn as_plugin(&self) -> PluginContext<'_> {
     PluginContext {
       dry_run: self.dry_run,
       config: &self.changesets,
-      // packages: &self.packages as &Vec<dyn Versioned>,
     }
   }
 }
