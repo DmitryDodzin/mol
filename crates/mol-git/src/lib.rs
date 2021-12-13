@@ -12,9 +12,9 @@ impl Plugin for GitExt {
   fn name(&self) -> &str {
     env!("CARGO_PKG_NAME")
   }
-  fn on_load(&mut self) {
-    self.repo = Repository::open(DEFAULT_PACKAGE_DIR.as_path()).ok();
-  }
+  // fn on_load(&mut self) {
+  //   self.repo = Repository::open(DEFAULT_PACKAGE_DIR.as_path()).ok();
+  // }
 }
 
 extern "C" fn register(registrar: &mut PluginRegistrar) {

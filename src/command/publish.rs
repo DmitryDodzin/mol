@@ -20,6 +20,8 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
   for Publish
 {
   async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
+    context.plugins.pre_command("publish");
+
     let graph = context.packages.as_package_graph();
 
     let packages = if self.packages.is_empty() {
@@ -40,6 +42,8 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
           .await?;
       }
     }
+
+    context.plugins.post_command("publish");
 
     Ok(())
   }

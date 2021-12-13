@@ -67,6 +67,8 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
   for Version
 {
   async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
+    context.plugins.pre_command("version");
+
     let package_graph = context.packages.as_package_graph();
     let (changeset_paths, bump) =
       Self::consume_changesets::<V>(&context.changesets, &package_graph).await?;
@@ -164,6 +166,8 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
           .with_context(|| format!("Unable to remove the changeset at {:?}", changeset_path))?;
       }
     }
+
+    context.plugins.post_command("version");
 
     Ok(())
   }

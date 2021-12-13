@@ -124,6 +124,8 @@ where
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {
   async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
+    context.plugins.pre_command("add");
+
     if let Some(changeset) = self.get_changeset(context)? {
       let changeset_path = {
         let mut rng = rand::thread_rng();
@@ -145,6 +147,8 @@ where
     } else {
       println!("{}", &*ADD_NO_PACKAGES);
     }
+
+    context.plugins.post_command("add");
 
     Ok(())
   }

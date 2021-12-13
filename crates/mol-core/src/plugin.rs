@@ -15,21 +15,13 @@ pub trait Plugin {
 
   fn on_unload(&mut self) {}
 
-  fn pre_add(&self) {}
+  fn pre_command(&self, command: &str) {
+    println!("Pre: {}", command);
+  }
 
-  fn post_add(&self) {}
-
-  fn pre_init(&self) {}
-
-  fn post_init(&self) {}
-
-  fn pre_publish(&self) {}
-
-  fn post_publish(&self) {}
-
-  fn pre_version(&self) {}
-
-  fn post_version(&self) {}
+  fn post_command(&self, command: &str) {
+    println!("Post: {}", command);
+  }
 }
 
 pub struct PluginProxy {
@@ -50,36 +42,12 @@ impl Plugin for PluginProxy {
     self.plugin.on_unload()
   }
 
-  fn pre_add(&self) {
-    self.plugin.pre_add()
+  fn pre_command(&self, command: &str) {
+    self.plugin.pre_command(command)
   }
 
-  fn post_add(&self) {
-    self.plugin.post_add()
-  }
-
-  fn pre_init(&self) {
-    self.plugin.pre_init()
-  }
-
-  fn post_init(&self) {
-    self.plugin.post_init()
-  }
-
-  fn pre_publish(&self) {
-    self.plugin.pre_publish()
-  }
-
-  fn post_publish(&self) {
-    self.plugin.post_publish()
-  }
-
-  fn pre_version(&self) {
-    self.plugin.pre_version()
-  }
-
-  fn post_version(&self) {
-    self.plugin.post_version()
+  fn post_command(&self, command: &str) {
+    self.plugin.post_command(command)
   }
 }
 
@@ -181,51 +149,15 @@ impl Plugin for PluginManager {
     "PluginManager"
   }
 
-  fn pre_add(&self) {
+  fn pre_command(&self, command: &str) {
     for plugin in &self.plugins {
-      plugin.pre_add()
+      plugin.pre_command(command)
     }
   }
 
-  fn post_add(&self) {
+  fn post_command(&self, command: &str) {
     for plugin in &self.plugins {
-      plugin.post_add()
-    }
-  }
-
-  fn pre_init(&self) {
-    for plugin in &self.plugins {
-      plugin.pre_init()
-    }
-  }
-
-  fn post_init(&self) {
-    for plugin in &self.plugins {
-      plugin.post_init()
-    }
-  }
-
-  fn pre_publish(&self) {
-    for plugin in &self.plugins {
-      plugin.pre_publish()
-    }
-  }
-
-  fn post_publish(&self) {
-    for plugin in &self.plugins {
-      plugin.post_publish()
-    }
-  }
-
-  fn pre_version(&self) {
-    for plugin in &self.plugins {
-      plugin.pre_version()
-    }
-  }
-
-  fn post_version(&self) {
-    for plugin in &self.plugins {
-      plugin.post_version()
+      plugin.post_command(command)
     }
   }
 }
