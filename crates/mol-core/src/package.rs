@@ -3,13 +3,13 @@ use std::path::PathBuf;
 
 use itertools::Itertools;
 
-use crate::version::{VersionValue, Versioned};
+use crate::version::{Version, Versioned};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Package<T: Versioned> {
   pub path: PathBuf,
   pub name: String,
-  pub version: VersionValue<T>,
+  pub version: Version<T>,
   pub dependencies: Vec<(String, String)>,
 }
 

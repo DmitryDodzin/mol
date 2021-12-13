@@ -16,17 +16,17 @@ pub trait Versioned: AsChangelogFmt + Clone + Default + Hash + FromStr + Ord + T
 }
 
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq, Ord, PartialOrd)]
-pub struct Version<T> {
+pub struct VersionMod<T> {
   pub(crate) version: T,
 }
 
-impl<T> Version<T> {
+impl<T> VersionMod<T> {
   pub fn new(version: T) -> Self {
-    Version { version }
+    VersionMod { version }
   }
 }
 
-impl<T> Versioned for Version<T>
+impl<T> Versioned for VersionMod<T>
 where
   T: Versioned,
 {
@@ -47,19 +47,19 @@ where
   }
 }
 
-impl<T> FromStr for Version<T>
+impl<T> FromStr for VersionMod<T>
 where
   T: FromStr,
 {
   type Err = T::Err;
   fn from_str(value: &str) -> Result<Self, Self::Err> {
-    Ok(Version {
+    Ok(VersionMod {
       version: T::from_str(value)?,
     })
   }
 }
 
-impl<T> ToString for Version<T>
+impl<T> ToString for VersionMod<T>
 where
   T: ToString,
 {
@@ -69,17 +69,17 @@ where
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct VersionValue<T> {
+pub struct Version<T> {
   pub value: String,
   r#type: PhantomData<T>,
 }
 
-impl<T, U> From<U> for VersionValue<T>
+impl<T, U> From<U> for Version<T>
 where
   U: ToString,
 {
   fn from(value: U) -> Self {
-    VersionValue {
+    Version {
       value: value.to_string(),
       r#type: PhantomData::<T>,
     }

@@ -8,7 +8,7 @@ use tokio::{fs, io::AsyncWriteExt};
 use crate::bump::PackageBump;
 use crate::changeset::Changeset;
 use crate::semantic::Semantic;
-use crate::version::{Version, VersionValue, Versioned};
+use crate::version::{Version, VersionMod, Versioned};
 
 fn capitalize(s: &str) -> String {
   let mut c = s.chars();
@@ -19,8 +19,8 @@ fn capitalize(s: &str) -> String {
 }
 
 fn fill_output<V: Versioned>(
-  next_version: &VersionValue<V>,
-  patches: &HashMap<Version<V>, Vec<String>>,
+  next_version: &Version<V>,
+  patches: &HashMap<VersionMod<V>, Vec<String>>,
 ) -> String {
   let mut output = String::new();
 
@@ -40,8 +40,8 @@ fn fill_output<V: Versioned>(
 fn create_patches<V: Versioned>(
   package_name: &str,
   changesets: Vec<&Changeset<V>>,
-) -> HashMap<Version<V>, Vec<String>> {
-  let mut patches: HashMap<Version<V>, Vec<String>> = HashMap::new();
+) -> HashMap<VersionMod<V>, Vec<String>> {
+  let mut patches: HashMap<VersionMod<V>, Vec<String>> = HashMap::new();
 
   for changset in changesets {
     let changeset_summary = changset.as_changelog_fmt();
@@ -63,7 +63,7 @@ pub struct Changelog;
 impl Changelog {
   pub async fn update_changelog<T: AsRef<Path> + Debug, V: Versioned>(
     changelog_path: T,
-    next_version: VersionValue<V>,
+    next_version: Version<V>,
     package_bump: &PackageBump<'_, V>,
     dry_run: bool,
   ) -> std::io::Result<()> {
@@ -145,13 +145,13 @@ impl AsChangelogFmt for Semantic {
   }
 }
 
-impl<T: AsChangelogFmt> AsChangelogFmt for Version<T> {
+impl<T: AsChangelogFmt> AsChangelogFmt for VersionMod<T> {
   fn as_changelog_fmt(&self) -> String {
     format!("### {} Changes\n", self.version.as_changelog_fmt())
   }
 }
 
-impl<T> AsChangelogFmt for VersionValue<T> {
+impl<T> AsChangelogFmt for Version<T> {
   fn as_changelog_fmt(&self) -> String {
     format!("## {}\n", self.value)
   }

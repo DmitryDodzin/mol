@@ -2,20 +2,20 @@ use std::collections::{HashMap, HashSet};
 
 use crate::changeset::Changeset;
 use crate::package::PackageGraph;
-use crate::version::{Version, Versioned};
+use crate::version::{VersionMod, Versioned};
 
 #[derive(Debug, Default)]
 pub struct Bump<T> {
   changesets: Vec<Changeset<T>>,
-  package_update: HashMap<String, Version<T>>,
+  package_update: HashMap<String, VersionMod<T>>,
   package_changesets: HashMap<String, HashSet<usize>>,
 }
 
 impl<'a, T: Versioned> Bump<T> {
   fn set_package_update(
-    package_update: &mut HashMap<String, Version<T>>,
+    package_update: &mut HashMap<String, VersionMod<T>>,
     name: &str,
-    version: Version<T>,
+    version: VersionMod<T>,
   ) {
     if let Some(concat_version) = package_update.get_mut(name) {
       if &version > concat_version {
@@ -47,7 +47,7 @@ impl<'a, T: Versioned> Bump<T> {
         Self::set_package_update(
           &mut self.package_update,
           &package.name,
-          Version::new(min_update.clone()),
+          VersionMod::new(min_update.clone()),
         );
       }
     }
@@ -81,7 +81,7 @@ impl<'a, T> PackageBump<'a, T> {
     self.name
   }
 
-  pub fn version(&self) -> Option<&Version<T>> {
+  pub fn version(&self) -> Option<&VersionMod<T>> {
     self.bump.package_update.get(self.name)
   }
 }
@@ -101,7 +101,7 @@ mod tests {
 
     bump.add(
       Changeset {
-        packages: vec![("mol".to_owned(), Version::new(Semantic::minor()))]
+        packages: vec![("mol".to_owned(), VersionMod::new(Semantic::minor()))]
           .into_iter()
           .collect(),
         message: "Hi".to_owned(),
@@ -111,8 +111,8 @@ mod tests {
     bump.add(
       Changeset {
         packages: vec![
-          ("mol".to_owned(), Version::new(Semantic::patch())),
-          ("mol-core".to_owned(), Version::new(Semantic::major())),
+          ("mol".to_owned(), VersionMod::new(Semantic::patch())),
+          ("mol-core".to_owned(), VersionMod::new(Semantic::major())),
         ]
         .into_iter()
         .collect(),
@@ -132,11 +132,11 @@ mod tests {
     );
     assert_eq!(
       bump.package_update.get("mol"),
-      Some(&Version::new(Semantic::minor()))
+      Some(&VersionMod::new(Semantic::minor()))
     );
     assert_eq!(
       bump.package_update.get("mol-core"),
-      Some(&Version::new(Semantic::major()))
+      Some(&VersionMod::new(Semantic::major()))
     );
   }
 
@@ -149,7 +149,7 @@ mod tests {
 
     bump.add(
       Changeset {
-        packages: vec![("mol".to_owned(), Version::new(Semantic::minor()))]
+        packages: vec![("mol".to_owned(), VersionMod::new(Semantic::minor()))]
           .into_iter()
           .collect(),
         message: "Hi".to_owned(),
@@ -158,7 +158,7 @@ mod tests {
     );
     bump.add(
       Changeset {
-        packages: vec![("mol-core".to_owned(), Version::new(Semantic::major()))]
+        packages: vec![("mol-core".to_owned(), VersionMod::new(Semantic::major()))]
           .into_iter()
           .collect(),
         message: "Too bad we dont play games".to_owned(),
@@ -213,7 +213,7 @@ mod tests {
 
     bump.add(
       Changeset {
-        packages: vec![("mol-core".to_owned(), Version::new(Semantic::minor()))]
+        packages: vec![("mol-core".to_owned(), VersionMod::new(Semantic::minor()))]
           .into_iter()
           .collect(),
         message: "Too bad we dont play games".to_owned(),
@@ -224,9 +224,9 @@ mod tests {
     assert_eq!(
       bump.package_update,
       vec![
-        ("mol-core".to_owned(), Version::new(Semantic::minor())),
-        ("mol".to_owned(), Version::new(Semantic::patch())),
-        ("mol-cargo".to_owned(), Version::new(Semantic::patch()))
+        ("mol-core".to_owned(), VersionMod::new(Semantic::minor())),
+        ("mol".to_owned(), VersionMod::new(Semantic::patch())),
+        ("mol-cargo".to_owned(), VersionMod::new(Semantic::patch()))
       ]
       .into_iter()
       .collect()

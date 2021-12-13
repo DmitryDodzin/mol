@@ -114,24 +114,24 @@ impl ToString for Semantic {
 mod tests {
 
   use super::*;
-  use crate::version::{Version, Versioned};
+  use crate::version::{VersionMod, Versioned};
 
   #[test]
   fn from_str() {
     let strings = vec!["patch", "minor", "minor", "major"];
 
-    let versions: Vec<Version<Semantic>> = strings
+    let versions: Vec<VersionMod<Semantic>> = strings
       .iter()
-      .filter_map(|item| Version::from_str(item).ok())
+      .filter_map(|item| VersionMod::from_str(item).ok())
       .collect();
 
     assert_eq!(
       versions,
       vec![
-        Version::new(Semantic::patch()),
-        Version::new(Semantic::minor()),
-        Version::new(Semantic::minor()),
-        Version::new(Semantic::major()),
+        VersionMod::new(Semantic::patch()),
+        VersionMod::new(Semantic::minor()),
+        VersionMod::new(Semantic::minor()),
+        VersionMod::new(Semantic::major()),
       ]
     );
   }
@@ -139,10 +139,10 @@ mod tests {
   #[test]
   fn to_str() {
     let versions = vec![
-      Version::new(Semantic::patch()),
-      Version::new(Semantic::minor()),
-      Version::new(Semantic::minor()),
-      Version::new(Semantic::major()),
+      VersionMod::new(Semantic::patch()),
+      VersionMod::new(Semantic::minor()),
+      VersionMod::new(Semantic::minor()),
+      VersionMod::new(Semantic::major()),
     ];
 
     let strings: Vec<String> = versions.iter().map(|item| item.to_string()).collect();
@@ -153,7 +153,7 @@ mod tests {
   // TODO: this
   // #[test]
   // fn canary_apply() {
-  //   let version = Version::new(Semantic::major());
+  //   let version = VersionMod::new(Semantic::major());
 
   //   let bumped = version.apply("0.0.1-alpha.0");
 
@@ -164,7 +164,7 @@ mod tests {
 
   #[test]
   fn major_apply() {
-    let version = Version::new(Semantic::major());
+    let version = VersionMod::new(Semantic::major());
 
     let bumped = version.apply("0.4.1");
 
@@ -175,7 +175,7 @@ mod tests {
 
   #[test]
   fn minor_apply() {
-    let version = Version::new(Semantic::minor());
+    let version = VersionMod::new(Semantic::minor());
 
     let bumped = version.apply("4.1.1");
 
@@ -186,7 +186,7 @@ mod tests {
 
   #[test]
   fn patch_apply() {
-    let version = Version::new(Semantic::patch());
+    let version = VersionMod::new(Semantic::patch());
 
     let bumped = version.apply("0.4.1");
 

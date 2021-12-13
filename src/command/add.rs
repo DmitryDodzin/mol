@@ -26,15 +26,15 @@ pub struct Add {
 }
 
 impl Add {
-  fn select_version<V: Versioned>(&self) -> anyhow::Result<Version<V>>
+  fn select_version<V: Versioned>(&self) -> anyhow::Result<VersionMod<V>>
   where
     <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
   {
     if let Some(version) = &self.version {
-      return Ok(Version::<V>::from_str(version)?);
+      return Ok(VersionMod::<V>::from_str(version)?);
     }
 
-    let versions = Version::<V>::options();
+    let versions = VersionMod::<V>::options();
     let version_selection = Select::with_theme(&*COLOR_THEME)
       .with_prompt("version")
       .items(&versions)
