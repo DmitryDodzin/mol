@@ -68,10 +68,6 @@ where
 
   let context = ExecutableContext::<T, V>::new(DEFAULT_PACKAGE_DIR.clone(), opts.dry_run).await?;
 
-  if let Ok(res) = context.root_dir.canonicalize() {
-    println!("Current Dir: {:?}", res);
-  }
-
   let mut plugin_manager = PluginManager::default();
 
   for plugin in &opts.plugins {

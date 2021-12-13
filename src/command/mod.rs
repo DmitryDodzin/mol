@@ -46,12 +46,19 @@ where
   pub async fn new(root_dir: PathBuf, dry_run: bool) -> anyhow::Result<Self> {
     let package_manager = T::default();
 
-    let package_path = T::default_path();
+    let package_path: PathBuf = root_dir
+      .iter()
+      .chain(&PathBuf::from(T::default_path()))
+      .collect();
+
+    if let Ok(res) = package_path.canonicalize() {
+      println!("Opening Dir: {:?}", res);
+    }
 
     let packages = package_manager
-      .read_package(package_path)
+      .read_package(&package_path)
       .await
-      .with_context(|| format!("Could not open read pacakges at dir {}", package_path))?;
+      .with_context(|| format!("Could not open read pacakges at dir {:?}", package_path))?;
 
     Ok(ExecutableContext {
       changesets: Changesets::default(),
