@@ -1,0 +1,38 @@
+name: Rust
+
+on:
+  push:
+    branches: [ main ]
+  # TODO: Remove this before merge
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: 🔥 Cargo Cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.cargo
+        key: ${{ runner.os }}-version-cargo-${{ hashFiles('Cargo.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-version-cargo-${{ hashFiles('Cargo.toml') }}
+          ${{ runner.os }}-version-cargo
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+    - name: Install Mol
+      run: cargo install mol
+    - name: Version
+      run: cargo mol version
+    - name: Add & Commit
+      uses: EndBug/add-and-commit@v7.5.0
+      with:
+        message: Version Packages
+        push: 'origin mol/release --force'
