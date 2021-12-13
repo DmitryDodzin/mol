@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use std::str::FromStr;
 use std::sync::Arc;
 
+use anyhow::Context;
 use clap::Parser;
 use dialoguer::{console, theme::ColorfulTheme};
 use lazy_static::lazy_static;
@@ -71,7 +72,9 @@ where
 
   for plugin in &opts.plugins {
     unsafe {
-      plugin_manager.load(&plugin, &context.as_plugin())?;
+      plugin_manager
+        .load(&plugin, &context.as_plugin())
+        .with_context(|| format!("Could not load plugin at path {}", plugin))?;
     }
   }
 
