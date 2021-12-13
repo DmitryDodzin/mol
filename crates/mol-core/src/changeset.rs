@@ -41,7 +41,10 @@ impl<T> Changeset<T> {
   }
 }
 
-impl<T: Versioned> Changeset<T> {
+impl<T> Changeset<T>
+where
+  T: FromStr + Ord + Versioned,
+{
   pub fn parse(value: &str) -> Result<Self, <Self as FromStr>::Err> {
     Changeset::from_str(value)
   }
@@ -98,7 +101,10 @@ where
   }
 }
 
-impl<T: Versioned> ToString for Changeset<T> {
+impl<T> ToString for Changeset<T>
+where
+  T: Versioned + Ord + ToString,
+{
   fn to_string(&self) -> String {
     let mut output = vec![];
 

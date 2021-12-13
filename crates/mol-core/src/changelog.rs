@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
+use std::hash::Hash;
 use std::path::Path;
 
 use itertools::Itertools;
@@ -18,7 +19,7 @@ fn capitalize(s: &str) -> String {
   }
 }
 
-fn fill_output<V: Versioned>(
+fn fill_output<V: AsChangelogFmt + Versioned + Ord>(
   next_version: &Version<V>,
   patches: &HashMap<VersionMod<V>, Vec<String>>,
 ) -> String {
@@ -37,10 +38,13 @@ fn fill_output<V: Versioned>(
   output
 }
 
-fn create_patches<V: Versioned>(
+fn create_patches<V>(
   package_name: &str,
   changesets: Vec<&Changeset<V>>,
-) -> HashMap<VersionMod<V>, Vec<String>> {
+) -> HashMap<VersionMod<V>, Vec<String>>
+where
+  V: AsChangelogFmt + Clone + Hash + Ord + Versioned,
+{
   let mut patches: HashMap<VersionMod<V>, Vec<String>> = HashMap::new();
 
   for changset in changesets {
@@ -61,12 +65,16 @@ fn create_patches<V: Versioned>(
 pub struct Changelog;
 
 impl Changelog {
-  pub async fn update_changelog<T: AsRef<Path> + Debug, V: Versioned>(
+  pub async fn update_changelog<T, V>(
     changelog_path: T,
     next_version: Version<V>,
     package_bump: &PackageBump<'_, V>,
     dry_run: bool,
-  ) -> std::io::Result<()> {
+  ) -> std::io::Result<()>
+  where
+    T: AsRef<Path> + Debug,
+    V: AsChangelogFmt + Clone + Hash + Ord + Versioned,
+  {
     let package_name = package_bump.name();
 
     if let Some(patches) = package_bump
@@ -113,7 +121,7 @@ impl Changelog {
   }
 }
 
-pub trait AsChangelogFmt {
+pub trait AsChangelogFmt: Sized {
   fn as_changelog_fmt(&self) -> String;
 }
 

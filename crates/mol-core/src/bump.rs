@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::changeset::Changeset;
 use crate::package::PackageGraph;
-use crate::version::{VersionMod, Versioned};
+use crate::version::{VersionEditor, VersionMod};
 
 #[derive(Debug, Default)]
 pub struct Bump<T> {
@@ -11,7 +11,7 @@ pub struct Bump<T> {
   package_changesets: HashMap<String, HashSet<usize>>,
 }
 
-impl<'a, T: Versioned> Bump<T> {
+impl<'a, T: VersionEditor> Bump<T> {
   fn set_package_update(
     package_update: &mut HashMap<String, VersionMod<T>>,
     name: &str,

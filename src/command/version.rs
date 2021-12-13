@@ -20,7 +20,7 @@ pub struct Version {
 }
 
 impl Version {
-  async fn consume_changesets<V: Versioned>(
+  async fn consume_changesets<V: VersionEditor>(
     changesets: &Changesets,
     package_graph: &PackageGraph<'_, V>,
   ) -> anyhow::Result<(Vec<PathBuf>, Bump<V>)> {
@@ -63,11 +63,11 @@ impl Version {
 }
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableCommand<T, V>
+impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync> ExecutableCommand<T, V>
   for Version
 {
   async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
-    context.plugins.pre_command("version");
+    context.plugins.pre_command("version", &context.as_plugin());
 
     let package_graph = context.packages.as_package_graph();
     let (changeset_paths, bump) =
@@ -167,7 +167,9 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
       }
     }
 
-    context.plugins.post_command("version");
+    context
+      .plugins
+      .post_command("version", &context.as_plugin());
 
     Ok(())
   }

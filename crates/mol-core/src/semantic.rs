@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use crate::error::{VersionBumpError, VersionParseError};
-use crate::version::Versioned;
+use crate::version::{VersionEditor, Versioned};
 
 #[derive(Copy, Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd)]
 enum SemanticVersion {
@@ -34,19 +34,6 @@ impl Semantic {
 }
 
 impl Versioned for Semantic {
-  // TODO: add mask validation
-  fn mask<'a>(mask: &str, version: &'a str) -> &'a str {
-    &version[..mask.len()]
-  }
-
-  fn r#match(mask: &str, version: &str) -> bool {
-    Self::mask(mask, version) == mask
-  }
-
-  fn options() -> Vec<Self> {
-    vec![Self::patch(), Self::minor(), Self::major()]
-  }
-
   fn apply(&self, current: &str) -> Result<String, VersionBumpError> {
     let mut current = current.split('.');
 
@@ -72,6 +59,21 @@ impl Versioned for Semantic {
       SemanticVersion::Minor => format!("{}.{}.{}", major, minor + 1, 0),
       SemanticVersion::Patch => format!("{}.{}.{}", major, minor, patch + 1),
     })
+  }
+}
+
+impl VersionEditor for Semantic {
+  // TODO: add mask validation
+  fn mask<'a>(mask: &str, version: &'a str) -> &'a str {
+    &version[..mask.len()]
+  }
+
+  fn r#match(mask: &str, version: &str) -> bool {
+    Self::mask(mask, version) == mask
+  }
+
+  fn options() -> Vec<Self> {
+    vec![Self::patch(), Self::minor(), Self::major()]
   }
 }
 

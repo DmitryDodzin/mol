@@ -5,13 +5,17 @@ use std::str::FromStr;
 use crate::changelog::AsChangelogFmt;
 use crate::error::VersionBumpError;
 
-pub trait Versioned: AsChangelogFmt + Clone + Default + Hash + FromStr + Ord + ToString {
+pub trait VersionEditor:
+  AsChangelogFmt + Versioned + Clone + Default + Hash + FromStr + Ord
+{
   fn options() -> Vec<Self>;
 
   fn mask<'a>(mask: &str, version: &'a str) -> &'a str;
 
   fn r#match(mask: &str, version: &str) -> bool;
+}
 
+pub trait Versioned: ToString {
   fn apply(&self, current: &str) -> Result<String, VersionBumpError>;
 }
 
@@ -30,6 +34,15 @@ impl<T> Versioned for VersionMod<T>
 where
   T: Versioned,
 {
+  fn apply(&self, current: &str) -> Result<String, VersionBumpError> {
+    self.version.apply(current)
+  }
+}
+
+impl<T> VersionEditor for VersionMod<T>
+where
+  T: VersionEditor,
+{
   fn mask<'a>(mask: &str, version: &'a str) -> &'a str {
     T::mask(mask, version)
   }
@@ -41,9 +54,6 @@ where
       .into_iter()
       .map(|version| Self { version })
       .collect()
-  }
-  fn apply(&self, current: &str) -> Result<String, VersionBumpError> {
-    self.version.apply(current)
   }
 }
 
@@ -69,7 +79,7 @@ where
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Version<T> {
+pub struct Version<T: ?Sized> {
   pub value: String,
   r#type: PhantomData<T>,
 }

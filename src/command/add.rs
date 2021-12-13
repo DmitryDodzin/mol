@@ -26,8 +26,9 @@ pub struct Add {
 }
 
 impl Add {
-  fn select_version<V: Versioned>(&self) -> anyhow::Result<VersionMod<V>>
+  fn select_version<V>(&self) -> anyhow::Result<VersionMod<V>>
   where
+    V: VersionEditor,
     <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
   {
     if let Some(version) = &self.version {
@@ -44,7 +45,7 @@ impl Add {
     Ok(versions[version_selection].clone())
   }
 
-  fn select_packages<T: PackageManager, V: Versioned>(
+  fn select_packages<T: PackageManager, V: VersionEditor>(
     &self,
     context: &ExecutableContext<T, V>,
   ) -> anyhow::Result<Vec<Package<V>>> {
@@ -80,11 +81,13 @@ impl Add {
     Ok(packages)
   }
 
-  fn get_changeset<T: PackageManager, V: Versioned>(
+  fn get_changeset<T, V>(
     &self,
     context: &ExecutableContext<T, V>,
   ) -> anyhow::Result<Option<Changeset<V>>>
   where
+    T: PackageManager,
+    V: VersionEditor,
     <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
   {
     let packages = self.select_packages(context)?;
@@ -119,12 +122,14 @@ impl Add {
 }
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableCommand<T, V> for Add
+impl<T, V> ExecutableCommand<T, V> for Add
 where
+  T: PackageManager + Send + Sync,
+  V: VersionEditor + Send + Sync,
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {
   async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
-    context.plugins.pre_command("add");
+    context.plugins.pre_command("add", &context.as_plugin());
 
     if let Some(changeset) = self.get_changeset(context)? {
       let changeset_path = {
@@ -148,7 +153,7 @@ where
       println!("{}", &*ADD_NO_PACKAGES);
     }
 
-    context.plugins.post_command("add");
+    context.plugins.post_command("add", &context.as_plugin());
 
     Ok(())
   }

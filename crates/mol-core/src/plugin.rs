@@ -3,10 +3,16 @@ use std::rc::Rc;
 
 use libloading::Library;
 
+use crate::changesets::Changesets;
 use crate::error::PluginLoadError;
 
 pub static CORE_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub static RUSTC_VERSION: &str = env!("RUSTC_VERSION");
+
+pub struct PluginContext<'a> {
+  pub dry_run: bool,
+  pub config: &'a Changesets,
+}
 
 pub trait Plugin {
   fn name(&self) -> &str;
@@ -15,11 +21,11 @@ pub trait Plugin {
 
   fn on_unload(&mut self) {}
 
-  fn pre_command(&self, command: &str) {
+  fn pre_command(&self, command: &str, _context: &PluginContext) {
     println!("Pre: {}", command);
   }
 
-  fn post_command(&self, command: &str) {
+  fn post_command(&self, command: &str, _context: &PluginContext) {
     println!("Post: {}", command);
   }
 }
@@ -42,12 +48,12 @@ impl Plugin for PluginProxy {
     self.plugin.on_unload()
   }
 
-  fn pre_command(&self, command: &str) {
-    self.plugin.pre_command(command)
+  fn pre_command(&self, command: &str, context: &PluginContext) {
+    self.plugin.pre_command(command, context)
   }
 
-  fn post_command(&self, command: &str) {
-    self.plugin.post_command(command)
+  fn post_command(&self, command: &str, context: &PluginContext) {
+    self.plugin.post_command(command, context)
   }
 }
 
@@ -149,15 +155,15 @@ impl Plugin for PluginManager {
     "PluginManager"
   }
 
-  fn pre_command(&self, command: &str) {
+  fn pre_command(&self, command: &str, context: &PluginContext) {
     for plugin in &self.plugins {
-      plugin.pre_command(command)
+      plugin.pre_command(command, &context)
     }
   }
 
-  fn post_command(&self, command: &str) {
+  fn post_command(&self, command: &str, context: &PluginContext) {
     for plugin in &self.plugins {
-      plugin.post_command(command)
+      plugin.post_command(command, &context)
     }
   }
 }

@@ -16,11 +16,11 @@ pub struct Publish {
 }
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableCommand<T, V>
+impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync> ExecutableCommand<T, V>
   for Publish
 {
   async fn execute(&self, context: &ExecutableContext<T, V>) -> anyhow::Result<()> {
-    context.plugins.pre_command("publish");
+    context.plugins.pre_command("publish", &context.as_plugin());
 
     let graph = context.packages.as_package_graph();
 
@@ -43,7 +43,9 @@ impl<T: PackageManager + Send + Sync, V: Versioned + Send + Sync> ExecutableComm
       }
     }
 
-    context.plugins.post_command("publish");
+    context
+      .plugins
+      .post_command("publish", &context.as_plugin());
 
     Ok(())
   }
