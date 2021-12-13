@@ -11,6 +11,14 @@ use toml_edit::{value, Document};
 
 use mol_core::prelude::*;
 
+fn remove_start_dot(dir: PathBuf) -> PathBuf {
+  if dir.starts_with("./") {
+    dir.iter().skip(1).collect()
+  } else {
+    dir
+  }
+}
+
 #[derive(Default)]
 pub struct Cargo;
 
@@ -22,7 +30,7 @@ impl Cargo {
     entry: fs::DirEntry,
   ) -> std::io::Result<Vec<Package<V>>> {
     let mut result = Vec::new();
-    let entry_path = entry.path();
+    let entry_path = remove_start_dot(entry.path());
 
     if exists.contains(&entry_path) {
       return Ok(result);
@@ -90,7 +98,7 @@ impl Cargo {
         .arg(command)
         .args(args)
         .spawn()
-        .expect("cargo command failed to start")
+        .expect("Cargo command failed to start")
         .wait()
         .await?;
     }
@@ -183,6 +191,8 @@ impl PackageManager for Cargo {
       }
 
       let exists = Arc::new(DashSet::new());
+
+      println!("{:?}", crate_path);
 
       result.extend(
         Cargo::check_read_dir(

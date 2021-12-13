@@ -51,10 +51,6 @@ where
       .chain(&PathBuf::from(T::default_path()))
       .collect();
 
-    if let Ok(res) = package_path.canonicalize() {
-      println!("Opening Dir: {:?}", res);
-    }
-
     let packages = package_manager
       .read_package(&package_path)
       .await
