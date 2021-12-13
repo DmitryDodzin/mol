@@ -5,12 +5,12 @@ on:
     branches: [ main ]
     paths:
       - '*.toml'
-      - 'src/**/*'
-      - 'crates/**/*'
+      - 'src'
+      - 'crates'
   pull_request:
       - '*.toml'
-      - 'src/**/*'
-      - 'crates/**/*'
+      - 'src'
+      - 'crates'
     branches: [ main ]
 
 env:
