@@ -66,12 +66,12 @@ where
   }
 }
 
-pub trait IntoExecutableCommand<T: PackageManager, V: VersionEditor> {
+pub trait IntoExecutableCommand<T: PackageManager, V: VersionEditor + 'static> {
   fn as_executable(&self) -> Option<&dyn ExecutableCommand<T, V>>;
 }
 
 #[async_trait]
-pub trait ExecutableCommand<T: PackageManager, V: VersionEditor> {
+pub trait ExecutableCommand<T: PackageManager, V: VersionEditor + 'static> {
   async fn execute(
     &self,
     context: &ExecutableContext<T, V>,
@@ -82,12 +82,12 @@ pub trait ExecutableCommand<T: PackageManager, V: VersionEditor> {
 unsafe impl<T, V> Send for ExecutableContext<T, V>
 where
   T: PackageManager + Send + Sync,
-  V: VersionEditor + Send + Sync,
+  V: VersionEditor + Send + Sync + 'static,
 {
 }
 unsafe impl<T, V> Sync for ExecutableContext<T, V>
 where
   T: PackageManager + Send + Sync,
-  V: VersionEditor + Send + Sync,
+  V: VersionEditor + Send + Sync + 'static,
 {
 }

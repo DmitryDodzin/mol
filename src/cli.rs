@@ -19,9 +19,10 @@ pub enum Command {
   Publish(Publish),
 }
 
-impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync> IntoExecutableCommand<T, V>
-  for Command
+impl<T, V> IntoExecutableCommand<T, V> for Command
 where
+  T: PackageManager + Send + Sync,
+  V: VersionEditor + Send + Sync + 'static,
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {
   fn as_executable(&self) -> Option<&dyn ExecutableCommand<T, V>> {

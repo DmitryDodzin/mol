@@ -12,8 +12,10 @@ use super::{ExecutableCommand, ExecutableContext};
 pub struct Init;
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync> ExecutableCommand<T, V>
-  for Init
+impl<T, V> ExecutableCommand<T, V> for Init
+where
+  T: PackageManager + Send + Sync,
+  V: VersionEditor + Send + Sync + 'static,
 {
   async fn execute(
     &self,

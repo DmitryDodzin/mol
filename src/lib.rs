@@ -36,7 +36,7 @@ lazy_static! {
 
 async fn handle_command<
   T: PackageManager,
-  V: VersionEditor,
+  V: VersionEditor + 'static,
   U: IntoExecutableCommand<T, V> + Debug,
 >(
   context: &ExecutableContext<T, V>,
