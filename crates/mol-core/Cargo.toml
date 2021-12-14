@@ -1,6 +1,6 @@
 [package]
 name = "mol-core"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Dmitry Dodzin <d.dodzin@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -13,7 +13,7 @@ default = []
 derive = ['mol-derive']
 
 [dependencies]
-mol-derive = { path = '../mol-derive', version = "0.0", optional = true}
+mol-derive = { path = '../mol-derive', version = "0.1", optional = true}
 
 anyhow = "1"
 async-trait = "0.1"
