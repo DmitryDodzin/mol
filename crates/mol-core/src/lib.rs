@@ -3,6 +3,7 @@ pub mod changelog;
 pub mod changeset;
 pub mod changesets;
 pub mod error;
+pub mod explorer;
 pub mod package;
 pub mod package_manager;
 pub mod plugin;

@@ -2,10 +2,9 @@ use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use async_recursion::async_recursion;
 use async_trait::async_trait;
 use dashmap::DashSet;
-use globset::{Glob, GlobSet, GlobSetBuilder};
+use globset::{Glob, GlobSetBuilder};
 use hyper::{Client, Method, Request};
 use hyper_tls::HttpsConnector;
 use serde::{Deserialize, Serialize};
@@ -13,14 +12,6 @@ use tokio::{fs, process::Command};
 use toml_edit::{value, Document};
 
 use mol_core::prelude::*;
-
-fn remove_start_dot(dir: PathBuf) -> PathBuf {
-  if dir.starts_with("./") {
-    dir.iter().skip(1).collect()
-  } else {
-    dir
-  }
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 struct CratesError {
@@ -51,69 +42,6 @@ enum CratesResult<T, E = CratesError> {
 pub struct Cargo;
 
 impl Cargo {
-  #[async_recursion]
-  async fn check_dir<V: Versioned + Send + Sync + 'static>(
-    exists: Arc<DashSet<PathBuf>>,
-    globs: GlobSet,
-    entry: fs::DirEntry,
-  ) -> anyhow::Result<Vec<Package<V>>> {
-    let mut result = Vec::new();
-    let entry_path = remove_start_dot(entry.path());
-
-    if exists.contains(&entry_path) {
-      return Ok(result);
-    } else {
-      exists.insert(entry_path.clone());
-    }
-
-    if entry_path.starts_with("target") || entry_path.starts_with(".git") {
-      return Ok(result);
-    }
-
-    if let Ok(file_type) = entry.file_type().await {
-      if file_type.is_dir() {
-        return Cargo::check_read_dir(exists, globs, fs::read_dir(entry.path()).await?).await;
-      }
-
-      if file_type.is_symlink() {
-        let link_value = fs::read_link(entry.path()).await?;
-        return Cargo::check_read_dir(exists, globs, fs::read_dir(&link_value).await?).await;
-      }
-
-      if globs.is_match(entry_path) && file_type.is_file() && entry.file_name() == "Cargo.toml" {
-        result.extend(Cargo.read_package(entry.path()).await?);
-      }
-    }
-
-    Ok(result)
-  }
-
-  #[async_recursion]
-  async fn check_read_dir<V: Versioned + Send + Sync + 'static>(
-    exists: Arc<DashSet<PathBuf>>,
-    globs: GlobSet,
-    mut current_dir: fs::ReadDir,
-  ) -> anyhow::Result<Vec<Package<V>>> {
-    let mut handles = Vec::new();
-
-    while let Some(entry) = current_dir.next_entry().await? {
-      let globs = globs.clone();
-      handles.push(tokio::spawn(Cargo::check_dir(exists.clone(), globs, entry)));
-    }
-
-    let mut result = Vec::new();
-
-    for task in futures::future::join_all(handles)
-      .await
-      .into_iter()
-      .flatten()
-    {
-      result.extend(task?);
-    }
-
-    Ok(result)
-  }
-
   async fn run_command<T: AsRef<Path> + Send + Sync>(
     &self,
     command: &str,
@@ -134,10 +62,7 @@ impl Cargo {
     Ok(())
   }
 
-  async fn load_document<T: AsRef<Path>>(
-    &self,
-    crate_path: T,
-  ) -> anyhow::Result<(PathBuf, Document)> {
+  async fn load_document<T: AsRef<Path>>(crate_path: T) -> anyhow::Result<(PathBuf, Document)> {
     let document = fs::read_to_string(&crate_path)
       .await?
       .parse::<Document>()
@@ -154,11 +79,10 @@ impl PackageManager for Cargo {
   }
 
   async fn read_package<T: AsRef<Path> + Send + Sync, V: Versioned + Send + Sync + 'static>(
-    &self,
     crate_path: T,
   ) -> anyhow::Result<Vec<Package<V>>> {
     let mut result = Vec::new();
-    let (crate_path, document) = self.load_document(crate_path).await?;
+    let (crate_path, document) = Self::load_document(crate_path).await?;
 
     let (package_name, version) = if document.contains_key("package") {
       (
@@ -218,11 +142,9 @@ impl PackageManager for Cargo {
         builder.add(glob.clone());
       }
 
-      let exists = Arc::new(DashSet::new());
-
       result.extend(
-        Cargo::check_read_dir(
-          exists,
+        Explorer::check_read_dir::<Self, V>(
+          Arc::new(DashSet::new()),
           builder.build().expect("Globs did not set together"),
           fs::read_dir(crate_path.parent().unwrap_or(&crate_path)).await?,
         )
@@ -309,7 +231,7 @@ impl PackageManager for Cargo {
     crate_path: T,
     version: &str,
   ) -> anyhow::Result<()> {
-    let (crate_path, mut document) = self.load_document(crate_path).await?;
+    let (crate_path, mut document) = Self::load_document(crate_path).await?;
 
     if document.contains_key("package") {
       document["package"]["version"] = value(version);
@@ -326,7 +248,7 @@ impl PackageManager for Cargo {
     name: &str,
     version: &str,
   ) -> anyhow::Result<()> {
-    let (crate_path, mut document) = self.load_document(crate_path).await?;
+    let (crate_path, mut document) = Self::load_document(crate_path).await?;
 
     if document.contains_key("dependencies") {
       let dep = &document["dependencies"][name];

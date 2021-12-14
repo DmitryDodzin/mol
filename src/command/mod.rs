@@ -51,8 +51,7 @@ where
       .chain(&PathBuf::from(T::default_path()))
       .collect();
 
-    let packages = package_manager
-      .read_package(&package_path)
+    let packages = T::read_package(&package_path)
       .await
       .with_context(|| format!("Could not open read pacakges at dir {:?}", package_path))?;
 

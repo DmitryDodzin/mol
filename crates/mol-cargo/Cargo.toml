@@ -12,15 +12,13 @@ readme = "README.md"
 mol-core = { path = '../mol-core', version = "0.3"}
 
 anyhow = "1"
-async-recursion = "0.3"
 async-trait = "0.1"
 dashmap = "4"
 dunce = "1"
-futures = "0.3"
 hyper = { version = "0.14", features = ["client", "http1", "runtime", "tcp"] }
 hyper-tls = "0.5"
 globset = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tokio = { version = "1", features = ["fs", "process", "rt"] }
+tokio = { version = "1", features = ["fs", "process"] }
 toml_edit = "0.10"
