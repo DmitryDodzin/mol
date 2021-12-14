@@ -1,5 +1,19 @@
 # mol
 
+## 0.3.0
+
+### Minor Changes
+
+- feat: api changes and renames for Version -> VersionMod and VersionValue -> Version
+
+- feat: add waiting for package update
+
+### Patch Changes
+
+- fix: add root_path to pacakge path before reading
+
+- chore: add more error contexts
+
 ## 0.2.0
 
 ### Minor Changes

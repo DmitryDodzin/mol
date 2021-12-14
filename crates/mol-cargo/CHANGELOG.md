@@ -1,5 +1,19 @@
 # mol-cargo
 
+## 0.3.0
+
+### Minor Changes
+
+- feat: api changes and renames for Version -> VersionMod and VersionValue -> Version
+
+- feat: add waiting for package update
+
+### Patch Changes
+
+- security: remove failure depdency
+
+- chore: add more error contexts
+
 ## 0.2.0
 
 ### Minor Changes

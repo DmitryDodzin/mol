@@ -1,5 +1,23 @@
 # mol-core
 
+## 0.3.0
+
+### Minor Changes
+
+- feat: api changes and renames for Version -> VersionMod and VersionValue -> Version
+
+- feat: add waiting for package update
+
+- feat: create ToBox trait and auto derive
+
+- feat: plugin api
+
+### Patch Changes
+
+- chore: add more error contexts
+
+- fix: add root_path to pacakge path before reading
+
 ## 0.2.0
 
 ### Minor Changes
