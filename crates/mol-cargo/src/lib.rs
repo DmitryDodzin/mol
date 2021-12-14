@@ -6,7 +6,8 @@ use async_recursion::async_recursion;
 use async_trait::async_trait;
 use dashmap::DashSet;
 use globset::{Glob, GlobSet, GlobSetBuilder};
-use hyper::{Body, Client, Method, Request};
+use hyper::{Client, Method, Request};
+use hyper_tls::HttpsConnector;
 use serde::{Deserialize, Serialize};
 use tokio::{fs, process::Command};
 use toml_edit::{value, Document};
@@ -33,7 +34,7 @@ struct CratesVersion {
 
 #[derive(Debug, Serialize, Deserialize)]
 struct CratesVersionMetadata {
-  #[serde(rename(serialize = "crate"))]
+  #[serde(alias = "crate")]
   name: String,
   num: String,
   yanked: bool,
@@ -44,12 +45,6 @@ struct CratesVersionMetadata {
 enum CratesResult<T, E = CratesError> {
   Ok(T),
   Err { errors: Vec<E> },
-}
-
-impl<T, E> CratesResult<T, E> {
-  fn is_ok(&self) -> bool {
-    matches!(self, Self::Ok(_))
-  }
 }
 
 #[derive(Default)]
@@ -242,12 +237,13 @@ impl PackageManager for Cargo {
     &self,
     package: &Package<V>,
   ) -> anyhow::Result<bool> {
-    let client = Client::new();
+    let https = HttpsConnector::new();
+    let client = Client::builder().build::<_, hyper::Body>(https);
 
     let request = Request::builder()
       .method(Method::GET)
       .uri(format!(
-        "https://crates.io/api/v1/crates/{}/{}/",
+        "https://crates.io/api/v1/crates/{}/{}",
         package.name, package.version.value
       ))
       .header(
@@ -257,13 +253,23 @@ impl PackageManager for Cargo {
           env!("CARGO_PKG_VERSION")
         ),
       )
-      .body(Body::empty())?;
+      .body(hyper::Body::empty())?;
 
     let response = client.request(request).await?;
 
     let bytes = hyper::body::to_bytes(response.into_body()).await?;
 
-    Ok(serde_json::from_slice::<CratesResult<CratesVersion>>(&bytes)?.is_ok())
+    let crates_result = serde_json::from_slice::<CratesResult<CratesVersion>>(&bytes)?;
+
+    match crates_result {
+      CratesResult::Ok(val) => Ok(val.version.name == package.name),
+      CratesResult::Err { errors } => {
+        for error in errors {
+          println!("crates-error:\n{}", error.detail);
+        }
+        Ok(false)
+      }
+    }
   }
 
   async fn run_build<T: AsRef<Path> + Send + Sync>(
