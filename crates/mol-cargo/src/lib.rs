@@ -143,7 +143,7 @@ impl PackageManager for Cargo {
       }
 
       result.extend(
-        Explorer::check_read_dir::<Self, V>(
+        Explorer::seek_packages_in_directory::<Self, V>(
           Arc::new(DashSet::new()),
           builder.build().expect("Globs did not set together"),
           fs::read_dir(crate_path.parent().unwrap_or(&crate_path)).await?,

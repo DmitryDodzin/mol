@@ -22,7 +22,7 @@ pub struct Explorer;
 
 impl Explorer {
   #[async_recursion]
-  pub async fn check_dir<
+  async fn seek_packeges_in_dir_entry<
     T: PackageManager + Send + Sync + 'static,
     V: Versioned + Send + Sync + 'static,
   >(
@@ -45,14 +45,22 @@ impl Explorer {
 
     if let Ok(file_type) = entry.file_type().await {
       if file_type.is_dir() {
-        return Explorer::check_read_dir::<T, V>(exists, globs, fs::read_dir(entry.path()).await?)
-          .await;
+        return Explorer::seek_packages_in_directory::<T, V>(
+          exists,
+          globs,
+          fs::read_dir(entry.path()).await?,
+        )
+        .await;
       }
 
       if file_type.is_symlink() {
         let link_value = fs::read_link(entry.path()).await?;
-        return Explorer::check_read_dir::<T, V>(exists, globs, fs::read_dir(&link_value).await?)
-          .await;
+        return Explorer::seek_packages_in_directory::<T, V>(
+          exists,
+          globs,
+          fs::read_dir(&link_value).await?,
+        )
+        .await;
       }
 
       if globs.is_match(entry_path) && file_type.is_file() && entry.file_name() == "Cargo.toml" {
@@ -64,7 +72,7 @@ impl Explorer {
   }
 
   #[async_recursion]
-  pub async fn check_read_dir<
+  pub async fn seek_packages_in_directory<
     T: PackageManager + Send + Sync + 'static,
     V: Versioned + Send + Sync + 'static,
   >(
@@ -76,7 +84,7 @@ impl Explorer {
 
     while let Some(entry) = current_dir.next_entry().await? {
       let globs = globs.clone();
-      handles.push(tokio::spawn(Explorer::check_dir::<T, V>(
+      handles.push(tokio::spawn(Explorer::seek_packeges_in_dir_entry::<T, V>(
         exists.clone(),
         globs,
         entry,
