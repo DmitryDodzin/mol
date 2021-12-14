@@ -6,6 +6,7 @@ use async_recursion::async_recursion;
 use async_trait::async_trait;
 use dashmap::DashSet;
 use globset::{Glob, GlobSet, GlobSetBuilder};
+use hyper::{Body, Client, Method, Request};
 use serde::{Deserialize, Serialize};
 use tokio::{fs, process::Command};
 use toml_edit::{value, Document};
@@ -40,7 +41,7 @@ struct CratesVersionMetadata {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
-enum CratesResult<T, E> {
+enum CratesResult<T, E = CratesError> {
   Ok(T),
   Err { errors: Vec<E> },
 }
@@ -241,26 +242,28 @@ impl PackageManager for Cargo {
     &self,
     package: &Package<V>,
   ) -> anyhow::Result<bool> {
-    let client = reqwest::Client::new();
+    let client = Client::new();
 
-    let result = client
-      .get(format!(
+    let request = Request::builder()
+      .method(Method::GET)
+      .uri(format!(
         "https://crates.io/api/v1/crates/{}/{}/",
         package.name, package.version.value
       ))
       .header(
-        reqwest::header::USER_AGENT,
+        hyper::header::USER_AGENT,
         format!(
           "mol-cargo/{} (https://github.com/DmitryDodzin/mol)",
           env!("CARGO_PKG_VERSION")
         ),
       )
-      .send()
-      .await?
-      .json::<CratesResult<CratesVersion, CratesError>>()
-      .await?;
+      .body(Body::empty())?;
 
-    Ok(result.is_ok())
+    let response = client.request(request).await?;
+
+    let bytes = hyper::body::to_bytes(response.into_body()).await?;
+
+    Ok(serde_json::from_slice::<CratesResult<CratesVersion>>(&bytes)?.is_ok())
   }
 
   async fn run_build<T: AsRef<Path> + Send + Sync>(
