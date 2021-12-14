@@ -6,6 +6,7 @@ use async_recursion::async_recursion;
 use async_trait::async_trait;
 use dashmap::DashSet;
 use globset::{Glob, GlobSet, GlobSetBuilder};
+use serde::{Deserialize, Serialize};
 use tokio::{fs, process::Command};
 use toml_edit::{value, Document};
 
@@ -19,6 +20,37 @@ fn remove_start_dot(dir: PathBuf) -> PathBuf {
   }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct CratesError {
+  detail: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CratesVersion {
+  version: CratesVersionMetadata,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CratesVersionMetadata {
+  #[serde(rename(serialize = "crate"))]
+  name: String,
+  num: String,
+  yanked: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+enum CratesResult<T, E> {
+  Ok(T),
+  Err { errors: Vec<E> },
+}
+
+impl<T, E> CratesResult<T, E> {
+  fn is_ok(&self) -> bool {
+    matches!(self, Self::Ok(_))
+  }
+}
+
 #[derive(Default)]
 pub struct Cargo;
 
@@ -28,7 +60,7 @@ impl Cargo {
     exists: Arc<DashSet<PathBuf>>,
     globs: GlobSet,
     entry: fs::DirEntry,
-  ) -> std::io::Result<Vec<Package<V>>> {
+  ) -> anyhow::Result<Vec<Package<V>>> {
     let mut result = Vec::new();
     let entry_path = remove_start_dot(entry.path());
 
@@ -65,7 +97,7 @@ impl Cargo {
     exists: Arc<DashSet<PathBuf>>,
     globs: GlobSet,
     mut current_dir: fs::ReadDir,
-  ) -> std::io::Result<Vec<Package<V>>> {
+  ) -> anyhow::Result<Vec<Package<V>>> {
     let mut handles = Vec::new();
 
     while let Some(entry) = current_dir.next_entry().await? {
@@ -91,7 +123,7 @@ impl Cargo {
     command: &str,
     crate_path: T,
     args: Vec<&str>,
-  ) -> std::io::Result<()> {
+  ) -> anyhow::Result<()> {
     if let Ok(canon_path) = dunce::canonicalize(crate_path) {
       Command::new("cargo")
         .current_dir(canon_path)
@@ -109,7 +141,7 @@ impl Cargo {
   async fn load_document<T: AsRef<Path>>(
     &self,
     crate_path: T,
-  ) -> std::io::Result<(PathBuf, Document)> {
+  ) -> anyhow::Result<(PathBuf, Document)> {
     let document = fs::read_to_string(&crate_path)
       .await?
       .parse::<Document>()
@@ -128,7 +160,7 @@ impl PackageManager for Cargo {
   async fn read_package<T: AsRef<Path> + Send + Sync, V: Versioned + Send + Sync + 'static>(
     &self,
     crate_path: T,
-  ) -> std::io::Result<Vec<Package<V>>> {
+  ) -> anyhow::Result<Vec<Package<V>>> {
     let mut result = Vec::new();
     let (crate_path, document) = self.load_document(crate_path).await?;
 
@@ -205,11 +237,37 @@ impl PackageManager for Cargo {
     Ok(result)
   }
 
+  async fn check_version<V: Versioned + Send + Sync + 'static>(
+    &self,
+    package: &Package<V>,
+  ) -> anyhow::Result<bool> {
+    let client = reqwest::Client::new();
+
+    let result = client
+      .get(format!(
+        "https://crates.io/api/v1/crates/{}/{}/",
+        package.name, package.version.value
+      ))
+      .header(
+        reqwest::header::USER_AGENT,
+        format!(
+          "mol-cargo/{} (https://github.com/DmitryDodzin/mol)",
+          env!("CARGO_PKG_VERSION")
+        ),
+      )
+      .send()
+      .await?
+      .json::<CratesResult<CratesVersion, CratesError>>()
+      .await?;
+
+    Ok(result.is_ok())
+  }
+
   async fn run_build<T: AsRef<Path> + Send + Sync>(
     &self,
     crate_path: T,
     build_args: Vec<String>,
-  ) -> std::io::Result<()> {
+  ) -> anyhow::Result<()> {
     self
       .run_command(
         "build",
@@ -224,7 +282,7 @@ impl PackageManager for Cargo {
     crate_path: T,
     publish_args: Vec<String>,
     dry_run: bool,
-  ) -> std::io::Result<()> {
+  ) -> anyhow::Result<()> {
     let args = if dry_run {
       vec!["--dry-run"]
         .into_iter()
@@ -241,7 +299,7 @@ impl PackageManager for Cargo {
     &self,
     crate_path: T,
     version: &str,
-  ) -> std::io::Result<()> {
+  ) -> anyhow::Result<()> {
     let (crate_path, mut document) = self.load_document(crate_path).await?;
 
     if document.contains_key("package") {
@@ -258,7 +316,7 @@ impl PackageManager for Cargo {
     crate_path: T,
     name: &str,
     version: &str,
-  ) -> std::io::Result<()> {
+  ) -> anyhow::Result<()> {
     let (crate_path, mut document) = self.load_document(crate_path).await?;
 
     if document.contains_key("dependencies") {

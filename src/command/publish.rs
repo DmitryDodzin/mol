@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 use std::sync::Arc;
+use std::time::Duration;
 
 use async_trait::async_trait;
 use clap::Parser;
@@ -17,8 +18,8 @@ pub struct Publish {
 }
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync> ExecutableCommand<T, V>
-  for Publish
+impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync + 'static>
+  ExecutableCommand<T, V> for Publish
 {
   async fn execute(
     &self,
@@ -45,6 +46,14 @@ impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync> Executable
           .package_manager
           .run_publish(root_path, self.publish_args.clone(), context.dry_run)
           .await?;
+
+        if !context.dry_run {
+          while !context.package_manager.check_version(package).await? {
+            println!("Package didn't upate yet");
+
+            tokio::time::sleep(Duration::from_secs(1)).await;
+          }
+        }
       }
     }
 

@@ -11,11 +11,14 @@ readme = "README.md"
 [dependencies]
 mol-core = { path = '../mol-core', version = "0.2"}
 
+anyhow = "1"
 async-recursion = "0.3"
 async-trait = "0.1"
 dashmap = "4"
 dunce = "1"
 futures = "0.3"
 globset = "0.4"
+serde = { version = "1", features = ["derive"] }
+reqwest = { version = "0.11", features = ["json"] }
 tokio = { version = "1", features = ["fs", "process", "rt"] }
 toml_edit = "0.10"

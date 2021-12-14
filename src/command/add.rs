@@ -126,7 +126,7 @@ impl Add {
 impl<T, V> ExecutableCommand<T, V> for Add
 where
   T: PackageManager + Send + Sync,
-  V: VersionEditor + Send + Sync,
+  V: VersionEditor + Send + Sync + 'static,
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {
   async fn execute(

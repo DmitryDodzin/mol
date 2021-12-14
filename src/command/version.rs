@@ -64,8 +64,10 @@ impl Version {
 }
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync> ExecutableCommand<T, V>
-  for Version
+impl<T, V> ExecutableCommand<T, V> for Version
+where
+  T: PackageManager + Send + Sync,
+  V: VersionEditor + Send + Sync + 'static,
 {
   async fn execute(
     &self,
