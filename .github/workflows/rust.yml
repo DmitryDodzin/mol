@@ -55,13 +55,16 @@ jobs:
       - name: 🔥 Cargo Cache
         uses: actions/cache@v2
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
+          path: ~/.cargo
           key: ${{ runner.os }}-cargo-check-unused-dependencies-${{ hashFiles('**/Cargo.toml') }}
+      - name: 🔥 Cargo Cache
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-check-unused-dependencies-target-${{ hashFiles('Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-check-unused-dependencies-target-${{ hashFiles('Cargo.toml') }}
+            ${{ runner.os }}-cargo-check-unused-dependencies-target
       - name: 🔧 Toolchain
         uses: actions-rs/toolchain@v1
         with:
