@@ -40,7 +40,7 @@ jobs:
         components: rustfmt, clippy
         override: true
     - name: 🔨 Build
-      run: cargo build --verbose --workspace
+      run: cargo build --verbose --workspace --no-default-features
     - name: 🔨 Build All Features
       run: cargo build --verbose --workspace --all-features
     - name: 📎 Fmt

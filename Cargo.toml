@@ -33,7 +33,7 @@ dialoguer = "0.9"
 faker_rand = "0.1"
 lazy_static = "1"
 rand = "0.8"
-tokio = { version = "1", features = [] }
+tokio = { version = "1", default-features = false }
 
 [dev-dependencies]
 cargo-husky = { version = "1", features = ["run-cargo-fmt","run-cargo-clippy"] }
