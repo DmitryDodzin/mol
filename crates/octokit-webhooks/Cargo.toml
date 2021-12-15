@@ -1,0 +1,12 @@
+[package]
+name = "octokit-webhooks"
+version = "0.0.0"
+authors = ["Dmitry Dodzin <d.dodzin@gmail.com>"]
+edition = "2018"
+license = "MIT"
+description = "Github Octokit webhook payload types"
+repository = "https://github.com/DmitryDodzin/mol"
+readme = "README.md"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
