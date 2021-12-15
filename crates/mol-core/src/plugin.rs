@@ -130,7 +130,9 @@ impl PluginManager {
 
     // version checks to prevent accidental ABI incompatibilities
     if decl.rustc_version != RUSTC_VERSION || decl.core_version != CORE_VERSION {
-      return Err(PluginLoadError::IncompatibleVersion.into());
+      return Err(
+        PluginLoadError::IncompatibleVersion(decl.core_version, decl.rustc_version).into(),
+      );
     }
 
     let mut registrar = PluginRegistrar::new(Rc::clone(&library));

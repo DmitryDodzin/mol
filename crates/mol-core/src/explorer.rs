@@ -64,7 +64,7 @@ impl Explorer {
       }
 
       if globs.is_match(entry_path) && file_type.is_file() && entry.file_name() == "Cargo.toml" {
-        result.extend(T::read_package(entry.path()).await?);
+        result.extend(T::seek_packages(entry.path()).await?);
       }
     }
 

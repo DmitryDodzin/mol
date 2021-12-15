@@ -96,7 +96,7 @@ impl FromStr for Semantic {
       "patch" => Ok(Semantic::patch()),
       "minor" => Ok(Semantic::minor()),
       "major" => Ok(Semantic::major()),
-      _ => Err(VersionParseError::from(value.to_string())),
+      _ => Err(VersionParseError(value.to_string())),
     }
   }
 }
