@@ -41,12 +41,14 @@ jobs:
         override: true
     - name: 🔨 Build
       run: cargo build --verbose --workspace
+    - name: 🔨 Build All Features
+      run: cargo build --verbose --workspace --all-features
     - name: 📎 Fmt
-      run: cargo fmt -- --check
+      run: cargo fmt --all -- --check
     - name: 📎 Clippy
-      run: cargo clippy --workspace
+      run: cargo clippy --workspace --all-features
     - name: 🔎 Test
-      run: cargo test --verbose --workspace
+      run: cargo test --verbose --workspace --all-features
     
   check-unused-dependencies:
     runs-on: ubuntu-latest
