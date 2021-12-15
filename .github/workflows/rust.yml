@@ -71,6 +71,6 @@ jobs:
           toolchain: nightly
           override: true
       - name: ⚡ Installs cargo-udeps
-        run: cargo install --force cargo-udeps
+        run: cargo install cargo-udeps
       - name: ⚡ Run cargo udeps
         run: cargo udeps
