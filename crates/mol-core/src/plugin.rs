@@ -20,7 +20,9 @@ pub struct PluginContext<'a> {
 pub trait Plugin {
   fn name(&self) -> &str;
 
-  fn on_load(&mut self, _context: &PluginContext) {}
+  fn on_load(&mut self, _context: &PluginContext) -> anyhow::Result<()> {
+    Ok(())
+  }
 
   fn on_unload(&mut self) {}
 
@@ -43,7 +45,7 @@ impl Plugin for PluginProxy {
     self.plugin.name()
   }
 
-  fn on_load(&mut self, context: &PluginContext) {
+  fn on_load(&mut self, context: &PluginContext) -> anyhow::Result<()> {
     self.plugin.on_load(context)
   }
 
@@ -121,18 +123,28 @@ impl PluginManager {
     &mut self,
     library_path: P,
     context: &PluginContext,
-  ) -> anyhow::Result<()> {
-    let library = Rc::new(Library::new(library_path)?);
+  ) -> Result<(), PluginLoadError> {
+    let library = Rc::new(
+      Library::new(&library_path)
+        .with_context(|| format!("Unable to load library at {:?}", library_path.as_ref()))?,
+    );
 
     let decl = library
-      .get::<*mut PluginDeclaration>(b"plugin_declaration\0")?
+      .get::<*mut PluginDeclaration>(b"plugin_declaration\0")
+      .with_context(|| {
+        format!(
+          "Unable to read plugin_declaration at {:?}",
+          library_path.as_ref()
+        )
+      })?
       .read();
 
     // version checks to prevent accidental ABI incompatibilities
     if decl.rustc_version != RUSTC_VERSION || decl.core_version != CORE_VERSION {
-      return Err(
-        PluginLoadError::IncompatibleVersion(decl.core_version, decl.rustc_version).into(),
-      );
+      return Err(PluginLoadError::IncompatibleVersion(
+        decl.core_version.to_owned(),
+        decl.rustc_version.to_owned(),
+      ));
     }
 
     let mut registrar = PluginRegistrar::new(Rc::clone(&library));
@@ -142,7 +154,13 @@ impl PluginManager {
     let mut plugins = registrar.consume();
 
     for plugin in &mut plugins {
-      plugin.on_load(context);
+      plugin.on_load(context).with_context(|| {
+        format!(
+          "Initialization error at plugin: {} for library at {:?}",
+          plugin.name(),
+          library_path.as_ref()
+        )
+      })?;
     }
 
     self.plugins.extend(plugins);
