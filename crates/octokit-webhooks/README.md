@@ -39,7 +39,7 @@
 - [x] push
 - [ ] registry_package
 - [x] release
-- [ ] repository
+- [x] repository
 - [ ] repository_import
 - [ ] repository_vulnerability_alert
 - [ ] secret_scanning_alert

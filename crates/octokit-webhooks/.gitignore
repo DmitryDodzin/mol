@@ -5,4 +5,5 @@ sample/*
 !sample/pull_request
 !sample/push
 !sample/release
+!sample/repository
 !sample/star
