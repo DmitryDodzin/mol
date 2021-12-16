@@ -1,16 +1,6 @@
 use serde::Deserialize;
 
-use super::Repository;
-use super::User;
-
-#[derive(Debug, Deserialize)]
-pub struct Team {}
-
-#[derive(Debug, Deserialize)]
-pub struct Link {}
-
-#[derive(Debug, Deserialize)]
-pub struct AuthorAssociation {}
+use super::{AuthorAssociation, Label, Link, Milestone, Repository, Team, User};
 
 #[derive(Debug, Deserialize)]
 pub struct PullRequest {
@@ -45,8 +35,8 @@ pub struct PullRequest {
   pub assignees: Vec<User>,
   pub requested_reviewers: Vec<UserOrTeam>,
   pub requested_teams: Vec<Team>,
-  // pub labels: Vec<Label>,
-  // pub milestone: Option<Milestone>,
+  pub labels: Vec<Label>,
+  pub milestone: Option<Milestone>,
   pub commits_url: String,
   pub review_comments_url: String,
   pub review_comment_url: String,
@@ -55,7 +45,7 @@ pub struct PullRequest {
   pub head: PullRequestRef,
   pub base: PullRequestRef,
   pub _links: PullRequestLinks,
-  // pub author_association: AuthorAssociation,
+  pub author_association: AuthorAssociation,
   // pub auto_merge: null,
   pub active_lock_reason: Option<PullRequestActiveLockReason>,
   /**

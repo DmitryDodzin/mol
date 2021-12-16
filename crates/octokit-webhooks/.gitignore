@@ -1,0 +1,3 @@
+# test cases TODO: remove when all are ready or dynamically loaded
+sample/*
+!sample/pull_request
