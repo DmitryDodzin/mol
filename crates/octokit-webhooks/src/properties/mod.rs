@@ -1,5 +1,7 @@
 mod author_association;
 mod branch_protection_rule;
+mod commit;
+mod committer;
 mod installation;
 mod label;
 mod license;
@@ -13,6 +15,8 @@ mod user;
 
 pub use author_association::*;
 pub use branch_protection_rule::*;
+pub use commit::*;
+pub use committer::*;
 pub use installation::*;
 pub use label::*;
 pub use license::*;

@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
 use crate::properties::*;
+use crate::util::parse_flexible_timestamp;
 
 #[derive(Debug, Deserialize)]
 #[serde(tag = "action")]
@@ -9,6 +10,7 @@ use crate::properties::*;
 pub enum StarEvent {
   Created {
     /// The time the star was created.
+    #[serde(deserialize_with = "parse_flexible_timestamp")]
     starred_at: DateTime<Utc>,
     repository: Repository,
     sender: User,

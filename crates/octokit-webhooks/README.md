@@ -36,7 +36,7 @@
 - [ ] pull_request_review
 - [ ] pull_request_review_comment
 - [ ] pull_request_review_thread
-- [ ] push
+- [x] push
 - [ ] registry_package
 - [ ] release
 - [ ] repository

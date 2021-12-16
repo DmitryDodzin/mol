@@ -1,6 +1,8 @@
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
+use crate::util::{parse_flexible_timestamp, parse_flexible_timestamp_option};
+
 use super::{License, User};
 
 #[derive(Debug, Deserialize)]
@@ -55,8 +57,11 @@ pub struct Repository {
   pub labels_url: String,
   pub releases_url: String,
   pub deployments_url: String,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
   pub created_at: DateTime<Utc>,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
   pub updated_at: DateTime<Utc>,
+  #[serde(deserialize_with = "parse_flexible_timestamp_option")]
   pub pushed_at: Option<DateTime<Utc>>,
   pub git_url: String,
   pub ssh_url: String,

@@ -1,6 +1,8 @@
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
+use crate::util::{parse_flexible_timestamp, parse_flexible_timestamp_option};
+
 use super::User;
 
 #[derive(Debug, Deserialize)]
@@ -20,9 +22,13 @@ pub struct Milestone {
   pub closed_issues: u32,
   /// The state of the milestone.
   pub state: MilestoneState,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
   pub created_at: DateTime<Utc>,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
   pub updated_at: DateTime<Utc>,
+  #[serde(deserialize_with = "parse_flexible_timestamp_option")]
   pub due_on: Option<DateTime<Utc>>,
+  #[serde(deserialize_with = "parse_flexible_timestamp_option")]
   pub closed_at: Option<DateTime<Utc>>,
 }
 

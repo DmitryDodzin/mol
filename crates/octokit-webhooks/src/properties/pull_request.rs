@@ -1,6 +1,8 @@
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
+use crate::util::{parse_flexible_timestamp, parse_flexible_timestamp_option};
+
 use super::{AuthorAssociation, Label, Link, Milestone, Repository, Team, User};
 
 #[derive(Debug, Deserialize)]
@@ -21,9 +23,13 @@ pub struct PullRequest {
   pub title: String,
   pub user: User,
   pub body: Option<String>,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
   pub created_at: DateTime<Utc>,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
   pub updated_at: DateTime<Utc>,
+  #[serde(deserialize_with = "parse_flexible_timestamp_option")]
   pub closed_at: Option<DateTime<Utc>>,
+  #[serde(deserialize_with = "parse_flexible_timestamp_option")]
   pub merged_at: Option<DateTime<Utc>>,
   pub merge_commit_sha: Option<String>,
   pub assignee: Option<User>,
