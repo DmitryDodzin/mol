@@ -19,7 +19,7 @@
 - [ ] gollum
 - [ ] issues
 - [ ] issue_comment
-- [ ] label
+- [x] label
 - [ ] member
 - [ ] membership
 - [ ] meta

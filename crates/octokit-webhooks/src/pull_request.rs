@@ -192,11 +192,11 @@ mod tests {
     let raw = std::fs::read_to_string("./sample/pull_request/assigned.payload.json")
       .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -205,11 +205,11 @@ mod tests {
       std::fs::read_to_string("./sample/pull_request/assigned.with-organization.payload.json")
         .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -217,11 +217,11 @@ mod tests {
     let raw = std::fs::read_to_string("./sample/pull_request/closed.payload.json")
       .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -230,11 +230,11 @@ mod tests {
       std::fs::read_to_string("./sample/pull_request/closed.with-organization.payload.json")
         .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -242,11 +242,11 @@ mod tests {
     let raw = std::fs::read_to_string("./sample/pull_request/converted_to_draft.payload.json")
       .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -256,11 +256,11 @@ mod tests {
     )
     .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -270,11 +270,11 @@ mod tests {
     )
     .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -282,11 +282,11 @@ mod tests {
     let raw = std::fs::read_to_string("./sample/pull_request/labeled.payload.json")
       .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -295,11 +295,11 @@ mod tests {
       std::fs::read_to_string("./sample/pull_request/labeled.with-organization.payload.json")
         .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -307,11 +307,11 @@ mod tests {
     let raw = std::fs::read_to_string("./sample/pull_request/locked.payload.json")
       .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -320,11 +320,11 @@ mod tests {
       std::fs::read_to_string("./sample/pull_request/locked.with-organization.payload.json")
         .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -332,11 +332,11 @@ mod tests {
     let raw = std::fs::read_to_string("./sample/pull_request/opened.payload.json")
       .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -344,11 +344,11 @@ mod tests {
     let raw = std::fs::read_to_string("./sample/pull_request/opened.with-null-body.json")
       .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -357,11 +357,11 @@ mod tests {
       std::fs::read_to_string("./sample/pull_request/opened.with-organization.payload.json")
         .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -369,11 +369,11 @@ mod tests {
     let raw = std::fs::read_to_string("./sample/pull_request/ready_for_review.payload.json")
       .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -383,11 +383,11 @@ mod tests {
     )
     .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -397,11 +397,11 @@ mod tests {
     )
     .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -409,11 +409,11 @@ mod tests {
     let raw = std::fs::read_to_string("./sample/pull_request/reopened.payload.json")
       .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -422,11 +422,11 @@ mod tests {
       std::fs::read_to_string("./sample/pull_request/reopened.with-organization.payload.json")
         .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -434,11 +434,11 @@ mod tests {
     let raw = std::fs::read_to_string("./sample/pull_request/review_request_removed.payload.json")
       .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -446,11 +446,11 @@ mod tests {
     let raw = std::fs::read_to_string("./sample/pull_request/review_requested.payload.json")
       .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -458,11 +458,11 @@ mod tests {
     let raw = std::fs::read_to_string("./sample/pull_request/synchronize.payload.json")
       .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -470,11 +470,11 @@ mod tests {
     let raw = std::fs::read_to_string("./sample/pull_request/unassigned.payload.json")
       .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -483,11 +483,11 @@ mod tests {
       std::fs::read_to_string("./sample/pull_request/unassigned.with-organization.payload.json")
         .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -495,11 +495,11 @@ mod tests {
     let raw = std::fs::read_to_string("./sample/pull_request/unlabeled.payload.json")
       .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -508,11 +508,11 @@ mod tests {
       std::fs::read_to_string("./sample/pull_request/unlabeled.with-organization.payload.json")
         .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -520,11 +520,11 @@ mod tests {
     let raw = std::fs::read_to_string("./sample/pull_request/unlocked.payload.json")
       .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 
   #[test]
@@ -533,10 +533,10 @@ mod tests {
       std::fs::read_to_string("./sample/pull_request/unlocked.with-organization.payload.json")
         .expect("test case not found");
 
-    let pull_request = serde_json::from_str::<PullRequestEvent>(&raw);
+    let event = serde_json::from_str::<PullRequestEvent>(&raw);
 
-    println!("{:?}", pull_request);
+    println!("{:?}", event);
 
-    assert!(pull_request.is_ok());
+    assert!(event.is_ok());
   }
 }
