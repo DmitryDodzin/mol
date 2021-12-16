@@ -17,10 +17,10 @@ pub struct Hook {
   pub updated_at: DateTime<Utc>,
   #[serde(deserialize_with = "parse_flexible_timestamp")]
   pub created_at: DateTime<Utc>,
-  pub url: String,
+  pub url: Option<String>,
   pub test_url: Option<String>,
-  pub ping_url: String,
-  pub deliveries_url: String,
+  pub ping_url: Option<String>,
+  pub deliveries_url: Option<String>,
   pub last_response: Option<HookLastResponse>,
 }
 

@@ -2,6 +2,7 @@
 sample/*
 !sample/branch_protection_rule
 !sample/label
+!sample/meta
 !sample/ping
 !sample/pull_request
 !sample/push
