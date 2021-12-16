@@ -8,7 +8,7 @@
 - [ ] check_suite
 - [ ] code_scanning_alert
 - [ ] commit_comment
-- [ ] create
+- [x] create
 - [ ] delete
 - [ ] deployment
 - [ ] deployment_status

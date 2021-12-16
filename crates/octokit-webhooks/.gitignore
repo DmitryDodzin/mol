@@ -1,6 +1,7 @@
 # test cases TODO: remove when all are ready or dynamically loaded
 sample/*
 !sample/branch_protection_rule
+!sample/create
 !sample/label
 !sample/meta
 !sample/ping
