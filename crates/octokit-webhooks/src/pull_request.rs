@@ -1,20 +1,7 @@
 use serde::Deserialize;
 
 use crate::properties::*;
-
-#[derive(Debug, Deserialize)]
-pub struct PullRequestEventEditedChanges {
-  pub body: Option<PullRequestEventEditedChange>,
-  pub title: Option<PullRequestEventEditedChange>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct PullRequestEventEditedChange {
-  /**
-   * The previous version of the body if the action was `edited`.
-   */
-  pub from: String,
-}
+use crate::util::WrappedSource;
 
 #[derive(Debug, Deserialize)]
 #[serde(tag = "action")]
@@ -70,7 +57,7 @@ pub enum PullRequestEvent {
     /// The pull request number.
     number: u32,
     /// The changes to the comment if the action was `edited`.
-    changes: PullRequestEventEditedChanges,
+    changes: PullRequestEditedEventChanges,
     pull_request: PullRequest,
     repository: Repository,
     installation: Option<InstallationLite>,
@@ -185,6 +172,12 @@ pub enum PullRequestEvent {
     organization: Option<Organization>,
     sender: User,
   },
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PullRequestEditedEventChanges {
+  pub body: Option<WrappedSource<String>>,
+  pub title: Option<WrappedSource<String>>,
 }
 
 #[cfg(test)]

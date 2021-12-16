@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
 use super::{AuthorAssociation, Label, Link, Milestone, Repository, Team, User};
@@ -11,25 +12,19 @@ pub struct PullRequest {
   pub diff_url: String,
   pub patch_url: String,
   pub issue_url: String,
-  /**
-   * Number uniquely identifying the pull request within its repository.
-   */
+  /// Number uniquely identifying the pull request within its repository.
   pub number: u32,
-  /**
-   * State of this Pull Request. Either `open` or `closed`.
-   */
+  /// State of this Pull Request. Either `open` or `closed`.
   pub state: PullRequestState,
   pub locked: bool,
-  /**
-   * The title of the pull request.
-   */
+  /// The title of the pull request.
   pub title: String,
   pub user: User,
   pub body: Option<String>,
-  pub created_at: String,
-  pub updated_at: String,
-  pub closed_at: Option<String>,
-  pub merged_at: Option<String>,
+  pub created_at: DateTime<Utc>,
+  pub updated_at: DateTime<Utc>,
+  pub closed_at: Option<DateTime<Utc>>,
+  pub merged_at: Option<DateTime<Utc>>,
   pub merge_commit_sha: Option<String>,
   pub assignee: Option<User>,
   pub assignees: Vec<User>,
@@ -48,9 +43,7 @@ pub struct PullRequest {
   pub author_association: AuthorAssociation,
   // pub auto_merge: null,
   pub active_lock_reason: Option<PullRequestActiveLockReason>,
-  /**
-   * Indicates whether or not the pull request is a draft.
-   */
+  /// Indicates whether or not the pull request is a draft.
   pub draft: bool,
   pub merged: Option<bool>,
   pub mergeable: Option<bool>,
@@ -59,9 +52,7 @@ pub struct PullRequest {
   pub merged_by: Option<User>,
   pub comments: u32,
   pub review_comments: u32,
-  /**
-   * Indicates whether maintainers can modify the pull request.
-   */
+  /// Indicates whether maintainers can modify the pull request.
   pub maintainer_can_modify: bool,
   pub commits: u32,
   pub additions: u32,

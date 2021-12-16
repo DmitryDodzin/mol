@@ -1,4 +1,5 @@
 mod author_association;
+mod branch_protection_rule;
 mod installation;
 mod label;
 mod license;
@@ -11,6 +12,7 @@ mod team;
 mod user;
 
 pub use author_association::*;
+pub use branch_protection_rule::*;
 pub use installation::*;
 pub use label::*;
 pub use license::*;

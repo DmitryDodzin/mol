@@ -1,4 +1,4 @@
-> This project is still in development and does not fulfill
+> This project is still in development and does not yet implemet all types see list bellow to see compatability
 
 # octokit-webhooks
 

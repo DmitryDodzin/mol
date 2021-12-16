@@ -1,9 +1,6 @@
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
-pub struct BranchProtectionRuleEvent;
-
-#[derive(Debug, Deserialize)]
 pub struct CheckRunEvent;
 
 #[derive(Debug, Deserialize)]
