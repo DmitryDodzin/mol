@@ -3,7 +3,7 @@
 # octokit-webhooks
 
 ## Types
-- [ ] branch_protection_rule
+- [x] branch_protection_rule
 - [ ] check_run
 - [ ] check_suite
 - [ ] code_scanning_alert
