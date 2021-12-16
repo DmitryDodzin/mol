@@ -12,7 +12,7 @@ pub enum RealeaseAssetState {
 pub struct ReleaseAsset {
   pub url: String,
   pub browser_download_url: String,
-  pub id: u32,
+  pub id: u64,
   pub node_id: String,
   /// The file name of the asset.
   pub name: String,
@@ -20,8 +20,8 @@ pub struct ReleaseAsset {
   /// State of the release asset.
   pub state: RealeaseAssetState,
   pub content_type: String,
-  pub size: u32,
-  pub download_count: u32,
+  pub size: u64,
+  pub download_count: u64,
   pub created_at: String,
   pub updated_at: String,
   pub uploader: Option<User>,

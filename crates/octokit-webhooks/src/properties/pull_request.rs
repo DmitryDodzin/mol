@@ -8,14 +8,14 @@ use super::{AuthorAssociation, Label, Link, Milestone, Repository, Team, User};
 #[derive(Debug, Deserialize)]
 pub struct PullRequest {
   pub url: String,
-  pub id: u32,
+  pub id: u64,
   pub node_id: String,
   pub html_url: String,
   pub diff_url: String,
   pub patch_url: String,
   pub issue_url: String,
   /// Number uniquely identifying the pull request within its repository.
-  pub number: u32,
+  pub number: u64,
   /// State of this Pull Request. Either `open` or `closed`.
   pub state: PullRequestState,
   pub locked: bool,
@@ -56,14 +56,14 @@ pub struct PullRequest {
   pub rebaseable: Option<bool>,
   pub mergeable_state: String,
   pub merged_by: Option<User>,
-  pub comments: u32,
-  pub review_comments: u32,
+  pub comments: u64,
+  pub review_comments: u64,
   /// Indicates whether maintainers can modify the pull request.
   pub maintainer_can_modify: bool,
-  pub commits: u32,
-  pub additions: u32,
-  pub deletions: u32,
-  pub changed_files: u32,
+  pub commits: u64,
+  pub additions: u64,
+  pub deletions: u64,
+  pub changed_files: u64,
 }
 
 #[derive(Debug, Deserialize)]

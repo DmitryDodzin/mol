@@ -9,7 +9,7 @@ use crate::util::WrappedSource;
 pub enum PullRequestEvent {
   Assigned {
     /// The pull request number.
-    number: u32,
+    number: u64,
     pull_request: PullRequest,
     assignee: User,
     repository: Repository,
@@ -19,7 +19,7 @@ pub enum PullRequestEvent {
   },
   AutoMergeDisabled {
     /// The pull request number.
-    number: u32,
+    number: u64,
     pull_request: PullRequest,
     repository: Repository,
     installation: Option<InstallationLite>,
@@ -28,7 +28,7 @@ pub enum PullRequestEvent {
   },
   AutoMergeEnabled {
     /// The pull request number.
-    number: u32,
+    number: u64,
     pull_request: PullRequest,
     repository: Repository,
     installation: Option<InstallationLite>,
@@ -37,7 +37,7 @@ pub enum PullRequestEvent {
   },
   Closed {
     /// The pull request number.
-    number: u32,
+    number: u64,
     pull_request: PullRequest,
     repository: Repository,
     installation: Option<InstallationLite>,
@@ -46,7 +46,7 @@ pub enum PullRequestEvent {
   },
   ConvertedToDraft {
     /// The pull request number.
-    number: u32,
+    number: u64,
     pull_request: PullRequest,
     repository: Repository,
     installation: Option<InstallationLite>,
@@ -55,7 +55,7 @@ pub enum PullRequestEvent {
   },
   Edited {
     /// The pull request number.
-    number: u32,
+    number: u64,
     /// The changes to the comment if the action was `edited`.
     changes: PullRequestEditedEventChanges,
     pull_request: PullRequest,
@@ -66,7 +66,7 @@ pub enum PullRequestEvent {
   },
   Labeled {
     /// The pull request number.
-    number: u32,
+    number: u64,
     pull_request: PullRequest,
     label: Label,
     repository: Repository,
@@ -76,7 +76,7 @@ pub enum PullRequestEvent {
   },
   Locked {
     /// The pull request number.
-    number: u32,
+    number: u64,
     pull_request: PullRequest,
     repository: Repository,
     installation: Option<InstallationLite>,
@@ -85,7 +85,7 @@ pub enum PullRequestEvent {
   },
   Opened {
     /// The pull request number.
-    number: u32,
+    number: u64,
     pull_request: PullRequest,
     repository: Repository,
     installation: Option<InstallationLite>,
@@ -94,7 +94,7 @@ pub enum PullRequestEvent {
   },
   ReadyForReview {
     /// The pull request number.
-    number: u32,
+    number: u64,
     pull_request: PullRequest,
     repository: Repository,
     installation: Option<InstallationLite>,
@@ -103,7 +103,7 @@ pub enum PullRequestEvent {
   },
   Reopened {
     /// The pull request number.
-    number: u32,
+    number: u64,
     pull_request: PullRequest,
     repository: Repository,
     installation: Option<InstallationLite>,
@@ -112,7 +112,7 @@ pub enum PullRequestEvent {
   },
   ReviewRequestRemoved {
     /// The pull request number.
-    number: u32,
+    number: u64,
     pull_request: PullRequest,
     requested_reviewer: Option<User>,
     requested_team: Option<Team>,
@@ -123,7 +123,7 @@ pub enum PullRequestEvent {
   },
   ReviewRequested {
     /// The pull request number.
-    number: u32,
+    number: u64,
     pull_request: PullRequest,
     requested_reviewer: Option<User>,
     requested_team: Option<Team>,
@@ -134,7 +134,7 @@ pub enum PullRequestEvent {
   },
   Synchronize {
     /// The pull request number.
-    number: u32,
+    number: u64,
     before: String,
     after: String,
     pull_request: PullRequest,
@@ -145,7 +145,7 @@ pub enum PullRequestEvent {
   },
   Unassigned {
     /// The pull request number.
-    number: u32,
+    number: u64,
     pull_request: PullRequest,
     assignee: User,
     repository: Repository,
@@ -155,7 +155,7 @@ pub enum PullRequestEvent {
   },
   Unlabeled {
     /// The pull request number.
-    number: u32,
+    number: u64,
     pull_request: PullRequest,
     repository: Repository,
     label: Label,
@@ -165,7 +165,7 @@ pub enum PullRequestEvent {
   },
   Unlocked {
     /// The pull request number.
-    number: u32,
+    number: u64,
     pull_request: PullRequest,
     repository: Repository,
     installation: Option<InstallationLite>,

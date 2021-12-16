@@ -7,7 +7,7 @@ use crate::properties::*;
 #[serde(rename_all = "snake_case")]
 pub enum MetaEvent {
   Deleted {
-    hook_id: u32,
+    hook_id: u64,
     /// The modified webhook. This will contain different keys based on the type of webhook it is: repository, organization, business, app, or GitHub Marketplace.
     hook: Hook,
     repository: Repository,

@@ -6,11 +6,11 @@ use crate::{util::parse_flexible_timestamp, WebhookEvents};
 #[derive(Debug, Deserialize)]
 pub struct Hook {
   pub r#type: String,
-  pub id: u32,
+  pub id: u64,
   pub name: String,
   pub active: bool,
   /// When you register a new GitHub App, GitHub sends a ping event to the **webhook URL** you specified during registration. The event contains the `app_id`, which is required for [authenticating](https://docs.github.com/en/apps/building-integrations/setting-up-and-registering-github-apps/about-authentication-options-for-github-apps) an app.
-  pub app_id: Option<u32>,
+  pub app_id: Option<u64>,
   pub events: Vec<WebhookEvents>,
   pub config: HookConfig,
   #[serde(deserialize_with = "parse_flexible_timestamp")]

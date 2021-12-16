@@ -9,13 +9,13 @@ use super::{PullRequestActiveLockReason, PullRequestRef, PullRequestState, UserO
 #[derive(Debug, Deserialize)]
 pub struct SimplePullRequest {
   pub url: String,
-  pub id: u32,
+  pub id: u64,
   pub node_id: String,
   pub html_url: String,
   pub diff_url: String,
   pub patch_url: String,
   pub issue_url: String,
-  pub number: u32,
+  pub number: u64,
   pub state: PullRequestState,
   pub locked: bool,
   pub title: String,

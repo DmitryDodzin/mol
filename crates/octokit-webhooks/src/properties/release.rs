@@ -11,7 +11,7 @@ pub struct Release {
   pub assets_url: String,
   pub upload_url: String,
   pub html_url: String,
-  pub id: u32,
+  pub id: u64,
   pub node_id: String,
   /// The name of the tag.
   pub tag_name: String,

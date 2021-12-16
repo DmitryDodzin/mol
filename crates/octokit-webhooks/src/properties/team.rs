@@ -5,7 +5,7 @@ pub struct Team {
   /// Name of the team
   pub name: String,
   /// Unique identifier of the team
-  pub id: u32,
+  pub id: u64,
   pub node_id: String,
   pub slug: String,
   /// Description of the team
@@ -26,7 +26,7 @@ pub struct TeamParent {
   /// Name of the team
   pub name: String,
   /// Unique identifier of the team
-  pub id: u32,
+  pub id: u64,
   pub node_id: String,
   pub slug: String,
   /// Description of the team

@@ -10,13 +10,13 @@ pub enum BranchProtectionRuleEnforcementLevel {
 
 #[derive(Debug, Deserialize)]
 pub struct BranchProtectionRule {
-  pub id: u32,
-  pub repository_id: u32,
+  pub id: u64,
+  pub repository_id: u64,
   pub name: String,
   pub created_at: String,
   pub updated_at: String,
   pub pull_request_reviews_enforcement_level: BranchProtectionRuleEnforcementLevel,
-  pub required_approving_review_count: u32,
+  pub required_approving_review_count: u64,
   pub dismiss_stale_reviews_on_push: bool,
   pub require_code_owner_review: bool,
   pub authorized_dismissal_actors_only: bool,

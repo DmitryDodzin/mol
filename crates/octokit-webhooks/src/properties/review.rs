@@ -5,7 +5,7 @@ use super::{AuthorAssociation, Link, User};
 #[derive(Debug, Deserialize)]
 pub struct Review {
   /// Unique identifier of the review
-  pub id: u32,
+  pub id: u64,
   pub node_id: String,
   pub user: User,
   /// The text of the review.

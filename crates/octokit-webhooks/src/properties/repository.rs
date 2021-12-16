@@ -8,7 +8,7 @@ use super::{License, User};
 #[derive(Debug, Deserialize)]
 pub struct Repository {
   /// Unique identifier of the repository.
-  pub id: u32,
+  pub id: u64,
   pub node_id: String,
   /// The name of the repository.
   pub name: String,
@@ -68,9 +68,9 @@ pub struct Repository {
   pub clone_url: String,
   pub svn_url: String,
   pub homepage: Option<String>,
-  pub size: u32,
-  pub stargazers_count: u32,
-  pub watchers_count: u32,
+  pub size: u64,
+  pub stargazers_count: u64,
+  pub watchers_count: u64,
   pub language: Option<String>,
   /// Whether issues are enabled.
   pub has_issues: bool,
@@ -81,18 +81,18 @@ pub struct Repository {
   /// Whether the wiki is enabled.
   pub has_wiki: bool,
   pub has_pages: bool,
-  pub forks_count: u32,
+  pub forks_count: u64,
   pub mirror_url: Option<String>,
   /// Whether the repository is archived.
   pub archived: bool,
   /// Returns whether or not this repository is disabled.
   pub disabled: Option<bool>,
-  pub open_issues_count: u32,
+  pub open_issues_count: u64,
   pub license: Option<License>,
-  pub forks: u32,
-  pub open_issues: u32,
-  pub watchers: u32,
-  pub stargazers: Option<u32>,
+  pub forks: u64,
+  pub open_issues: u64,
+  pub watchers: u64,
+  pub stargazers: Option<u64>,
   /// The default branch of the repository.
   pub default_branch: String,
   /// Whether to allow squash merges for pull requests.

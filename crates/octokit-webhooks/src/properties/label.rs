@@ -2,7 +2,7 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct Label {
-  pub id: u32,
+  pub id: u64,
   pub node_id: String,
   /// URL for the label
   pub url: String,

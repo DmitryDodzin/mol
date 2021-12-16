@@ -3,7 +3,7 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize)]
 pub struct Organization {
   pub login: String,
-  pub id: u32,
+  pub id: u64,
   pub node_id: String,
   pub url: String,
   pub html_url: Option<String>,

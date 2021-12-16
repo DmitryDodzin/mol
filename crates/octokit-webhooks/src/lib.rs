@@ -14,6 +14,7 @@ mod push;
 mod release;
 mod repository;
 mod star;
+mod status;
 
 pub use branch_protection_rule::*;
 pub use create::*;
@@ -28,3 +29,4 @@ pub use push::*;
 pub use release::*;
 pub use repository::*;
 pub use star::*;
+pub use status::*;

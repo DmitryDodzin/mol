@@ -1,4 +1,5 @@
 mod author_association;
+mod branch;
 mod branch_protection_rule;
 mod commit;
 mod committer;
@@ -18,8 +19,10 @@ mod review;
 mod simple_pull_request;
 mod team;
 mod user;
+mod verification;
 
 pub use author_association::*;
+pub use branch::*;
 pub use branch_protection_rule::*;
 pub use commit::*;
 pub use committer::*;
@@ -39,3 +42,4 @@ pub use review::*;
 pub use simple_pull_request::*;
 pub use team::*;
 pub use user::*;
+pub use verification::*;

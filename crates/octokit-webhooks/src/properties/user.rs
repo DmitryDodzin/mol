@@ -10,7 +10,7 @@ pub enum UserType {
 #[derive(Debug, Deserialize)]
 pub struct User {
   pub login: String,
-  pub id: u32,
+  pub id: u64,
   pub node_id: String,
   pub name: Option<String>,
   pub email: Option<String>,

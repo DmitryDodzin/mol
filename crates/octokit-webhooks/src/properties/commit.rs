@@ -23,3 +23,16 @@ pub struct Commit {
   /// An array of files removed in the commit.
   pub removed: Vec<String>,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct CommitRef {
+  pub sha: String,
+  pub url: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CommitParent {
+  pub sha: String,
+  pub url: String,
+  pub html_url: String,
+}

@@ -10,16 +10,16 @@ pub struct Milestone {
   pub url: String,
   pub html_url: String,
   pub labels_url: String,
-  pub id: u32,
+  pub id: u64,
   pub node_id: String,
   /// The number of the milestone.
-  pub number: u32,
+  pub number: u64,
   /// The title of the milestone.
   pub title: String,
   pub description: Option<String>,
   pub creator: User,
-  pub open_issues: u32,
-  pub closed_issues: u32,
+  pub open_issues: u64,
+  pub closed_issues: u64,
   /// The state of the milestone.
   pub state: MilestoneState,
   #[serde(deserialize_with = "parse_flexible_timestamp")]

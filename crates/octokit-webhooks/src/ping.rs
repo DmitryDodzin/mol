@@ -8,7 +8,7 @@ use crate::properties::*;
 pub struct PingEvent {
   pub zen: String,
   /// The ID of the webhook that triggered the ping.
-  pub hook_id: u32,
+  pub hook_id: u64,
   /// The [webhook configuration](https://docs.github.com/en/rest/reference/repos#get-a-repository-webhook).
   pub hook: Hook,
   pub repository: Option<Repository>,
