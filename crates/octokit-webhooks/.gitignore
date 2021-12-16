@@ -4,4 +4,5 @@ sample/*
 !sample/label
 !sample/pull_request
 !sample/push
+!sample/release
 !sample/star

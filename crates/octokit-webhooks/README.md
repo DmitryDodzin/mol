@@ -38,7 +38,7 @@
 - [ ] pull_request_review_thread
 - [x] push
 - [ ] registry_package
-- [ ] release
+- [x] release
 - [ ] repository
 - [ ] repository_import
 - [ ] repository_vulnerability_alert
