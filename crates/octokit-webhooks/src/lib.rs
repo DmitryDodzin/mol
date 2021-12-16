@@ -3,6 +3,7 @@ pub mod util;
 
 mod branch_protection_rule;
 mod create;
+mod delete;
 mod events;
 mod label;
 mod meta;
@@ -15,6 +16,7 @@ mod star;
 
 pub use branch_protection_rule::*;
 pub use create::*;
+pub use delete::*;
 pub use events::*;
 pub use label::*;
 pub use meta::*;

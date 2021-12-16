@@ -9,7 +9,7 @@
 - [ ] code_scanning_alert
 - [ ] commit_comment
 - [x] create
-- [ ] delete
+- [x] delete
 - [ ] deployment
 - [ ] deployment_status
 - [ ] deploy_key
