@@ -11,14 +11,20 @@ readme = "README.md"
 keywords = ["cargo", "versioning", "changeset", "changesets"]
 
 [[bin]]
+required-features = ["cargo"]
 name = "cargo-mol"
 
 [features]
-default = []
+default = ["cargo"]
+cargo = [
+  "mol-cargo",
+  "tokio/macros",
+  "tokio/rt-multi-thread"
+]
 
 [dependencies]
-mol-cargo = { path = 'crates/mol-cargo', version = "0.3"}
-mol-core = { path = 'crates/mol-core', version = "0.3"}
+mol-cargo = { path = 'crates/mol-cargo', version = "0.3", optional = true }
+mol-core = { path = 'crates/mol-core', version = "0.3" }
 
 anyhow = "1"
 async-trait = "0.1"
@@ -27,7 +33,7 @@ dialoguer = "0.9"
 faker_rand = "0.1"
 lazy_static = "1"
 rand = "0.8"
-tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread"] }
+tokio = { version = "1", default-features = false }
 
 [dev-dependencies]
 cargo-husky = { version = "1", features = ["run-cargo-fmt","run-cargo-clippy"] }

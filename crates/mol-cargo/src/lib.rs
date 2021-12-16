@@ -78,7 +78,7 @@ impl PackageManager for Cargo {
     "Cargo.toml"
   }
 
-  async fn read_package<T: AsRef<Path> + Send + Sync, V: Versioned + Send + Sync + 'static>(
+  async fn seek_packages<T: AsRef<Path> + Send + Sync, V: Versioned + Send + Sync + 'static>(
     crate_path: T,
   ) -> anyhow::Result<Vec<Package<V>>> {
     let mut result = Vec::new();
@@ -171,7 +171,8 @@ impl PackageManager for Cargo {
       .header(
         hyper::header::USER_AGENT,
         format!(
-          "mol-cargo/{} (https://github.com/DmitryDodzin/mol)",
+          "{}/{} (https://github.com/DmitryDodzin/mol)",
+          env!("CARGO_PKG_NAME"),
           env!("CARGO_PKG_VERSION")
         ),
       )
