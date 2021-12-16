@@ -3,3 +3,4 @@ sample/*
 !sample/branch_protection_rule
 !sample/label
 !sample/pull_request
+!sample/star

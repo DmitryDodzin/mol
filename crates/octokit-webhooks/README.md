@@ -43,7 +43,7 @@
 - [ ] repository_import
 - [ ] repository_vulnerability_alert
 - [ ] secret_scanning_alert
-- [ ] star
+- [x] star
 - [ ] status
 - [ ] team
 - [ ] team_add
