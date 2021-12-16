@@ -13,23 +13,15 @@ pub struct Release {
   pub html_url: String,
   pub id: u32,
   pub node_id: String,
-  /**
-   * The name of the tag.
-   */
+  /// The name of the tag.
   pub tag_name: String,
-  /**
-   * Specifies the commitish value that determines where the Git tag is created from.
-   */
+  /// Specifies the commitish value that determines where the Git tag is created from.
   pub target_commitish: String,
   pub name: String,
-  /**
-   * Wether the release is a draft or published
-   */
+  /// Wether the release is a draft or published
   pub draft: bool,
   pub author: User,
-  /**
-   * Whether the release is identified as a prerelease or a full release.
-   */
+  /// Whether the release is identified as a prerelease or a full release.
   pub prerelease: bool,
   #[serde(deserialize_with = "parse_flexible_timestamp_option")]
   pub created_at: Option<DateTime<Utc>>,
