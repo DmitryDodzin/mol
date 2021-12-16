@@ -22,7 +22,7 @@
 - [x] label
 - [ ] member
 - [ ] membership
-- [ ] meta
+- [x] meta
 - [ ] milestone
 - [ ] organization
 - [ ] org_block
