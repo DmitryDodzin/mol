@@ -63,49 +63,21 @@ pub struct StatusCommitMeta {
 
 #[cfg(test)]
 mod tests {
+  use crate::test_from_sample;
 
   use super::*;
 
   // TODO: fetch latest jsons from https://github.com/octokit/webhooks/tree/master/payload-examples/api.github.com
 
-  #[test]
-  fn payload() {
-    let raw = std::fs::read_to_string("./sample/status/payload.json").expect("test case not found");
-
-    let event = serde_json::from_str::<StatusEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn with_author_committer_null() {
-    let raw = std::fs::read_to_string("./sample/status/with-author-committer-null.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<StatusEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn with_installation() {
-    let raw = std::fs::read_to_string("./sample/status/with-installation.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<StatusEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
+  test_from_sample!(payload, StatusEvent, "./sample/status/payload.json");
+  test_from_sample!(
+    with_author_committer_null,
+    StatusEvent,
+    "./sample/status/with-author-committer-null.payload.json"
+  );
+  test_from_sample!(
+    with_installation,
+    StatusEvent,
+    "./sample/status/with-installation.payload.json"
+  );
 }

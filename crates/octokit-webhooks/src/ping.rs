@@ -18,49 +18,20 @@ pub struct PingEvent {
 
 #[cfg(test)]
 mod tests {
+  use crate::test_from_sample;
 
   use super::*;
 
   // TODO: fetch latest jsons from https://github.com/octokit/webhooks/tree/master/payload-examples/api.github.com
-
-  #[test]
-  fn payload() {
-    let raw = std::fs::read_to_string("./sample/ping/payload.json").expect("test case not found");
-
-    let event = serde_json::from_str::<PingEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn with_app_id() {
-    let raw = std::fs::read_to_string("./sample/ping/with-app_id.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PingEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn with_organization() {
-    let raw = std::fs::read_to_string("./sample/ping/with-organization.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PingEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
+  test_from_sample!(payload, PingEvent, "./sample/ping/payload.json");
+  test_from_sample!(
+    with_app_id,
+    PingEvent,
+    "./sample/ping/with-app_id.payload.json"
+  );
+  test_from_sample!(
+    with_organization,
+    PingEvent,
+    "./sample/ping/with-organization.payload.json"
+  );
 }

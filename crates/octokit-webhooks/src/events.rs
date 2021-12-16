@@ -28,6 +28,7 @@ pub enum WebhookEvents {
   OrgBlock,
   Package,
   PageBuild,
+  Ping,
   Project,
   ProjectCard,
   ProjectColumn,

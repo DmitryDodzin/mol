@@ -28,48 +28,21 @@ pub enum DeleteEventRefType {
 #[cfg(test)]
 mod tests {
 
+  use crate::test_from_sample;
+
   use super::*;
 
   // TODO: fetch latest jsons from https://github.com/octokit/webhooks/tree/master/payload-examples/api.github.com
 
-  #[test]
-  fn payload() {
-    let raw = std::fs::read_to_string("./sample/delete/payload.json").expect("test case not found");
-
-    let event = serde_json::from_str::<DeleteEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn with_installation() {
-    let raw = std::fs::read_to_string("./sample/delete/with-installation.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<DeleteEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn with_organization() {
-    let raw = std::fs::read_to_string("./sample/delete/with-organization.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<DeleteEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
+  test_from_sample!(payload, DeleteEvent, "./sample/delete/payload.json");
+  test_from_sample!(
+    with_installation,
+    DeleteEvent,
+    "./sample/delete/with-installation.payload.json"
+  );
+  test_from_sample!(
+    with_organization,
+    DeleteEvent,
+    "./sample/delete/with-organization.payload.json"
+  );
 }

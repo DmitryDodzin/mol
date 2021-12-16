@@ -41,52 +41,25 @@ pub struct PullRequestReviewEditedEventChange {
 
 #[cfg(test)]
 mod tests {
+  use crate::test_from_sample;
 
   use super::*;
 
   // TODO: fetch latest jsons from https://github.com/octokit/webhooks/tree/master/payload-examples/api.github.com
 
-  #[test]
-  fn dismissed() {
-    let raw = std::fs::read_to_string("./sample/pull_request_review/dismissed.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestReviewEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn submitted() {
-    let raw = std::fs::read_to_string("./sample/pull_request_review/submitted.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestReviewEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn submitted_with_organization() {
-    let raw = std::fs::read_to_string(
-      "./sample/pull_request_review/submitted.with-organization.payload.json",
-    )
-    .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestReviewEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
+  test_from_sample!(
+    dismissed,
+    PullRequestReviewEvent,
+    "./sample/pull_request_review/dismissed.payload.json"
+  );
+  test_from_sample!(
+    submitted,
+    PullRequestReviewEvent,
+    "./sample/pull_request_review/submitted.payload.json"
+  );
+  test_from_sample!(
+    submitted_with_organization,
+    PullRequestReviewEvent,
+    "./sample/pull_request_review/submitted.with-organization.payload.json"
+  );
 }

@@ -32,90 +32,32 @@ pub struct PushEvent {
 
 #[cfg(test)]
 mod tests {
+  use crate::test_from_sample;
 
   use super::*;
 
   // TODO: fetch latest jsons from https://github.com/octokit/webhooks/tree/master/payload-examples/api.github.com
 
-  #[test]
-  fn payload() {
-    let raw = std::fs::read_to_string("./sample/push/payload.json").expect("test case not found");
-
-    let event = serde_json::from_str::<PushEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn payload_1() {
-    let raw = std::fs::read_to_string("./sample/push/1.payload.json").expect("test case not found");
-
-    let event = serde_json::from_str::<PushEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn with_installation() {
-    let raw = std::fs::read_to_string("./sample/push/with-installation.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PushEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn with_new_branch() {
-    let raw = std::fs::read_to_string("./sample/push/with-new-branch.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PushEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn with_no_username_committer() {
-    let raw = std::fs::read_to_string("./sample/push/with-no-username-committer.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PushEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn with_organization() {
-    let raw = std::fs::read_to_string("./sample/push/with-organization.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PushEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
+  test_from_sample!(payload, PushEvent, "./sample/push/payload.json");
+  test_from_sample!(payload_1, PushEvent, "./sample/push/1.payload.json");
+  test_from_sample!(
+    with_installation,
+    PushEvent,
+    "./sample/push/with-installation.payload.json"
+  );
+  test_from_sample!(
+    with_new_branch,
+    PushEvent,
+    "./sample/push/with-new-branch.payload.json"
+  );
+  test_from_sample!(
+    with_no_username_committer,
+    PushEvent,
+    "./sample/push/with-no-username-committer.payload.json"
+  );
+  test_from_sample!(
+    with_organization,
+    PushEvent,
+    "./sample/push/with-organization.payload.json"
+  );
 }

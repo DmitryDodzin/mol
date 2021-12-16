@@ -40,64 +40,18 @@ pub struct LabelEditedEventChange {
 
 #[cfg(test)]
 mod tests {
+  use crate::test_from_sample;
 
   use super::*;
 
   // TODO: fetch latest jsons from https://github.com/octokit/webhooks/tree/master/payload-examples/api.github.com
 
-  #[test]
-  fn created() {
-    let raw =
-      std::fs::read_to_string("./sample/label/created.payload.json").expect("test case not found");
-
-    let event = serde_json::from_str::<LabelEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn created_with_installation() {
-    let raw = std::fs::read_to_string("./sample/label/created.with-installation.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<LabelEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn deleted() {
-    let raw =
-      std::fs::read_to_string("./sample/label/deleted.payload.json").expect("test case not found");
-
-    let event = serde_json::from_str::<LabelEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn edited() {
-    let raw =
-      std::fs::read_to_string("./sample/label/edited.payload.json").expect("test case not found");
-
-    let event = serde_json::from_str::<LabelEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
+  test_from_sample!(created, LabelEvent, "./sample/label/created.payload.json");
+  test_from_sample!(
+    created_with_installation,
+    LabelEvent,
+    "./sample/label/created.with-installation.payload.json"
+  );
+  test_from_sample!(deleted, LabelEvent, "./sample/label/deleted.payload.json");
+  test_from_sample!(edited, LabelEvent, "./sample/label/edited.payload.json");
 }

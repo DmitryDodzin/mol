@@ -27,36 +27,12 @@ pub enum StarEvent {
 
 #[cfg(test)]
 mod tests {
+  use crate::test_from_sample;
 
   use super::*;
 
   // TODO: fetch latest jsons from https://github.com/octokit/webhooks/tree/master/payload-examples/api.github.com
 
-  #[test]
-  fn created() {
-    let raw =
-      std::fs::read_to_string("./sample/star/created.payload.json").expect("test case not found");
-
-    let event = serde_json::from_str::<StarEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn deleted() {
-    let raw =
-      std::fs::read_to_string("./sample/star/deleted.payload.json").expect("test case not found");
-
-    let event = serde_json::from_str::<StarEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
+  test_from_sample!(created, StarEvent, "./sample/star/created.payload.json");
+  test_from_sample!(deleted, StarEvent, "./sample/star/deleted.payload.json");
 }

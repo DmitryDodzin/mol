@@ -17,22 +17,11 @@ pub enum MetaEvent {
 
 #[cfg(test)]
 mod tests {
+  use crate::test_from_sample;
 
   use super::*;
 
   // TODO: fetch latest jsons from https://github.com/octokit/webhooks/tree/master/payload-examples/api.github.com
 
-  #[test]
-  fn deleted() {
-    let raw =
-      std::fs::read_to_string("./sample/meta/deleted.payload.json").expect("test case not found");
-
-    let event = serde_json::from_str::<MetaEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
+  test_from_sample!(deleted, MetaEvent, "./sample/meta/deleted.payload.json");
 }

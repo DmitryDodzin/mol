@@ -1,3 +1,4 @@
+pub mod macros;
 pub mod properties;
 pub mod util;
 
@@ -30,3 +31,22 @@ pub use release::*;
 pub use repository::*;
 pub use star::*;
 pub use status::*;
+
+impl_event_unwrapper! {
+  #[derive(Debug)]
+  pub enum Events {
+    BranchProtectionRule(BranchProtectionRuleEvent),
+    Create(CreateEvent),
+    Delete(DeleteEvent),
+    Label(LabelEvent),
+    Meta(MetaEvent),
+    Ping(PingEvent),
+    PullRequest(PullRequestEvent),
+    PullRequestReview(PullRequestReviewEvent),
+    Push(PushEvent),
+    Release(ReleaseEvent),
+    Repository(RepositoryEvent),
+    Star(StarEvent),
+    Status(StatusEvent),
+  }
+}

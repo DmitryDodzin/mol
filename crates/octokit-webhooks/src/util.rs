@@ -48,8 +48,6 @@ where
 {
   let raw = Option::<FlexibleDate>::deserialize(deserializer)?;
 
-  println!("{:?}", raw);
-
   raw
     .map(|value| value.try_into().map_err(de::Error::custom))
     .transpose()

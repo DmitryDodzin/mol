@@ -60,178 +60,62 @@ pub struct ReleaseEditedEventChanges {
 
 #[cfg(test)]
 mod tests {
+  use crate::test_from_sample;
 
   use super::*;
 
   // TODO: fetch latest jsons from https://github.com/octokit/webhooks/tree/master/payload-examples/api.github.com
 
-  #[test]
-  fn created() {
-    let raw = std::fs::read_to_string("./sample/release/created.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<ReleaseEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn created_with_discussion_url() {
-    let raw = std::fs::read_to_string("./sample/release/created.with-discussion-url.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<ReleaseEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn created_with_installation() {
-    let raw = std::fs::read_to_string("./sample/release/created.with-installation.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<ReleaseEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn deleted() {
-    let raw = std::fs::read_to_string("./sample/release/deleted.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<ReleaseEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn deleted_with_reactions() {
-    let raw = std::fs::read_to_string("./sample/release/deleted.with-reactions.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<ReleaseEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn edited() {
-    let raw =
-      std::fs::read_to_string("./sample/release/edited.payload.json").expect("test case not found");
-
-    let event = serde_json::from_str::<ReleaseEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn edited_with_reactions() {
-    let raw = std::fs::read_to_string("./sample/release/edited.with-reactions.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<ReleaseEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn prereleased() {
-    let raw = std::fs::read_to_string("./sample/release/prereleased.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<ReleaseEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn prereleased_with_discussion_url() {
-    let raw =
-      std::fs::read_to_string("./sample/release/prereleased.with-disussion-url.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<ReleaseEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn published() {
-    let raw = std::fs::read_to_string("./sample/release/published.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<ReleaseEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn published_with_discussion_url() {
-    let raw =
-      std::fs::read_to_string("./sample/release/published.with-discussion-url.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<ReleaseEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn released() {
-    let raw =
-      std::fs::read_to_string("./sample/release/released.json").expect("test case not found");
-
-    let event = serde_json::from_str::<ReleaseEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
+  test_from_sample!(
+    created,
+    ReleaseEvent,
+    "./sample/release/created.payload.json"
+  );
+  test_from_sample!(
+    created_with_discussion_url,
+    ReleaseEvent,
+    "./sample/release/created.with-discussion-url.payload.json"
+  );
+  test_from_sample!(
+    created_with_installation,
+    ReleaseEvent,
+    "./sample/release/created.with-installation.payload.json"
+  );
+  test_from_sample!(
+    deleted,
+    ReleaseEvent,
+    "./sample/release/deleted.payload.json"
+  );
+  test_from_sample!(
+    deleted_with_reactions,
+    ReleaseEvent,
+    "./sample/release/deleted.with-reactions.payload.json"
+  );
+  test_from_sample!(edited, ReleaseEvent, "./sample/release/edited.payload.json");
+  test_from_sample!(
+    edited_with_reactions,
+    ReleaseEvent,
+    "./sample/release/edited.with-reactions.payload.json"
+  );
+  test_from_sample!(
+    prereleased,
+    ReleaseEvent,
+    "./sample/release/prereleased.payload.json"
+  );
+  test_from_sample!(
+    prereleased_with_discussion_url,
+    ReleaseEvent,
+    "./sample/release/prereleased.with-disussion-url.payload.json"
+  );
+  test_from_sample!(
+    published,
+    ReleaseEvent,
+    "./sample/release/published.payload.json"
+  );
+  test_from_sample!(
+    published_with_discussion_url,
+    ReleaseEvent,
+    "./sample/release/published.with-discussion-url.payload.json"
+  );
+  test_from_sample!(released, ReleaseEvent, "./sample/release/released.json");
 }

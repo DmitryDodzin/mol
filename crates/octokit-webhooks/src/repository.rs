@@ -91,181 +91,70 @@ pub struct RepositoryTransferredEventChanges {
 
 #[cfg(test)]
 mod tests {
+  use crate::test_from_sample;
 
   use super::*;
 
   // TODO: fetch latest jsons from https://github.com/octokit/webhooks/tree/master/payload-examples/api.github.com
 
-  #[test]
-  fn created() {
-    let raw = std::fs::read_to_string("./sample/repository/created.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<RepositoryEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn created_with_installation() {
-    let raw = std::fs::read_to_string("./sample/repository/created.with-installation.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<RepositoryEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn edited() {
-    let raw = std::fs::read_to_string("./sample/repository/edited.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<RepositoryEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn edited_with_default_branch_edit() {
-    let raw =
-      std::fs::read_to_string("./sample/repository/edited.with-default_branch-edit.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<RepositoryEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn privatized() {
-    let raw = std::fs::read_to_string("./sample/repository/privatized.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<RepositoryEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn privatized_with_organization() {
-    let raw =
-      std::fs::read_to_string("./sample/repository/privatized.with-organization.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<RepositoryEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn publicized() {
-    let raw = std::fs::read_to_string("./sample/repository/publicized.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<RepositoryEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn publicized_with_organization() {
-    let raw =
-      std::fs::read_to_string("./sample/repository/publicized.with-organization.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<RepositoryEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn renamed() {
-    let raw = std::fs::read_to_string("./sample/repository/renamed.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<RepositoryEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn transferred() {
-    let raw = std::fs::read_to_string("./sample/repository/transferred.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<RepositoryEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn transferred_with_installation() {
-    let raw =
-      std::fs::read_to_string("./sample/repository/transferred.with-installation.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<RepositoryEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn transferred_with_organization() {
-    let raw =
-      std::fs::read_to_string("./sample/repository/transferred.with-organization.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<RepositoryEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
+  test_from_sample!(
+    created,
+    RepositoryEvent,
+    "./sample/repository/created.payload.json"
+  );
+  test_from_sample!(
+    created_with_installation,
+    RepositoryEvent,
+    "./sample/repository/created.with-installation.payload.json"
+  );
+  test_from_sample!(
+    edited,
+    RepositoryEvent,
+    "./sample/repository/edited.payload.json"
+  );
+  test_from_sample!(
+    edited_with_default_branch_edit,
+    RepositoryEvent,
+    "./sample/repository/edited.with-default_branch-edit.payload.json"
+  );
+  test_from_sample!(
+    privatized,
+    RepositoryEvent,
+    "./sample/repository/privatized.payload.json"
+  );
+  test_from_sample!(
+    privatized_with_organization,
+    RepositoryEvent,
+    "./sample/repository/privatized.with-organization.payload.json"
+  );
+  test_from_sample!(
+    publicized,
+    RepositoryEvent,
+    "./sample/repository/publicized.payload.json"
+  );
+  test_from_sample!(
+    publicized_with_organization,
+    RepositoryEvent,
+    "./sample/repository/publicized.with-organization.payload.json"
+  );
+  test_from_sample!(
+    renamed,
+    RepositoryEvent,
+    "./sample/repository/renamed.payload.json"
+  );
+  test_from_sample!(
+    transferred,
+    RepositoryEvent,
+    "./sample/repository/transferred.payload.json"
+  );
+  test_from_sample!(
+    transferred_with_installation,
+    RepositoryEvent,
+    "./sample/repository/transferred.with-installation.payload.json"
+  );
+  test_from_sample!(
+    transferred_with_organization,
+    RepositoryEvent,
+    "./sample/repository/transferred.with-organization.payload.json"
+  );
 }

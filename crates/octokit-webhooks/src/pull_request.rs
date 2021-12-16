@@ -182,417 +182,150 @@ pub struct PullRequestEditedEventChanges {
 
 #[cfg(test)]
 mod tests {
+  use crate::test_from_sample;
 
   use super::*;
 
   // TODO: fetch latest jsons from https://github.com/octokit/webhooks/tree/master/payload-examples/api.github.com
 
-  #[test]
-  fn assigned() {
-    let raw = std::fs::read_to_string("./sample/pull_request/assigned.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn assigned_with_organization() {
-    let raw =
-      std::fs::read_to_string("./sample/pull_request/assigned.with-organization.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn closed() {
-    let raw = std::fs::read_to_string("./sample/pull_request/closed.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn closed_with_organization() {
-    let raw =
-      std::fs::read_to_string("./sample/pull_request/closed.with-organization.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn converted_to_draft() {
-    let raw = std::fs::read_to_string("./sample/pull_request/converted_to_draft.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn converted_to_draft_with_installation() {
-    let raw = std::fs::read_to_string(
-      "./sample/pull_request/converted_to_draft.with-installation.payload.json",
-    )
-    .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn converted_to_draft_with_organization() {
-    let raw = std::fs::read_to_string(
-      "./sample/pull_request/converted_to_draft.with-organization.payload.json",
-    )
-    .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn labeled() {
-    let raw = std::fs::read_to_string("./sample/pull_request/labeled.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn labeled_with_organization() {
-    let raw =
-      std::fs::read_to_string("./sample/pull_request/labeled.with-organization.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn locked() {
-    let raw = std::fs::read_to_string("./sample/pull_request/locked.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn locked_with_organization() {
-    let raw =
-      std::fs::read_to_string("./sample/pull_request/locked.with-organization.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn opened() {
-    let raw = std::fs::read_to_string("./sample/pull_request/opened.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn opened_with_null_body() {
-    let raw = std::fs::read_to_string("./sample/pull_request/opened.with-null-body.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn opened_with_organization() {
-    let raw =
-      std::fs::read_to_string("./sample/pull_request/opened.with-organization.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn ready_for_review() {
-    let raw = std::fs::read_to_string("./sample/pull_request/ready_for_review.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn ready_for_review_with_installation() {
-    let raw = std::fs::read_to_string(
-      "./sample/pull_request/ready_for_review.with-installation.payload.json",
-    )
-    .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn ready_for_review_with_organization() {
-    let raw = std::fs::read_to_string(
-      "./sample/pull_request/ready_for_review.with-organization.payload.json",
-    )
-    .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn reopened() {
-    let raw = std::fs::read_to_string("./sample/pull_request/reopened.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn reopened_with_organization() {
-    let raw =
-      std::fs::read_to_string("./sample/pull_request/reopened.with-organization.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn review_request_removed() {
-    let raw = std::fs::read_to_string("./sample/pull_request/review_request_removed.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn review_requested() {
-    let raw = std::fs::read_to_string("./sample/pull_request/review_requested.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn synchronize() {
-    let raw = std::fs::read_to_string("./sample/pull_request/synchronize.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn unassigned() {
-    let raw = std::fs::read_to_string("./sample/pull_request/unassigned.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn unassigned_with_organization() {
-    let raw =
-      std::fs::read_to_string("./sample/pull_request/unassigned.with-organization.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn unlabeled() {
-    let raw = std::fs::read_to_string("./sample/pull_request/unlabeled.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn unlabeled_with_organization() {
-    let raw =
-      std::fs::read_to_string("./sample/pull_request/unlabeled.with-organization.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn unlocked() {
-    let raw = std::fs::read_to_string("./sample/pull_request/unlocked.payload.json")
-      .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
-
-  #[test]
-  fn unlocked_with_organization() {
-    let raw =
-      std::fs::read_to_string("./sample/pull_request/unlocked.with-organization.payload.json")
-        .expect("test case not found");
-
-    let event = serde_json::from_str::<PullRequestEvent>(&raw);
-
-    if let Err(ref error) = event {
-      println!("{:#?}", error);
-    }
-
-    assert!(event.is_ok());
-  }
+  test_from_sample!(
+    assigned,
+    PullRequestEvent,
+    "./sample/pull_request/assigned.payload.json"
+  );
+  test_from_sample!(
+    assigned_with_organization,
+    PullRequestEvent,
+    "./sample/pull_request/assigned.with-organization.payload.json"
+  );
+  test_from_sample!(
+    closed,
+    PullRequestEvent,
+    "./sample/pull_request/closed.payload.json"
+  );
+  test_from_sample!(
+    closed_with_organization,
+    PullRequestEvent,
+    "./sample/pull_request/closed.with-organization.payload.json"
+  );
+  test_from_sample!(
+    converted_to_draft,
+    PullRequestEvent,
+    "./sample/pull_request/converted_to_draft.payload.json"
+  );
+  test_from_sample!(
+    converted_to_draft_with_installation,
+    PullRequestEvent,
+    "./sample/pull_request/converted_to_draft.with-installation.payload.json"
+  );
+  test_from_sample!(
+    converted_to_draft_with_organization,
+    PullRequestEvent,
+    "./sample/pull_request/converted_to_draft.with-organization.payload.json"
+  );
+  test_from_sample!(
+    labeled,
+    PullRequestEvent,
+    "./sample/pull_request/labeled.payload.json"
+  );
+  test_from_sample!(
+    labeled_with_organization,
+    PullRequestEvent,
+    "./sample/pull_request/labeled.with-organization.payload.json"
+  );
+  test_from_sample!(
+    locked,
+    PullRequestEvent,
+    "./sample/pull_request/locked.payload.json"
+  );
+  test_from_sample!(
+    locked_with_organization,
+    PullRequestEvent,
+    "./sample/pull_request/locked.with-organization.payload.json"
+  );
+  test_from_sample!(
+    opened,
+    PullRequestEvent,
+    "./sample/pull_request/opened.payload.json"
+  );
+  test_from_sample!(
+    opened_with_null_body,
+    PullRequestEvent,
+    "./sample/pull_request/opened.with-null-body.json"
+  );
+  test_from_sample!(
+    opened_with_organization,
+    PullRequestEvent,
+    "./sample/pull_request/opened.with-organization.payload.json"
+  );
+  test_from_sample!(
+    ready_for_review,
+    PullRequestEvent,
+    "./sample/pull_request/ready_for_review.payload.json"
+  );
+  test_from_sample!(
+    ready_for_review_with_installation,
+    PullRequestEvent,
+    "./sample/pull_request/ready_for_review.with-installation.payload.json"
+  );
+  test_from_sample!(
+    ready_for_review_with_organization,
+    PullRequestEvent,
+    "./sample/pull_request/ready_for_review.with-organization.payload.json"
+  );
+  test_from_sample!(
+    reopened,
+    PullRequestEvent,
+    "./sample/pull_request/reopened.payload.json"
+  );
+  test_from_sample!(
+    reopened_with_organization,
+    PullRequestEvent,
+    "./sample/pull_request/reopened.with-organization.payload.json"
+  );
+  test_from_sample!(
+    review_request_removed,
+    PullRequestEvent,
+    "./sample/pull_request/review_request_removed.payload.json"
+  );
+  test_from_sample!(
+    review_requested,
+    PullRequestEvent,
+    "./sample/pull_request/review_requested.payload.json"
+  );
+  test_from_sample!(
+    synchronize,
+    PullRequestEvent,
+    "./sample/pull_request/synchronize.payload.json"
+  );
+  test_from_sample!(
+    unassigned,
+    PullRequestEvent,
+    "./sample/pull_request/unassigned.payload.json"
+  );
+  test_from_sample!(
+    unassigned_with_organization,
+    PullRequestEvent,
+    "./sample/pull_request/unassigned.with-organization.payload.json"
+  );
+  test_from_sample!(
+    unlabeled,
+    PullRequestEvent,
+    "./sample/pull_request/unlabeled.payload.json"
+  );
+  test_from_sample!(
+    unlabeled_with_organization,
+    PullRequestEvent,
+    "./sample/pull_request/unlabeled.with-organization.payload.json"
+  );
+  test_from_sample!(
+    unlocked,
+    PullRequestEvent,
+    "./sample/pull_request/unlocked.payload.json"
+  );
+  test_from_sample!(
+    unlocked_with_organization,
+    PullRequestEvent,
+    "./sample/pull_request/unlocked.with-organization.payload.json"
+  );
 }
