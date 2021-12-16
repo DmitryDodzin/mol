@@ -51,7 +51,9 @@ mod tests {
 
     let event = serde_json::from_str::<BranchProtectionRuleEvent>(&raw);
 
-    println!("{:?}", event);
+    if let Err(ref error) = event {
+      println!("{:#?}", error);
+    }
 
     assert!(event.is_ok());
   }
@@ -63,7 +65,9 @@ mod tests {
 
     let event = serde_json::from_str::<BranchProtectionRuleEvent>(&raw);
 
-    println!("{:?}", event);
+    if let Err(ref error) = event {
+      println!("{:#?}", error);
+    }
 
     assert!(event.is_ok());
   }
@@ -75,7 +79,9 @@ mod tests {
 
     let event = serde_json::from_str::<BranchProtectionRuleEvent>(&raw);
 
-    println!("{:?}", event);
+    if let Err(ref error) = event {
+      println!("{:#?}", error);
+    }
 
     assert!(event.is_ok());
   }

@@ -1,9 +1,10 @@
+use std::convert::TryInto;
+
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::{
   de::{self, Deserializer},
   Deserialize,
 };
-use std::convert::TryInto;
 
 #[derive(Debug, Deserialize)]
 pub struct WrappedSource<T> {
