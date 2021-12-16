@@ -40,13 +40,15 @@ jobs:
         components: rustfmt, clippy
         override: true
     - name: 🔨 Build
-      run: cargo build --verbose --workspace
+      run: cargo build --verbose --workspace --no-default-features
+    - name: 🔨 Build All Features
+      run: cargo build --verbose --workspace --all-features
     - name: 📎 Fmt
-      run: cargo fmt -- --check
+      run: cargo fmt --all -- --check
     - name: 📎 Clippy
-      run: cargo clippy --workspace
+      run: cargo clippy --workspace --all-features
     - name: 🔎 Test
-      run: cargo test --verbose --workspace
+      run: cargo test --verbose --workspace --all-features
     
   check-unused-dependencies:
     runs-on: ubuntu-latest
@@ -71,6 +73,6 @@ jobs:
           toolchain: nightly
           override: true
       - name: ⚡ Installs cargo-udeps
-        run: cargo install --force cargo-udeps
+        run: cargo install cargo-udeps
       - name: ⚡ Run cargo udeps
         run: cargo udeps

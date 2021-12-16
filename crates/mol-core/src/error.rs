@@ -1,106 +1,59 @@
-use std::error::Error;
-use std::fmt::{Display, Formatter};
+use std::marker::PhantomData;
 
-#[derive(Debug)]
+use itertools::Itertools;
+use thiserror::Error;
+
+use crate::plugin::{CORE_VERSION, RUSTC_VERSION};
+use crate::version::VersionEditor;
+
+#[derive(Debug, Error)]
 pub enum ChangesetParseError {
+  #[error("Header not found")]
   HeaderNotFound,
+  #[error("Header parsing error")]
   HeaderParsing,
 }
 
-impl Display for ChangesetParseError {
-  fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-    match self {
-      ChangesetParseError::HeaderNotFound => write!(fmt, "Header Not Found"),
-      ChangesetParseError::HeaderParsing => write!(fmt, "Header Parsing Error"),
-    }
+#[derive(Debug, Error)]
+#[error("\"{0}\" isn't a version, should be {}", V::options().iter().map(|val| val.to_string()).join("/"))]
+pub struct VersionParseError<V: VersionEditor>(String, PhantomData<V>);
+
+impl<V: VersionEditor> From<&str> for VersionParseError<V> {
+  fn from(value: &str) -> Self {
+    VersionParseError(value.to_owned(), PhantomData::<V>)
   }
 }
 
-impl Error for ChangesetParseError {}
-
-#[derive(Debug)]
-pub struct ChangelogParseError(String);
-
-impl From<String> for ChangelogParseError {
-  // TODO: add code here
-  fn from(value: String) -> Self {
-    ChangelogParseError(value)
-  }
-}
-
-impl Display for ChangelogParseError {
-  // TODO: add code here
-  fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-    write!(fmt, "Could not parse changelog: {}", self.0)
-  }
-}
-
-impl Error for ChangelogParseError {}
-
-#[derive(Debug)]
-pub struct ExplorerError;
-
-impl From<std::io::Error> for ExplorerError {
-  fn from(_: std::io::Error) -> Self {
-    ExplorerError
-  }
-}
-
-impl Display for ExplorerError {
-  // TODO: add code here
-  fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-    write!(fmt, "ExplorerError")
-  }
-}
-
-impl Error for ExplorerError {}
-
-#[derive(Debug)]
-pub struct VersionParseError(String);
-
-impl From<String> for VersionParseError {
-  // TODO: add code here
-  fn from(value: String) -> Self {
-    VersionParseError(value)
-  }
-}
-
-impl Display for VersionParseError {
-  // TODO: add code here
-  fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-    write!(
-      fmt,
-      "\"{}\" isn't a version, should be patch/minor/major",
-      self.0
-    )
-  }
-}
-
-impl Error for VersionParseError {}
-
-#[derive(Debug)]
+#[derive(Debug, Error)]
+#[error("Version bump error")]
 pub struct VersionBumpError;
 
-impl Display for VersionBumpError {
-  // TODO: add code here
-  fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-    write!(fmt, "VersionBumpError")
+fn pretty_print_version_incompatbility(rustc_ver: &str, core_ver: &str) -> String {
+  let mut message = vec![];
+
+  if rustc_ver != RUSTC_VERSION {
+    message.push(format!(
+      "rustc -> wanted {} but got {}",
+      RUSTC_VERSION, rustc_ver
+    ));
   }
+
+  if core_ver != CORE_VERSION {
+    message.push(format!(
+      "mol-core -> wanted {} but got {}",
+      CORE_VERSION, core_ver
+    ));
+  }
+
+  message.join("\n")
 }
 
-impl Error for VersionBumpError {}
-
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum PluginLoadError {
-  IncompatibleVersion,
+  #[error("Incompatible versions detected \n{}", pretty_print_version_incompatbility(.0, .1))]
+  IncompatibleVersion(String, String),
+  #[error(transparent)]
+  LibloadingError(#[from] libloading::Error),
+  #[error(transparent)]
+  GeneralError(#[from] anyhow::Error),
 }
-
-impl Display for PluginLoadError {
-  fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-    match self {
-      PluginLoadError::IncompatibleVersion => write!(fmt, "Incompatible Plugin Version"),
-    }
-  }
-}
-
-impl Error for PluginLoadError {}

@@ -90,13 +90,13 @@ impl From<SemanticVersion> for Semantic {
 }
 
 impl FromStr for Semantic {
-  type Err = VersionParseError;
+  type Err = VersionParseError<Semantic>;
   fn from_str(value: &str) -> Result<Self, Self::Err> {
     match value.to_lowercase().as_str() {
       "patch" => Ok(Semantic::patch()),
       "minor" => Ok(Semantic::minor()),
       "major" => Ok(Semantic::major()),
-      _ => Err(VersionParseError::from(value.to_string())),
+      _ => Err(VersionParseError::<Semantic>::from(value)),
     }
   }
 }

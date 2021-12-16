@@ -9,7 +9,7 @@ use crate::version::Versioned;
 pub trait PackageManager {
   fn default_path() -> &'static str;
 
-  async fn read_package<T: AsRef<Path> + Send + Sync, V: Versioned + Send + Sync + 'static>(
+  async fn seek_packages<T: AsRef<Path> + Send + Sync, V: Versioned + Send + Sync + 'static>(
     crate_path: T,
   ) -> anyhow::Result<Vec<Package<V>>>;
 
