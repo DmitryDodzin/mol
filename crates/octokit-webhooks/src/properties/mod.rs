@@ -14,6 +14,8 @@ mod reactions;
 mod release;
 mod release_asset;
 mod repository;
+mod review;
+mod simple_pull_request;
 mod team;
 mod user;
 
@@ -33,5 +35,7 @@ pub use reactions::*;
 pub use release::*;
 pub use release_asset::*;
 pub use repository::*;
+pub use review::*;
+pub use simple_pull_request::*;
 pub use team::*;
 pub use user::*;

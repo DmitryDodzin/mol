@@ -7,6 +7,7 @@ sample/*
 !sample/meta
 !sample/ping
 !sample/pull_request
+!sample/pull_request_review
 !sample/push
 !sample/release
 !sample/repository

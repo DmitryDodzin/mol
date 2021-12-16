@@ -8,9 +8,7 @@ use crate::properties::*;
 pub enum MetaEvent {
   Deleted {
     hook_id: u32,
-    /**
-     * The modified webhook. This will contain different keys based on the type of webhook it is: repository, organization, business, app, or GitHub Marketplace.
-     */
+    /// The modified webhook. This will contain different keys based on the type of webhook it is: repository, organization, business, app, or GitHub Marketplace.
     hook: Hook,
     repository: Repository,
     sender: User,
