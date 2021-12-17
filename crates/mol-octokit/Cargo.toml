@@ -1,0 +1,12 @@
+[package]
+name = "mol-octokit"
+version = "0.0.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+octokit-ntex = { path = "../octokit-ntex", version = "0.0" }
+octokit-webhooks = { path = "../octokit-webhooks", version = "0.0" }
+
+ntex = "0.4"

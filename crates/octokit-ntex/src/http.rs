@@ -1,0 +1,34 @@
+use ntex::{
+  http,
+  web::{self, middleware, App, HttpServer},
+};
+
+use crate::{octokit_route, Octokit};
+
+#[web::get("/")]
+async fn no_params() -> &'static str {
+  "Hi and Welcome to octokit-ntex bot =]\r\n"
+}
+
+pub async fn listen<T>(octokit: T) -> std::io::Result<()>
+where
+  T: Octokit + Send + Sync + 'static,
+{
+  std::env::set_var("RUST_LOG", "ntex=info");
+  env_logger::init();
+
+  let octokit = web::types::Data::new(octokit);
+
+  HttpServer::new(move || {
+    App::new()
+      .wrap(middleware::Logger::default())
+      .app_data(octokit.clone())
+      .service(web::resource("/callback").route(web::post().to(octokit_route::<T>)))
+      .service(no_params)
+  })
+  .bind("0.0.0.0:8081")?
+  .workers(4)
+  .keep_alive(http::KeepAlive::Disabled)
+  .run()
+  .await
+}
