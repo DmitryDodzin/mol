@@ -59,6 +59,9 @@ jobs:
         with:
           path: ~/.cargo
           key: ${{ runner.os }}-cargo-check-unused-dependencies-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-check-unused-dependencies-${{ hashFiles('Cargo.toml') }}
+            ${{ runner.os }}-cargo-check-unused-dependencies
       - name: 🔥 Cargo Cache
         uses: actions/cache@v1
         with:
