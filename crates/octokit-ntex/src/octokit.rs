@@ -10,7 +10,7 @@ use octokit_webhooks::*;
 
 #[async_trait]
 pub trait Octokit {
-  fn on_event(&self, event: Events);
+  async fn on_event(&self, event: Events);
 }
 
 pub async fn octokit_route<T>(
@@ -37,7 +37,7 @@ where
 
   let event = (action, &bytes as &[u8]).try_into().map_err(|_| ())?;
 
-  octokit.on_event(event);
+  octokit.on_event(event).await;
 
   Ok("Ok")
 }

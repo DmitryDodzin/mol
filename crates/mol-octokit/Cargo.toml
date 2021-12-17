@@ -9,4 +9,5 @@ edition = "2018"
 octokit-ntex = { path = "../octokit-ntex", version = "0.0" }
 octokit-webhooks = { path = "../octokit-webhooks", version = "0.0" }
 
+async-trait = "0.1"
 ntex = "0.4"

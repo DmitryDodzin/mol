@@ -32,7 +32,7 @@ pub use repository::*;
 pub use star::*;
 pub use status::*;
 
-impl_event_unwrapper! {
+impl_events_unwrapper! {
   #[derive(Debug)]
   pub enum Events {
     BranchProtectionRule(BranchProtectionRuleEvent),

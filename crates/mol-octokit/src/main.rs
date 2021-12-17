@@ -1,10 +1,14 @@
+use async_trait::async_trait;
+
 use octokit_ntex::Octokit;
+use octokit_webhooks::*;
 
 struct MolOctokit;
 
+#[async_trait]
 impl Octokit for MolOctokit {
-  fn on_event(&self, event: octokit_webhooks::Events) {
-    println!("got event {:?}", event);
+  async fn on_event(&self, event: Events) {
+    println!("Got event {:?}", event.name());
   }
 }
 

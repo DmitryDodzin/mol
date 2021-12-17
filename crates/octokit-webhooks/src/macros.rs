@@ -1,5 +1,5 @@
 #[macro_export]
-macro_rules! impl_event_unwrapper {
+macro_rules! impl_events_unwrapper {
   (
      $(#[$meta:meta])*
      $vis:vis enum $name:ident {
@@ -15,6 +15,16 @@ macro_rules! impl_event_unwrapper {
         $(#[$variant_meta:meta])*
         $variant_name(Box<$variant_type>),
         )*
+      }
+
+      impl $name {
+        pub fn name(&self) -> $crate::WebhookEvents {
+          match self {
+            $(
+                $name::$variant_name(_) => $crate::WebhookEvents::$variant_name,
+            )*
+          }
+        }
       }
 
       #[allow(clippy::redundant_closure, clippy::large_enum_variant)]
