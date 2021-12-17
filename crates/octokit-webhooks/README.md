@@ -24,7 +24,7 @@
 - [ ] membership
 - [x] meta
 - [ ] milestone
-- [ ] organization
+- [x] organization
 - [ ] org_block
 - [ ] package
 - [ ] page_build

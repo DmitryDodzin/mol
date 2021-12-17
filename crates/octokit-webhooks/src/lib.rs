@@ -8,6 +8,7 @@ mod delete;
 mod events;
 mod label;
 mod meta;
+mod organization;
 mod ping;
 mod pull_request;
 mod pull_request_review;
@@ -23,6 +24,7 @@ pub use delete::*;
 pub use events::*;
 pub use label::*;
 pub use meta::*;
+pub use organization::*;
 pub use ping::*;
 pub use pull_request::*;
 pub use pull_request_review::*;
@@ -40,6 +42,7 @@ impl_events_unwrapper! {
     Delete(DeleteEvent),
     Label(LabelEvent),
     Meta(MetaEvent),
+    Organization(OrganizationEvent),
     Ping(PingEvent),
     PullRequest(PullRequestEvent),
     PullRequestReview(PullRequestReviewEvent),
