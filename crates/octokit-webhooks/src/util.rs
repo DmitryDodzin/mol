@@ -8,7 +8,7 @@ use serde::{
 
 #[derive(Debug, Deserialize)]
 pub struct WrappedSource<T> {
-  from: T,
+  pub from: T,
 }
 
 #[derive(Debug, Deserialize)]

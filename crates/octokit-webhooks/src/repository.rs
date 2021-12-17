@@ -69,24 +69,24 @@ pub enum RepositoryEvent {
 
 #[derive(Debug, Deserialize)]
 pub struct RepositoryEditedEventChanges {
-  description: Option<WrappedSource<Option<String>>>,
-  default_branch: Option<WrappedSource<String>>,
-  homepage: Option<WrappedSource<Option<String>>>,
+  pub description: Option<WrappedSource<Option<String>>>,
+  pub default_branch: Option<WrappedSource<String>>,
+  pub homepage: Option<WrappedSource<Option<String>>>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct RepositoryRenamedEventChanges {
-  name: Option<WrappedSource<String>>,
+  pub name: Option<WrappedSource<String>>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct RepositoryTransferredEventUserWrapper {
-  user: Option<User>,
+  pub user: Option<User>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct RepositoryTransferredEventChanges {
-  owner: Option<WrappedSource<RepositoryTransferredEventUserWrapper>>,
+  pub owner: Option<WrappedSource<RepositoryTransferredEventUserWrapper>>,
 }
 
 #[cfg(test)]
