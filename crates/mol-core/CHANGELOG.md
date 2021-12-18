@@ -1,5 +1,13 @@
 # mol-core
 
+## 0.4.0
+
+### Minor Changes
+
+- feat: move internal mol-cargo functions to a mol-core struct
+
+- chore: update function names and use thiserror
+
 ## 0.3.0
 
 ### Minor Changes
