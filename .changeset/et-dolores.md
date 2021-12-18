@@ -1,5 +1,4 @@
 ---
-"mol-octokit": minor
 "octokit-ntex": minor
 "octokit-webhooks": minor
 ---
