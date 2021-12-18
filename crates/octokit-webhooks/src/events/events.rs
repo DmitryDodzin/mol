@@ -41,6 +41,7 @@ pub enum WebhookEvents {
   RegistryPackage,
   Release,
   Repository,
+  RepositoryDispatch,
   RepositoryImport,
   RepositoryVulnerabilityAlert,
   SecretScanningAlert,
@@ -49,6 +50,7 @@ pub enum WebhookEvents {
   Team,
   TeamAdd,
   Watch,
+  WorkflowDispatch,
   WorkflowJob,
   WorkflowRun,
   #[serde(rename = "*")]
