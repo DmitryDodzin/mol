@@ -1,4 +1,7 @@
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
+
+use crate::util::parse_flexible_timestamp;
 
 use super::{App, CheckRunConclusion, CheckRunDeployment, CheckRunPullRequest, CheckRunStatus};
 
@@ -25,8 +28,9 @@ pub struct CheckSuite {
   pub pull_requests: Vec<CheckRunPullRequest>,
   pub deployment: Option<CheckRunDeployment>,
   pub app: App,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub created_at: DateTime<Utc>,
   // TODO: update to timestamp when github will return RFC3339 format
-  pub created_at: String,
-  // TODO: update to timestamp when github will return RFC3339 format
-  pub updated_at: String,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub updated_at: DateTime<Utc>,
 }

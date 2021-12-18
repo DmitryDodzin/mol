@@ -55,8 +55,8 @@
         "description": null,
         "external_url": "http://super-duper.example.com",
         "html_url": "http://github.com/apps/super-duper",
-        "created_at": "2018-04-25 20:42:10",
-        "updated_at": "2018-04-25 20:42:10"
+        "created_at": "2018-04-25T20:42:10Z",
+        "updated_at": "2018-04-25T20:42:10Z"
       },
       "created_at": "2018-05-04T01:14:52Z",
       "updated_at": "2018-05-04T01:14:52Z"
@@ -88,8 +88,8 @@
       "description": null,
       "external_url": "http://super-duper.example.com",
       "html_url": "http://github.com/apps/super-duper",
-      "created_at": "2018-04-25 20:42:10",
-      "updated_at": "2018-04-25 20:42:10"
+      "created_at": "2018-04-25T20:42:10Z",
+      "updated_at": "2018-04-25T20:42:10Z"
     },
     "pull_requests": []
   },
