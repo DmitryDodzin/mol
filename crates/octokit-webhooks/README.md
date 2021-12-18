@@ -18,7 +18,7 @@
 - [ ] fork
 - [ ] gollum
 - [ ] issues
-- [ ] issue_comment
+- [x] issue_comment
 - [x] label
 - [ ] member
 - [ ] membership

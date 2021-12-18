@@ -29,19 +29,20 @@ macro_rules! impl_events_unwrapper {
 
       #[allow(clippy::redundant_closure, clippy::large_enum_variant)]
       impl<'a> std::convert::TryInto<$name> for ($crate::WebhookEvents, &'a [u8]) {
-        type Error = serde_json::Error;
+        type Error = $crate::EventsUnwrapError;
         fn try_into(self) -> Result<$name, Self::Error> {
           match self.0 {
             $(
                 $crate::WebhookEvents::$variant_name => {
                   serde_json::from_slice::<$crate::$variant_type>(self.1)
                     .map(|event| $crate::Events::$variant_name(Box::new(event)))
+                    .map_err(|err| err.into())
                 }
             )*
             _ => {
               println!("Webhook not implemented: {:?}", self.0);
 
-              unimplemented!()
+              Err(EventsUnwrapError::NotImplemented)
             },
           }
         }
