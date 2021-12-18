@@ -60,6 +60,8 @@ mod tests {
       fn $name() {
         let raw = std::fs::read_to_string($source).expect("test case not found");
 
+        println!("{:?}", raw);
+
         let event = serde_json::from_str::<$event>(&raw);
 
         if let Err(ref error) = event {

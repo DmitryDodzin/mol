@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 use crate::util::{parse_flexible_timestamp, parse_flexible_timestamp_option};
 
-use super::{App, CheckRunDeployment, CheckRunPullRequest};
+use super::{App, CheckRunPullRequest, CheckSuite};
 
 #[derive(Debug, Deserialize)]
 pub struct CheckRun {
@@ -43,7 +43,7 @@ pub struct CheckRun {
    * The name of the check run.
    */
   pub name: String,
-  pub check_suite: CheckRunCheckSuite,
+  pub check_suite: CheckSuite,
   pub app: App,
   pub pull_requests: Vec<CheckRunPullRequest>,
 }
@@ -55,35 +55,6 @@ pub struct CheckRunOutput {
   pub text: Option<String>,
   pub annotations_count: u64,
   pub annotations_url: String,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct CheckRunCheckSuite {
-  /**
-   * The id of the check suite that this check run is part of.
-   */
-  pub id: u64,
-  pub node_id: Option<String>,
-  pub head_branch: Option<String>,
-  /**
-   * The SHA of the head commit that is being checked.
-   */
-  pub head_sha: String,
-  pub status: CheckRunStatus,
-  pub conclusion: Option<CheckRunConclusion>,
-  pub url: String,
-  pub before: Option<String>,
-  pub after: Option<String>,
-  /**
-   * An array of pull requests that match this check suite. A pull request matches a check suite if they have the same `head_sha` and `head_branch`. When the check suite's `head_branch` is in a forked repository it will be `null` and the `pull_requests` array will be empty.
-   */
-  pub pull_requests: Vec<CheckRunPullRequest>,
-  pub deployment: Option<CheckRunDeployment>,
-  pub app: App,
-  #[serde(deserialize_with = "parse_flexible_timestamp")]
-  pub created_at: DateTime<Utc>,
-  #[serde(deserialize_with = "parse_flexible_timestamp")]
-  pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Deserialize)]

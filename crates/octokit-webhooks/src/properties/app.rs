@@ -1,7 +1,7 @@
-use chrono::{DateTime, Utc};
+// use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
-use crate::util::parse_flexible_timestamp;
+// use crate::util::parse_flexible_timestamp;
 use crate::WebhookEvents;
 
 use super::User;
@@ -25,10 +25,10 @@ pub struct App {
   pub description: Option<String>,
   pub external_url: String,
   pub html_url: String,
-  #[serde(deserialize_with = "parse_flexible_timestamp")]
-  pub created_at: DateTime<Utc>,
-  #[serde(deserialize_with = "parse_flexible_timestamp")]
-  pub updated_at: DateTime<Utc>,
+  // TODO: update to timestamp when github will return RFC3339 format
+  pub created_at: String,
+  // TODO: update to timestamp when github will return RFC3339 format
+  pub updated_at: String,
   /**
    * The set of permissions for the GitHub app
    */
