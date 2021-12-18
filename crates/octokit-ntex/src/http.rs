@@ -3,14 +3,14 @@ use ntex::{
   web::{self, middleware, App, HttpServer},
 };
 
-use crate::{octokit_route, Octokit};
+use crate::octokit::{octokit_route, Octokit, OctokitConfig};
 
 #[web::get("/")]
 async fn no_params() -> &'static str {
   "Hi and Welcome to octokit-ntex bot =]\r\n"
 }
 
-pub async fn listen<T>(octokit: T) -> std::io::Result<()>
+pub async fn listen<T>(octokit: T, config: OctokitConfig) -> std::io::Result<()>
 where
   T: Octokit + Send + Sync + 'static,
 {
@@ -18,11 +18,13 @@ where
   env_logger::init();
 
   let octokit = web::types::Data::new(octokit);
+  let octokit_config = web::types::Data::new(config);
 
   HttpServer::new(move || {
     App::new()
       .wrap(middleware::Logger::default())
       .app_data(octokit.clone())
+      .app_data(octokit_config.clone())
       .service(web::resource("/callback").route(web::post().to(octokit_route::<T>)))
       .service(no_params)
   })
