@@ -45,9 +45,9 @@
 - [ ] repository_vulnerability_alert
 - [ ] secret_scanning_alert
 - [x] star
-- [ ] status
+- [x] status
 - [ ] team
 - [ ] team_add
 - [ ] watch
-- [ ] workflow_job
+- [x] workflow_job
 - [x] workflow_run
