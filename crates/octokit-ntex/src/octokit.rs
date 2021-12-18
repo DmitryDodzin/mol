@@ -41,7 +41,7 @@ pub async fn octokit_route<T>(
   mut body: web::types::Payload,
   octokit: web::types::Data<T>,
   octokit_config: web::types::Data<OctokitConfig>,
-) -> Result<&'static str, error::PayloadError>
+) -> Result<&'static str, error::InternalError<String>>
 where
   T: Octokit,
 {
@@ -52,18 +52,20 @@ where
     .flatten()
     .map(|val| serde_plain::from_str::<WebhookEvents>(val).ok())
     .flatten()
-    .ok_or(())?;
+    .ok_or_else(|| error::ErrorBadRequest("invalid x-github-event".to_owned()))?;
 
   let mut bytes = BytesMut::new();
   while let Some(item) = ntex::util::next(&mut body).await {
-    bytes.extend_from_slice(&item?);
+    bytes.extend_from_slice(&item.map_err(|err| error::ErrorBadRequest(format!("{}", err)))?);
   }
 
   if !octokit_route_validate_signature(octokit_config.secret.as_bytes(), &bytes, &req) {
-    return Err(().into());
+    return Err(error::ErrorUnauthorized("secret didn't match".to_owned()));
   }
 
-  let event = (action, &bytes as &[u8]).try_into().map_err(|_| ())?;
+  let event = (action, &bytes as &[u8])
+    .try_into()
+    .map_err(|err| error::ErrorBadRequest(format!("{}", err)))?;
 
   octokit.on_event(event).await;
 
