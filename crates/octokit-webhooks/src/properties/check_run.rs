@@ -1,4 +1,7 @@
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
+
+use crate::util::{parse_flexible_timestamp, parse_flexible_timestamp_option};
 
 use super::{App, CheckRunDeployment, CheckRunPullRequest};
 
@@ -28,11 +31,13 @@ pub struct CheckRun {
   /**
    * The time that the check run began. This is a timestamp in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format: `YYYY-MM-DDTHH:MM:SSZ`.
    */
-  pub started_at: String,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub started_at: DateTime<Utc>,
   /**
    * The time the check completed. This is a timestamp in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format: `YYYY-MM-DDTHH:MM:SSZ`.
    */
-  pub completed_at: Option<String>,
+  #[serde(deserialize_with = "parse_flexible_timestamp_option")]
+  pub completed_at: Option<DateTime<Utc>>,
   pub output: CheckRunOutput,
   /**
    * The name of the check run.
@@ -57,7 +62,7 @@ pub struct CheckRunCheckSuite {
   /**
    * The id of the check suite that this check run is part of.
    */
-  pub id: String,
+  pub id: u64,
   pub node_id: Option<String>,
   pub head_branch: Option<String>,
   /**
@@ -75,8 +80,10 @@ pub struct CheckRunCheckSuite {
   pub pull_requests: Vec<CheckRunPullRequest>,
   pub deployment: Option<CheckRunDeployment>,
   pub app: App,
-  pub created_at: String,
-  pub updated_at: String,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub created_at: DateTime<Utc>,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Deserialize)]

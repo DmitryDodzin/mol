@@ -1,4 +1,7 @@
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
+
+use crate::util::{parse_flexible_timestamp, parse_flexible_timestamp_option};
 
 use super::{App, AuthorAssociation, Label, Milestone, Reactions, User};
 
@@ -31,9 +34,12 @@ pub struct Issue {
   pub assignees: Vec<User>,
   pub milestone: Option<Milestone>,
   pub comments: u64,
-  pub created_at: String,
-  pub updated_at: String,
-  pub closed_at: Option<String>,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub created_at: DateTime<Utc>,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub updated_at: DateTime<Utc>,
+  #[serde(deserialize_with = "parse_flexible_timestamp_option")]
+  pub closed_at: Option<DateTime<Utc>>,
   pub author_association: AuthorAssociation,
   pub active_lock_reason: Option<IssueActiveLockReason>,
   pub draft: bool,

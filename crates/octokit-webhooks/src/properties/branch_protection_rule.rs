@@ -1,4 +1,7 @@
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
+
+use crate::util::parse_flexible_timestamp;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -13,8 +16,10 @@ pub struct BranchProtectionRule {
   pub id: u64,
   pub repository_id: u64,
   pub name: String,
-  pub created_at: String,
-  pub updated_at: String,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub created_at: DateTime<Utc>,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub updated_at: DateTime<Utc>,
   pub pull_request_reviews_enforcement_level: BranchProtectionRuleEnforcementLevel,
   pub required_approving_review_count: u64,
   pub dismiss_stale_reviews_on_push: bool,

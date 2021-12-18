@@ -1,4 +1,7 @@
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
+
+use crate::util::parse_flexible_timestamp;
 
 use super::User;
 
@@ -22,7 +25,9 @@ pub struct ReleaseAsset {
   pub content_type: String,
   pub size: u64,
   pub download_count: u64,
-  pub created_at: String,
-  pub updated_at: String,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub created_at: DateTime<Utc>,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub updated_at: DateTime<Utc>,
   pub uploader: Option<User>,
 }

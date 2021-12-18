@@ -1,4 +1,7 @@
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
+
+use crate::util::parse_flexible_timestamp;
 
 use super::{App, AuthorAssociation, Reactions, User};
 
@@ -16,8 +19,10 @@ pub struct IssueComment {
   pub id: u64,
   pub node_id: String,
   pub user: User,
-  pub created_at: String,
-  pub updated_at: String,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub created_at: DateTime<Utc>,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub updated_at: DateTime<Utc>,
   pub author_association: AuthorAssociation,
   /**
    * Contents of the issue comment

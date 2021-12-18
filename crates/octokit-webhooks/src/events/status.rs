@@ -1,6 +1,8 @@
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
 use crate::properties::*;
+use crate::util::parse_flexible_timestamp;
 
 #[derive(Debug, Deserialize)]
 pub struct StatusEvent {
@@ -20,8 +22,10 @@ pub struct StatusEvent {
   pub commit: StatusCommit,
   /// An array of branch objects containing the status' SHA. Each branch contains the given SHA, but the SHA may or may not be the head of the branch. The array includes a maximum of 10 branches.
   pub branches: Vec<BranchRef>,
-  pub created_at: String,
-  pub updated_at: String,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub created_at: DateTime<Utc>,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub updated_at: DateTime<Utc>,
   pub repository: Repository,
   pub sender: User,
   pub installation: Option<InstallationLite>,

@@ -1,4 +1,7 @@
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
+
+use crate::util::parse_flexible_timestamp;
 
 use super::{AuthorAssociation, Link, User};
 
@@ -12,7 +15,8 @@ pub struct Review {
   pub body: Option<String>,
   /// A commit SHA for the review.
   pub commit_id: String,
-  pub submitted_at: String,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub submitted_at: DateTime<Utc>,
   pub state: ReviewState,
   pub html_url: String,
   pub pull_request_url: String,

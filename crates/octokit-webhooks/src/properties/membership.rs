@@ -1,5 +1,7 @@
-// use chrono::{DateTime, Utc};
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
+
+use crate::util::{parse_flexible_timestamp, parse_flexible_timestamp_option};
 
 use super::User;
 
@@ -19,8 +21,10 @@ pub struct MemberInvitation {
   pub login: String,
   pub email: Option<String>,
   pub role: String,
-  pub created_at: String,
-  pub failed_at: Option<String>,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub created_at: DateTime<Utc>,
+  #[serde(deserialize_with = "parse_flexible_timestamp_option")]
+  pub failed_at: Option<DateTime<Utc>>,
   pub failed_reason: Option<String>,
   pub inviter: User,
   pub team_count: u64,
