@@ -12,6 +12,7 @@ impl_events_unwrapper! {
   pub enum Events {
     BranchProtectionRule(BranchProtectionRuleEvent),
     CheckRun(CheckRunEvent),
+    CheckSuite(CheckSuiteEvent),
     Create(CreateEvent),
     Delete(DeleteEvent),
     IssueComment(IssueCommentEvent),

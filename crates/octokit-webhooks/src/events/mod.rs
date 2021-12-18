@@ -1,5 +1,6 @@
 mod branch_protection_rule;
 mod check_run;
+mod check_suite;
 mod create;
 mod delete;
 mod issue_comment;
@@ -20,6 +21,7 @@ mod workflow_run;
 
 pub use branch_protection_rule::*;
 pub use check_run::*;
+pub use check_suite::*;
 pub use create::*;
 pub use delete::*;
 pub use issue_comment::*;
