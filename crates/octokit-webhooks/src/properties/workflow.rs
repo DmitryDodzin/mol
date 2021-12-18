@@ -13,3 +13,19 @@ pub struct Workflow {
   pub updated_at: String,
   pub url: String,
 }
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum WorkflowStatus {
+  Queued,
+  InProgress,
+  Completed,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum WorkflowConclusion {
+  Success,
+  Skipped,
+  Failure,
+}

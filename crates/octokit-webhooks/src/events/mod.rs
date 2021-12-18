@@ -15,6 +15,7 @@ mod repository;
 mod star;
 mod status;
 mod webhook_events;
+mod workflow_job;
 mod workflow_run;
 
 pub use branch_protection_rule::*;
@@ -34,4 +35,5 @@ pub use repository::*;
 pub use star::*;
 pub use status::*;
 pub use webhook_events::*;
+pub use workflow_job::*;
 pub use workflow_run::*;

@@ -30,6 +30,7 @@ mod team;
 mod user;
 mod verification;
 mod workflow;
+mod workflow_job;
 mod workflow_run;
 
 pub use app::*;
@@ -64,4 +65,5 @@ pub use team::*;
 pub use user::*;
 pub use verification::*;
 pub use workflow::*;
+pub use workflow_job::*;
 pub use workflow_run::*;
