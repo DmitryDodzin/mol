@@ -5,7 +5,7 @@
 ## Types
 - [x] branch_protection_rule
 - [x] check_run
-- [ ] check_suite
+- [x] check_suite
 - [ ] code_scanning_alert
 - [ ] commit_comment
 - [x] create
