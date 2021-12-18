@@ -38,7 +38,11 @@ macro_rules! impl_events_unwrapper {
                     .map(|event| $crate::Events::$variant_name(Box::new(event)))
                 }
             )*
-            _ => unimplemented!(),
+            _ => {
+              println!("Webhook not implemented: {:?}", self.0);
+
+              unimplemented!()
+            },
           }
         }
       }

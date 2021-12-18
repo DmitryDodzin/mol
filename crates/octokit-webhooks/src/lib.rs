@@ -6,6 +6,7 @@ mod branch_protection_rule;
 mod create;
 mod delete;
 mod events;
+mod issue_comment;
 mod label;
 mod meta;
 mod organization;
@@ -22,6 +23,7 @@ pub use branch_protection_rule::*;
 pub use create::*;
 pub use delete::*;
 pub use events::*;
+pub use issue_comment::*;
 pub use label::*;
 pub use meta::*;
 pub use organization::*;
@@ -40,6 +42,7 @@ impl_events_unwrapper! {
     BranchProtectionRule(BranchProtectionRuleEvent),
     Create(CreateEvent),
     Delete(DeleteEvent),
+    IssueComment(IssueCommentEvent),
     Label(LabelEvent),
     Meta(MetaEvent),
     Organization(OrganizationEvent),
