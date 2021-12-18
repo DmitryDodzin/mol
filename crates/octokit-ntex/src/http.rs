@@ -1,3 +1,5 @@
+use std::net::ToSocketAddrs;
+
 use ntex::{
   http,
   web::{self, middleware, App, HttpServer},
@@ -10,9 +12,10 @@ async fn no_params() -> &'static str {
   "Hi and Welcome to octokit-ntex bot =]\r\n"
 }
 
-pub async fn listen<T>(octokit: T, config: OctokitConfig) -> std::io::Result<()>
+pub async fn listen<T, P>(addr: P, octokit: T, config: OctokitConfig) -> std::io::Result<()>
 where
   T: Octokit + Send + Sync + 'static,
+  P: ToSocketAddrs + Send + Sync + 'static,
 {
   std::env::set_var("RUST_LOG", "ntex=info");
   env_logger::init();
@@ -28,7 +31,7 @@ where
       .service(web::resource("/callback").route(web::post().to(octokit_route::<T>)))
       .service(no_params)
   })
-  .bind("0.0.0.0:8081")?
+  .bind(addr)?
   .workers(4)
   .keep_alive(http::KeepAlive::Disabled)
   .run()

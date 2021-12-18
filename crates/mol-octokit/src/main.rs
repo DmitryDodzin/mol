@@ -15,6 +15,7 @@ impl Octokit for MolOctokit {
 #[ntex::main]
 async fn main() -> std::io::Result<()> {
   octokit_ntex::listen(
+    "0.0.0.0:8081",
     MolOctokit,
     OctokitConfig {
       secret: "foobar2000".to_owned(),
