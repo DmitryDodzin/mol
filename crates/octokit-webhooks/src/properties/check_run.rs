@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 use crate::util::{parse_flexible_timestamp, parse_flexible_timestamp_option};
 
-use super::{App, CheckRunPullRequest, CheckSuite};
+use super::{App, CheckSuite, RunPullRequest};
 
 #[derive(Debug, Deserialize)]
 pub struct CheckRun {
@@ -45,7 +45,7 @@ pub struct CheckRun {
   pub name: String,
   pub check_suite: CheckSuite,
   pub app: App,
-  pub pull_requests: Vec<CheckRunPullRequest>,
+  pub pull_requests: Vec<RunPullRequest>,
 }
 
 #[derive(Debug, Deserialize)]

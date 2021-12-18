@@ -4,7 +4,7 @@
 
 ## Types
 - [x] branch_protection_rule
-- [ ] check_run
+- [x] check_run
 - [ ] check_suite
 - [ ] code_scanning_alert
 - [ ] commit_comment
@@ -50,4 +50,4 @@
 - [ ] team_add
 - [ ] watch
 - [ ] workflow_job
-- [ ] workflow_run
+- [x] workflow_run

@@ -26,5 +26,6 @@ impl_events_unwrapper! {
     Repository(RepositoryEvent),
     Star(StarEvent),
     Status(StatusEvent),
+    WorkflowRun(WorkflowRunEvent),
   }
 }

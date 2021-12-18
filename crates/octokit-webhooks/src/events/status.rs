@@ -59,7 +59,7 @@ pub struct StatusCommitMeta {
   pub author: Committer,
   pub committer: Committer,
   pub message: String,
-  pub tree: CommitRef,
+  pub tree: CommitUrl,
   pub url: String,
   pub comment_count: u64,
   pub verification: Verification,

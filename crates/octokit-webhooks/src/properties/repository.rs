@@ -118,6 +118,13 @@ pub struct Repository {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct RepoRef {
+  pub id: u64,
+  pub url: String,
+  pub name: String,
+}
+
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum RepositoryVisibility {
   Public,
