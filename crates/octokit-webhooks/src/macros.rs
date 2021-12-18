@@ -29,7 +29,7 @@ macro_rules! impl_events_unwrapper {
 
       #[allow(clippy::redundant_closure, clippy::large_enum_variant)]
       impl<'a> std::convert::TryInto<$name> for ($crate::WebhookEvents, &'a [u8]) {
-        type Error = $crate::EventsUnwrapError;
+        type Error = $crate::error::EventsUnwrapError;
         fn try_into(self) -> Result<$name, Self::Error> {
           match self.0 {
             $(
@@ -42,7 +42,7 @@ macro_rules! impl_events_unwrapper {
             _ => {
               println!("Webhook not implemented: {:?}", self.0);
 
-              Err(EventsUnwrapError::NotImplemented)
+              Err($crate::error::EventsUnwrapError::NotImplemented)
             },
           }
         }
