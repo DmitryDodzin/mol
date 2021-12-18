@@ -32,7 +32,6 @@ where
       .service(no_params)
   })
   .bind(addr)?
-  .workers(4)
   .keep_alive(http::KeepAlive::Disabled)
   .run()
   .await
