@@ -3,13 +3,14 @@ use std::convert::TryInto;
 use async_trait::async_trait;
 use hmac::{Hmac, Mac};
 use ntex::{
+  http::HttpMessage,
   util::BytesMut,
   web::{self, error, HttpRequest},
 };
 use sha2::Sha256;
 use subtle::ConstantTimeEq;
 
-use octokit_webhooks::*;
+use octokit_webhooks::{util::UrlencodedWrapper, *};
 
 #[async_trait]
 pub trait Octokit {
@@ -63,9 +64,17 @@ where
     return Err(error::ErrorUnauthorized("secret didn't match".to_owned()));
   }
 
-  let event = (action, &bytes as &[u8])
-    .try_into()
-    .map_err(|err| error::ErrorBadRequest(format!("{}", err)))?;
+  let event = match req.content_type() {
+    "application/json" => (action, &bytes as &[u8]).try_into(),
+    "application/x-www-form-urlencoded" => {
+      let proxy = serde_urlencoded::from_bytes::<UrlencodedWrapper>(&bytes)
+        .map_err(|err| error::ErrorBadRequest(format!("{}", err)))?;
+
+      (action, proxy.payload.as_bytes()).try_into()
+    }
+    _ => unimplemented!(),
+  }
+  .map_err(|err| error::ErrorBadRequest(format!("{}", err)))?;
 
   octokit.on_event(event).await;
 
