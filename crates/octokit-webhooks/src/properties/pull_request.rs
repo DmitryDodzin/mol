@@ -5,7 +5,7 @@ use crate::util::{parse_flexible_timestamp, parse_flexible_timestamp_option};
 
 use super::{AuthorAssociation, Label, Link, Milestone, Repository, Team, User};
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct PullRequest {
   pub url: String,
   pub id: u64,
@@ -66,14 +66,14 @@ pub struct PullRequest {
   pub changed_files: u64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum PullRequestState {
   Open,
   Closed,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum PullRequestActiveLockReason {
   #[serde(rename = "resolved")]
   Resolved,
@@ -85,14 +85,14 @@ pub enum PullRequestActiveLockReason {
   Spam,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(untagged)]
 pub enum UserOrTeam {
   User(User),
   Team(Team),
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct PullRequestRef {
   pub label: String,
   pub r#ref: String,
@@ -101,7 +101,7 @@ pub struct PullRequestRef {
   pub repo: Repository,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct PullRequestLinks {
   #[serde(rename = "self")]
   pub _self: Link,

@@ -5,7 +5,7 @@ use crate::util::{parse_flexible_timestamp, parse_flexible_timestamp_option};
 
 use super::User;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Milestone {
   pub url: String,
   pub html_url: String,
@@ -32,7 +32,7 @@ pub struct Milestone {
   pub closed_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum MilestoneState {
   Open,

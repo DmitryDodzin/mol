@@ -5,7 +5,7 @@ use crate::util::{parse_flexible_timestamp, parse_flexible_timestamp_option};
 
 use super::{License, User};
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Repository {
   /// Unique identifier of the repository.
   pub id: u64,
@@ -124,7 +124,7 @@ pub struct RepoRef {
   pub name: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum RepositoryVisibility {
   Public,
@@ -132,7 +132,7 @@ pub enum RepositoryVisibility {
   Internal,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct RepositoryPermission {
   pub pull: bool,
   pub push: bool,
