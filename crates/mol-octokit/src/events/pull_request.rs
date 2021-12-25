@@ -1,10 +1,11 @@
 use async_trait::async_trait;
 use serde::Deserialize;
 
-use octokit_webhooks::*;
+use octokit_hyper::prelude::{Client, RequestExt};
+use octokit_hyper::properties::PullRequest;
+use octokit_webhooks::PullRequestEvent;
 
 use crate::actions::{Action, UnwrapActions};
-use crate::octokit::{Client, RequestExt};
 
 #[derive(Debug, Deserialize)]
 struct File {
@@ -27,7 +28,7 @@ struct CompareResult {
 
 async fn fetch_compare(
   client: &Client,
-  pull_request: &properties::PullRequest,
+  pull_request: &PullRequest,
 ) -> anyhow::Result<CompareResult> {
   let compare_url = pull_request
     .base

@@ -1,5 +1,4 @@
 pub mod error;
-pub mod properties;
 pub mod util;
 
 mod events;

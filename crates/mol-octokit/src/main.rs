@@ -5,7 +5,6 @@ use octokit_webhooks::*;
 
 mod actions;
 mod events;
-mod octokit;
 
 use actions::UnwrapActions;
 

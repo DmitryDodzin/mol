@@ -1,0 +1,31 @@
+[package]
+name = "octokit-hyper"
+version = "0.0.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = ["client"]
+client = [
+  "async-trait",
+  "anyhow",
+  "lazy_static",
+  "http",
+  "hyper",
+  "hyper-tls",
+  "serde_json",
+]
+
+[dependencies]
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+
+
+async-trait = { version = "0.1", optional = true }
+anyhow = { version = "1", optional = true }
+lazy_static = { version = "1", optional = true }
+http = { version = "0.2", optional = true }
+hyper = { version = "0.14", features = ["client", "http1", "http2"], optional = true }
+hyper-tls = { version = "0.5", optional = true }
+serde_json = { version = "1", optional = true }

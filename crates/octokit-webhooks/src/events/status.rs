@@ -1,8 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
-use crate::properties::*;
-use crate::util::parse_flexible_timestamp;
+use octokit_hyper::{properties::*, util::parse_flexible_timestamp};
 
 #[derive(Debug, Deserialize)]
 pub struct StatusEvent {

@@ -2,7 +2,6 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
 use crate::util::parse_flexible_timestamp;
-use crate::WebhookEvents;
 
 use super::User;
 
@@ -36,7 +35,7 @@ pub struct App {
   /**
    * The list of events for the GitHub app
    */
-  pub events: Option<Vec<WebhookEvents>>,
+  pub events: Option<Vec<String>>, // TODO:: change to WebhookEvents
 }
 
 #[derive(Debug, Deserialize)]

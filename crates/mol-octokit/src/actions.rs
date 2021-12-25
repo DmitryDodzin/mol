@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use serde::Serialize;
 
 use mol_core::prelude::*;
-use octokit_webhooks::properties::{PullRequest, Repository};
+use octokit_hyper::properties::{PullRequest, Repository};
 
 #[derive(Debug)]
 pub enum Action {
