@@ -9,16 +9,8 @@ use crate::actions::{Action, UnwrapActions};
 
 #[derive(Debug, Deserialize)]
 struct File {
-  sha: String,
   filename: String,
   status: String,
-  additions: u64,
-  deletions: u64,
-  changes: u64,
-  blob_url: String,
-  raw_url: String,
-  contents_url: String,
-  patch: String,
 }
 
 #[derive(Debug, Deserialize)]
