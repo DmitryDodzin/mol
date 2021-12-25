@@ -21,9 +21,11 @@ async-trait = "0.1"
 dashmap = "4"
 futures = "0.3"
 globset = "0.4"
+faker_rand = "0.1"
 itertools = "0.10"
 libloading = "0.7"
 lazy_static = "1"
+rand = "0.8"
 thiserror = "1"
 tokio = { version = "1", default-features = false, features = ["fs", "io-util", "rt"] }
 

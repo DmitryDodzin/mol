@@ -37,7 +37,7 @@ impl Action {
         };
 
         let create_changeset_url = serde_urlencoded::to_string(FileCreate {
-          filename: format!(".changeset/brave-flies-matter.md"),
+          filename: format!(".changeset/{}", Changeset::<Semantic>::random_file_name()),
           value: changeset.to_string(),
         })
         .map(|params| {

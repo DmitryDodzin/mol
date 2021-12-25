@@ -1,11 +1,10 @@
 use async_trait::async_trait;
-use hyper::{Body, Client, Method, Request};
-use hyper_tls::HttpsConnector;
 use serde::Deserialize;
 
 use octokit_webhooks::*;
 
 use crate::actions::{Action, UnwrapActions};
+use crate::octokit::Client;
 
 #[derive(Debug, Deserialize)]
 struct File {
@@ -23,49 +22,18 @@ struct File {
 
 #[derive(Debug, Deserialize)]
 struct CompareResult {
-  url: String,
-  html_url: String,
-  permalink_url: String,
-  diff_url: String,
-  patch_url: String,
-  status: String, // TODO: Replace
-  ahead_by: u64,
-  behind_by: u64,
-  total_commits: u64,
   files: Vec<File>,
 }
 
 async fn fetch_compare(pull_request: &properties::PullRequest) -> anyhow::Result<CompareResult> {
-  let head_sha = &pull_request.head.sha;
-  let base_sha = &pull_request.base.sha;
-
   let compare_url = pull_request
     .base
     .repo
     .compare_url
-    .replace("{base}", base_sha)
-    .replace("{head}", head_sha);
+    .replace("{base}", &pull_request.base.sha)
+    .replace("{head}", &pull_request.head.sha);
 
-  let https = HttpsConnector::new();
-  let client = Client::builder().build::<_, hyper::Body>(https);
-
-  let req = Request::builder()
-    .method(Method::GET)
-    .uri(compare_url)
-    .header(
-      "user-agent",
-      format!(
-        "{}/{} (https://github.com/DmitryDodzin/mol)",
-        env!("CARGO_PKG_NAME"),
-        env!("CARGO_PKG_VERSION")
-      ),
-    )
-    .body(Body::empty())?;
-
-  let res = client.request(req).await?;
-  let buf = hyper::body::to_bytes(res).await?;
-
-  serde_json::from_slice(&buf).map_err(|err| err.into())
+  Client::new().get(&compare_url).await
 }
 
 #[async_trait]
@@ -81,29 +49,35 @@ impl UnwrapActions for PullRequestEvent {
         installation: _,
         organization: _,
         sender: _,
-      } => match fetch_compare(pull_request).await {
-        Ok(comparison) => {
-          let changesets: Vec<&File> = comparison
-            .files
-            .iter()
-            .filter(|file| {
-              file.filename.starts_with(".changesets") && !file.filename.ends_with("README.md")
-            })
-            .collect();
+      } => {
+        if !pull_request.head.r#ref.starts_with("mol/") {
+          match fetch_compare(pull_request).await {
+            Ok(comparison) => {
+              let changesets: Vec<&File> = comparison
+                .files
+                .iter()
+                .filter(|file| {
+                  file.filename.starts_with(".changesets")
+                    && (file.status == "added" || file.status == "modified")
+                    && !file.filename.ends_with("README.md")
+                })
+                .collect();
 
-          if changesets.is_empty() {
-            actions.push(Action::CommentNoChangesets {
-              branch: pull_request.head.r#ref.clone(),
-              latest_commit: pull_request.head.sha.clone(),
-              repository: repository.clone(),
-              pull_request: pull_request.clone(),
-            });
+              if changesets.is_empty() {
+                actions.push(Action::CommentNoChangesets {
+                  branch: pull_request.head.r#ref.clone(),
+                  latest_commit: pull_request.head.sha.clone(),
+                  repository: repository.clone(),
+                  pull_request: pull_request.clone(),
+                });
+              }
+            }
+            Err(err) => {
+              println!("{:?}", err);
+            }
           }
         }
-        Err(err) => {
-          println!("{:?}", err);
-        }
-      },
+      }
       _ => {}
     }
 
