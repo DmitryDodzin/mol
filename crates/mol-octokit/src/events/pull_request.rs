@@ -4,7 +4,7 @@ use serde::Deserialize;
 use octokit_webhooks::*;
 
 use crate::actions::{Action, UnwrapActions};
-use crate::octokit::Client;
+use crate::octokit::{Client, RequestExt};
 
 #[derive(Debug, Deserialize)]
 struct File {
@@ -25,7 +25,10 @@ struct CompareResult {
   files: Vec<File>,
 }
 
-async fn fetch_compare(pull_request: &properties::PullRequest) -> anyhow::Result<CompareResult> {
+async fn fetch_compare(
+  client: &Client,
+  pull_request: &properties::PullRequest,
+) -> anyhow::Result<CompareResult> {
   let compare_url = pull_request
     .base
     .repo
@@ -33,12 +36,14 @@ async fn fetch_compare(pull_request: &properties::PullRequest) -> anyhow::Result
     .replace("{base}", &pull_request.base.sha)
     .replace("{head}", &pull_request.head.sha);
 
-  Client::new().get(&compare_url).await
+  Client::get(&compare_url).send(client).await
 }
 
 #[async_trait]
+#[allow(clippy::single_match)]
 impl UnwrapActions for PullRequestEvent {
   async fn unwrap_actions(&self) -> Vec<Action> {
+    let client = Client::new();
     let mut actions = Vec::new();
 
     match self {
@@ -51,19 +56,13 @@ impl UnwrapActions for PullRequestEvent {
         sender: _,
       } => {
         if !pull_request.head.r#ref.starts_with("mol/") {
-          match fetch_compare(pull_request).await {
+          match fetch_compare(&client, pull_request).await {
             Ok(comparison) => {
-              let changesets: Vec<&File> = comparison
-                .files
-                .iter()
-                .filter(|file| {
-                  file.filename.starts_with(".changesets")
-                    && (file.status == "added" || file.status == "modified")
-                    && !file.filename.ends_with("README.md")
-                })
-                .collect();
-
-              if changesets.is_empty() {
+              if !comparison.files.iter().any(|file| {
+                file.filename.starts_with(".changesets")
+                  && (file.status == "added" || file.status == "modified")
+                  && !file.filename.ends_with("README.md")
+              }) {
                 actions.push(Action::CommentNoChangesets {
                   branch: pull_request.head.r#ref.clone(),
                   latest_commit: pull_request.head.sha.clone(),
