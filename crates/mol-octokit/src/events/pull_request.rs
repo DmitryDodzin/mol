@@ -1,35 +1,26 @@
 use async_trait::async_trait;
-use serde::Deserialize;
 
-use octokit_hyper::prelude::{Client, RequestExt};
-use octokit_hyper::properties::PullRequest;
+use octokit_hyper::{
+  api::compare::{client::compare_request, CompareReply},
+  prelude::{Client, RequestExt},
+  properties::{PullRequest, Repository},
+};
 use octokit_webhooks::PullRequestEvent;
 
 use crate::actions::{Action, UnwrapActions};
 
-#[derive(Debug, Deserialize)]
-struct File {
-  filename: String,
-  status: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct CompareResult {
-  files: Vec<File>,
-}
-
 async fn fetch_compare(
   client: &Client,
+  repository: &Repository,
   pull_request: &PullRequest,
-) -> anyhow::Result<CompareResult> {
-  let compare_url = pull_request
-    .base
-    .repo
-    .compare_url
-    .replace("{base}", &pull_request.base.sha)
-    .replace("{head}", &pull_request.head.sha);
-
-  Client::get(&compare_url).send(client).await
+) -> anyhow::Result<CompareReply> {
+  compare_request(
+    &repository.full_name,
+    &pull_request.base.r#ref,
+    &pull_request.head.r#ref,
+  )
+  .send(client)
+  .await
 }
 
 #[async_trait]
@@ -49,7 +40,7 @@ impl UnwrapActions for PullRequestEvent {
         sender: _,
       } => {
         if !pull_request.head.r#ref.starts_with("mol/") {
-          match fetch_compare(&client, pull_request).await {
+          match fetch_compare(&client, repository, pull_request).await {
             Ok(comparison) => {
               if !comparison.files.iter().any(|file| {
                 file.filename.starts_with(".changesets")

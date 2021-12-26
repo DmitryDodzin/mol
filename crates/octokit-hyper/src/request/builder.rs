@@ -18,7 +18,11 @@ lazy_static! {
 pub struct RequestBuilder<T = Unauthorized>(Builder, T);
 
 impl RequestBuilder {
-  pub fn new(url: &str) -> RequestBuilder<Unauthorized> {
+  pub fn new<T>(url: T) -> RequestBuilder<Unauthorized>
+  where
+    http::Uri: TryFrom<T>,
+    <http::Uri as TryFrom<T>>::Error: Into<http::Error>,
+  {
     RequestBuilder(
       Builder::new()
         .uri(url)
