@@ -20,6 +20,16 @@ impl UnwrapActions for PullRequestEvent {
         organization: _,
         sender: _,
       }
+      | PullRequestEvent::Synchronize {
+        number: _,
+        pull_request,
+        before: _,
+        after: _,
+        repository,
+        installation: _,
+        organization: _,
+        sender: _,
+      }
       | PullRequestEvent::Reopened {
         number: _,
         pull_request,
