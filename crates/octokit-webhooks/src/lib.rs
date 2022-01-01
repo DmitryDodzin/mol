@@ -2,7 +2,7 @@ pub mod error;
 pub mod util;
 
 mod events;
-mod macros;
+mod r#macro;
 
 pub use events::*;
 

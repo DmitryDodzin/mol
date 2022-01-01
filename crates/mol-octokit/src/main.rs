@@ -1,7 +1,8 @@
 use async_trait::async_trait;
 
+use octokit_hyper::prelude::*;
 use octokit_ntex::{Octokit, OctokitConfig};
-use octokit_webhooks::*;
+use octokit_webhooks::Events;
 
 mod actions;
 mod events;
@@ -12,11 +13,12 @@ struct MolOctokit;
 
 #[async_trait]
 impl Octokit for MolOctokit {
-  async fn on_event(&self, event: Events) {
+  async fn on_event(&self, event: Events) -> anyhow::Result<()> {
     println!("Got: {:?}", event.name());
+    let client = Client::new();
 
     let actions = match event {
-      Events::PullRequest(event) => event.unwrap_actions().await,
+      Events::PullRequest(event) => event.unwrap_actions(&client).await?,
       _ => vec![],
     };
 
@@ -26,11 +28,11 @@ impl Octokit for MolOctokit {
       for action in actions {
         println!("Doing: {:#?}", action);
 
-        if let Err(err) = action.execute().await {
-          println!("{:?}", err);
-        }
+        action.execute(&client).await?;
       }
     }
+
+    Ok(())
   }
 }
 

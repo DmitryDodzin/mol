@@ -8,6 +8,7 @@ edition = "2018"
 [dependencies]
 octokit-webhooks = { path = "../octokit-webhooks", version = "0.0", default-features = false, features = ["json"] }
 
+anyhow = "1"
 async-trait = "0.1"
 env_logger = "0.9"
 futures-util = "0.3"

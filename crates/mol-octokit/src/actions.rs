@@ -2,13 +2,15 @@ use async_trait::async_trait;
 use serde::Serialize;
 
 use mol_core::prelude::*;
+use octokit_hyper::api::pull::reviews::{
+  client::create_review_request, CreateReviewEvent, PullRequestCreateReviewBody,
+};
+use octokit_hyper::client::Client;
 use octokit_hyper::properties::{PullRequest, Repository};
 
 #[derive(Debug)]
 pub enum Action {
   CommentNoChangesets {
-    branch: String,
-    latest_commit: String,
     pull_request: PullRequest,
     repository: Repository,
   },
@@ -21,13 +23,11 @@ struct FileCreate {
 }
 
 impl Action {
-  pub async fn execute(&self) -> anyhow::Result<()> {
+  pub async fn execute(&self, client: &Client) -> anyhow::Result<()> {
     match self {
       Action::CommentNoChangesets {
-        branch,
-        repository,
-        latest_commit,
         pull_request,
+        repository,
       } => {
         let changeset = Changeset {
           message: pull_request.title.clone(),
@@ -43,12 +43,26 @@ impl Action {
         .map(|params| {
           format!(
             "https://github.com/{}/new/{}?{}",
-            repository.full_name, branch, params
+            repository.full_name, pull_request.head.r#ref, params
           )
         })
         .expect("No Url");
 
-        println!("###  ⚠️  No Changeset found\n\nLatest commit: {}\n\n[Click here if you're a maintainer who wants to add a changeset to this PR]({})\n", latest_commit, create_changeset_url);
+        let message = format!("###  ⚠️  No Changeset found\n\nLatest commit: {}\n\n[Click here if you're a maintainer who wants to add a changeset to this PR]({})\n", pull_request.head.sha, create_changeset_url);
+
+        let update = create_review_request(
+          &repository.full_name,
+          pull_request.id,
+          PullRequestCreateReviewBody {
+            event: Some(CreateReviewEvent::Comment),
+            body: Some(message),
+            ..Default::default()
+          },
+        )
+        .send(client)
+        .await?;
+
+        println!("{:?}", update);
       }
     }
 
@@ -58,5 +72,5 @@ impl Action {
 
 #[async_trait]
 pub trait UnwrapActions {
-  async fn unwrap_actions(&self) -> Vec<Action>;
+  async fn unwrap_actions(&self, client: &Client) -> anyhow::Result<Vec<Action>>;
 }

@@ -14,7 +14,7 @@ use octokit_webhooks::{util::UrlencodedWrapper, *};
 
 #[async_trait]
 pub trait Octokit {
-  async fn on_event(&self, event: Events);
+  async fn on_event(&self, event: Events) -> anyhow::Result<()>;
 }
 
 pub fn octokit_route_validate_signature(secret: &[u8], body: &[u8], req: &HttpRequest) -> bool {
@@ -76,7 +76,9 @@ where
   }
   .map_err(|err| error::ErrorBadRequest(format!("{}", err)))?;
 
-  octokit.on_event(event).await;
+  if let Err(error) = octokit.on_event(event).await {
+    println!("{:?}", error);
+  }
 
   Ok("Ok")
 }

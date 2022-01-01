@@ -4,6 +4,7 @@ pub mod client;
 pub mod request;
 
 pub mod api;
+pub mod r#macro;
 pub mod properties;
 pub mod util;
 

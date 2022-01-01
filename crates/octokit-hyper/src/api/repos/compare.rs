@@ -18,12 +18,16 @@ pub struct CompareReply {
 
 #[cfg(feature = "client")]
 pub mod client {
-  use crate::api::GITHUB_API;
-  use crate::request::builder::RequestBuilder;
+  use crate::octokit_request;
+  use crate::request::{middleware::Unauthorized, proxy::RequestProxy};
 
-  #[cfg(feature = "client")]
-  pub fn compare_request(repo: &str, base: &str, head: &str) -> RequestBuilder {
-    RequestBuilder::new(format!("{}/repos/{}/{}..{}", *GITHUB_API, repo, base, head))
-      .method(hyper::Method::GET)
+  use super::CompareReply;
+
+  pub fn compare_request(
+    repo: &str,
+    base: &str,
+    head: &str,
+  ) -> RequestProxy<CompareReply, Unauthorized> {
+    RequestProxy::new(octokit_request!(GET, "/repos/{}/{}..{}", repo, base, head))
   }
 }

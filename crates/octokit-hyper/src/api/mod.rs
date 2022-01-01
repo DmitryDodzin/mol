@@ -1,4 +1,6 @@
-pub mod compare;
+mod repos;
+
+pub use repos::*;
 
 #[cfg(feature = "client")]
 lazy_static::lazy_static! {
