@@ -26,8 +26,6 @@ impl Octokit for MolOctokit {
       println!("Doing: Nothing");
     } else {
       for action in actions {
-        println!("Doing: {:#?}", action);
-
         action.execute(&client).await?;
       }
     }

@@ -5,11 +5,17 @@ lazy_static! {
   static ref AUTHORIZATION_HEADER: &'static str = "Authorization";
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct OAuth {
   pub access_token: String,
   pub scope: String,
   pub token_type: String,
+}
+
+impl From<&OAuth> for OAuth {
+  fn from(auth: &OAuth) -> Self {
+    auth.clone()
+  }
 }
 
 pub struct Unauthorized;

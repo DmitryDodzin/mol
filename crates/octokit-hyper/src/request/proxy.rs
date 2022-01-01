@@ -29,7 +29,10 @@ where
     RequestProxy(builder, creator, PhantomData)
   }
 
-  pub fn map<K>(self, cb: &dyn Fn(RequestBuilder<U>) -> RequestBuilder<K>) -> RequestProxy<T, K> {
+  pub fn map<F, K>(self, cb: F) -> RequestProxy<T, K>
+  where
+    F: Fn(RequestBuilder<U>) -> RequestBuilder<K>,
+  {
     RequestProxy(cb(self.0), self.1, self.2)
   }
 

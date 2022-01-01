@@ -27,11 +27,18 @@ pub mod client {
   use super::PullRequestCreateReviewBody;
 
   pub fn create_review_request(
+    owner: &str,
     repo: &str,
     pull_request: u64,
     payload: PullRequestCreateReviewBody,
   ) -> RequestProxy<(), Unauthorized> {
-    let builder = octokit_request!(POST, "/repos/{}/pulls/{}/reviews", repo, pull_request);
+    let builder = octokit_request!(
+      POST,
+      "/repos/{}/{}/pulls/{}/reviews",
+      owner,
+      repo,
+      pull_request
+    );
 
     RequestProxy::with_body(
       builder,
@@ -52,7 +59,8 @@ mod tests {
   #[test]
   fn create_emptry_review() {
     let request = client::create_review_request(
-      "DmitryDodzin/mol",
+      "DmitryDodzin",
+      "mol",
       1,
       PullRequestCreateReviewBody {
         event: Some(CreateReviewEvent::Comment),

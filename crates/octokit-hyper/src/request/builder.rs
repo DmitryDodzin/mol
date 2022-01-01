@@ -31,8 +31,16 @@ impl RequestBuilder {
     )
   }
 
-  pub fn with_auth(self, oauth: OAuth) -> RequestBuilder<WithAuth> {
-    RequestBuilder(self.0, WithAuth { oauth })
+  pub fn with_auth<T>(self, oauth: T) -> RequestBuilder<WithAuth>
+  where
+    T: Into<OAuth>,
+  {
+    RequestBuilder(
+      self.0,
+      WithAuth {
+        oauth: oauth.into(),
+      },
+    )
   }
 }
 

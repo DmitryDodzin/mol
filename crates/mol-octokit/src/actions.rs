@@ -2,10 +2,8 @@ use async_trait::async_trait;
 use serde::Serialize;
 
 use mol_core::prelude::*;
-use octokit_hyper::api::pull::reviews::{
-  client::create_review_request, CreateReviewEvent, PullRequestCreateReviewBody,
-};
-use octokit_hyper::client::Client;
+use octokit_hyper::api::issue::comments::{client::create_issue_comment, IssueCreateCommentBody};
+use octokit_hyper::prelude::*;
 use octokit_hyper::properties::{PullRequest, Repository};
 
 #[derive(Debug)]
@@ -24,6 +22,12 @@ struct FileCreate {
 
 impl Action {
   pub async fn execute(&self, client: &Client) -> anyhow::Result<()> {
+    let auth = OAuth {
+      access_token: std::env::var("GITHUB_TOKEN").unwrap_or_else(|_| "".to_owned()),
+      token_type: "token".to_owned(),
+      scope: "".to_owned(),
+    };
+
     match self {
       Action::CommentNoChangesets {
         pull_request,
@@ -48,17 +52,15 @@ impl Action {
         })
         .expect("No Url");
 
-        let message = format!("###  ⚠️  No Changeset found\n\nLatest commit: {}\n\n[Click here if you're a maintainer who wants to add a changeset to this PR]({})\n", pull_request.head.sha, create_changeset_url);
+        let body = format!("###  ⚠️  No Changeset found\n\nLatest commit: {}\n\n[Click here if you're a maintainer who wants to add a changeset to this PR]({})\n", pull_request.head.sha, create_changeset_url);
 
-        let update = create_review_request(
-          &repository.full_name,
-          pull_request.id,
-          PullRequestCreateReviewBody {
-            event: Some(CreateReviewEvent::Comment),
-            body: Some(message),
-            ..Default::default()
-          },
+        let update = create_issue_comment(
+          &repository.owner.login,
+          &repository.name,
+          pull_request.number,
+          IssueCreateCommentBody { body },
         )
+        .map(|req| req.with_auth(&auth))
         .send(client)
         .await?;
 

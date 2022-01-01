@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 
-use octokit_hyper::{api::compare::client::compare_request, prelude::Client};
+use octokit_hyper::{api::compare::client::compare_request, prelude::*};
 use octokit_webhooks::PullRequestEvent;
 
 use crate::actions::{Action, UnwrapActions};
@@ -39,9 +39,10 @@ impl UnwrapActions for PullRequestEvent {
       } => {
         if !pull_request.head.r#ref.starts_with("mol/") {
           let comparison = compare_request(
-            &repository.full_name,
-            &pull_request.base.r#ref,
-            &pull_request.head.r#ref,
+            &repository.owner.login,
+            &repository.name,
+            &pull_request.base.sha,
+            &pull_request.head.sha,
           )
           .send(client)
           .await?;

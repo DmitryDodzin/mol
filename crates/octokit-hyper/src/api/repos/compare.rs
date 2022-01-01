@@ -24,10 +24,18 @@ pub mod client {
   use super::CompareReply;
 
   pub fn compare_request(
+    owner: &str,
     repo: &str,
     base: &str,
     head: &str,
   ) -> RequestProxy<CompareReply, Unauthorized> {
-    RequestProxy::new(octokit_request!(GET, "/repos/{}/{}..{}", repo, base, head))
+    RequestProxy::new(octokit_request!(
+      GET,
+      "/repos/{}/{}/compare/{}...{}",
+      owner,
+      repo,
+      base,
+      head
+    ))
   }
 }

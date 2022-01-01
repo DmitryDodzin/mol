@@ -20,7 +20,7 @@ pub struct SimplePullRequest {
   pub locked: bool,
   pub title: String,
   pub user: User,
-  pub body: String,
+  pub body: Option<String>,
   #[serde(deserialize_with = "parse_flexible_timestamp")]
   pub created_at: DateTime<Utc>,
   #[serde(deserialize_with = "parse_flexible_timestamp")]
