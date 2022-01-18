@@ -57,12 +57,19 @@ impl UnwrapActions for PullRequestEvent {
           .send(client)
           .await?;
 
-          if !comparison.files.iter().any(|file| {
-            file.filename.starts_with(".changesets")
-              && (file.status == "added" || file.status == "modified")
-              && !file.filename.ends_with("README.md")
-          }) {
+          if comparison.files.len() == 0
+            || !comparison.files.iter().any(|file| {
+              file.filename.starts_with(".changesets")
+                && (file.status == "added" || file.status == "modified")
+                && !file.filename.ends_with("README.md")
+            })
+          {
             actions.push(Action::CommentNoChangesets {
+              repository: repository.clone(),
+              pull_request: pull_request.clone(),
+            });
+          } else {
+            actions.push(Action::RemoveCommentNoChangesets {
               repository: repository.clone(),
               pull_request: pull_request.clone(),
             });

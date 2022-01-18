@@ -2,13 +2,20 @@ use async_trait::async_trait;
 use serde::Serialize;
 
 use mol_core::prelude::*;
-use octokit_hyper::api::issue::comments::{client::create_issue_comment, IssueCreateCommentBody};
+use octokit_hyper::api::issue::comments::{
+  client::{create_issue_comment, list_issue_comment},
+  IssueCreateCommentBody, IssueListCommentQuery,
+};
 use octokit_hyper::prelude::*;
 use octokit_hyper::properties::{PullRequest, Repository};
 
 #[derive(Debug)]
 pub enum Action {
   CommentNoChangesets {
+    pull_request: PullRequest,
+    repository: Repository,
+  },
+  RemoveCommentNoChangesets {
     pull_request: PullRequest,
     repository: Repository,
   },
@@ -22,11 +29,7 @@ struct FileCreate {
 
 impl Action {
   pub async fn execute(&self, client: &Client) -> anyhow::Result<()> {
-    let auth = OAuth {
-      access_token: std::env::var("GITHUB_TOKEN").unwrap_or_else(|_| "".to_owned()),
-      token_type: "token".to_owned(),
-      scope: "".to_owned(),
-    };
+    let auth = OAuth::from_env().unwrap_or_default();
 
     match self {
       Action::CommentNoChangesets {
@@ -65,6 +68,24 @@ impl Action {
         .await?;
 
         println!("{:?}", update);
+      }
+      Action::RemoveCommentNoChangesets {
+        pull_request,
+        repository,
+      } => {
+        let comments = list_issue_comment(
+          &repository.owner.login,
+          &repository.name,
+          pull_request.number,
+          IssueListCommentQuery {
+            ..Default::default()
+          },
+        )
+        .map(|req| req.with_auth(&auth))
+        .send(client)
+        .await?;
+
+        println!("{:?}", comments);
       }
     }
 

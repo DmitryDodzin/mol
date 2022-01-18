@@ -5,11 +5,21 @@ lazy_static! {
   static ref AUTHORIZATION_HEADER: &'static str = "Authorization";
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct OAuth {
   pub access_token: String,
   pub scope: String,
   pub token_type: String,
+}
+
+impl OAuth {
+  pub fn from_env() -> Result<Self, std::env::VarError> {
+    Ok(OAuth {
+      access_token: std::env::var("GITHUB_TOKEN")?,
+      token_type: "token".to_owned(),
+      scope: "".to_owned(),
+    })
+  }
 }
 
 impl From<&OAuth> for OAuth {

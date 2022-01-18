@@ -15,6 +15,7 @@ client = [
   "hyper",
   "hyper-tls",
   "serde_json",
+  "serde_urlencoded"
 ]
 
 [dependencies]
@@ -28,3 +29,4 @@ http = { version = "0.2", optional = true }
 hyper = { version = "0.14", features = ["client", "http1", "http2"], optional = true }
 hyper-tls = { version = "0.5", optional = true }
 serde_json = { version = "1", optional = true }
+serde_urlencoded = { version = "0.7", optional = true }
