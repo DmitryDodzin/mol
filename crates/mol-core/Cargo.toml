@@ -16,9 +16,9 @@ derive = ['mol-derive']
 mol-derive = { path = '../mol-derive', version = "0.1", optional = true}
 
 anyhow = "1"
-async-recursion = "0.3"
+async-recursion = "1"
 async-trait = "0.1"
-dashmap = "4"
+dashmap = "5"
 futures = "0.3"
 globset = "0.4"
 faker_rand = "0.1"
