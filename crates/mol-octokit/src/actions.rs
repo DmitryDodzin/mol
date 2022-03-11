@@ -3,11 +3,13 @@ use serde::Serialize;
 
 use mol_core::prelude::*;
 use octokit_hyper::api::issue::comments::{
-  client::{create_issue_comment, list_issue_comment},
-  IssueCreateCommentBody, IssueListCommentQuery,
+  client::{create_issue_comment, delete_issue_comment},
+  IssueCreateCommentBody,
 };
 use octokit_hyper::prelude::*;
 use octokit_hyper::properties::{PullRequest, Repository};
+
+pub static MESSAGE_PREFIX: &str = "###  ⚠️  No Changeset found";
 
 #[derive(Debug)]
 pub enum Action {
@@ -16,8 +18,8 @@ pub enum Action {
     repository: Repository,
   },
   RemoveCommentNoChangesets {
-    pull_request: PullRequest,
     repository: Repository,
+    comment_ids: Vec<u64>,
   },
 }
 
@@ -55,7 +57,7 @@ impl Action {
         })
         .expect("No Url");
 
-        let body = format!("###  ⚠️  No Changeset found\n\nLatest commit: {}\n\n[Click here if you're a maintainer who wants to add a changeset to this PR]({})\n", pull_request.head.sha, create_changeset_url);
+        let body = format!("{}\n\nLatest commit: {}\n\n[Click here if you're a maintainer who wants to add a changeset to this PR]({})\n", MESSAGE_PREFIX, pull_request.head.sha, create_changeset_url);
 
         let update = create_issue_comment(
           &repository.owner.login,
@@ -70,22 +72,15 @@ impl Action {
         println!("{:?}", update);
       }
       Action::RemoveCommentNoChangesets {
-        pull_request,
         repository,
+        comment_ids,
       } => {
-        let comments = list_issue_comment(
-          &repository.owner.login,
-          &repository.name,
-          pull_request.number,
-          IssueListCommentQuery {
-            ..Default::default()
-          },
-        )
-        .map(|req| req.with_auth(&auth))
-        .send(client)
-        .await?;
-
-        println!("{:?}", comments);
+        for &comment_id in comment_ids {
+          delete_issue_comment(&repository.owner.login, &repository.name, comment_id)
+            .map(|req| req.with_auth(&auth))
+            .send(client)
+            .await?;
+        }
       }
     }
 

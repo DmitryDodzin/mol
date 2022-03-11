@@ -29,8 +29,6 @@ impl Client {
   where
     T: DeserializeOwned,
   {
-    println!("{:#?}", request);
-
     let res = self.hyper.request(request).await?;
     let buf = hyper::body::to_bytes(res).await?;
 

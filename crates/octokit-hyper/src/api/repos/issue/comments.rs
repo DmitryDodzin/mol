@@ -1,4 +1,8 @@
-use serde::Serialize;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+
+use crate::properties::{Reactions, User};
+use crate::util::parse_flexible_timestamp;
 
 #[derive(Debug, Default, Serialize)]
 pub struct IssueCreateCommentBody {
@@ -19,19 +23,36 @@ pub struct IssueListCommentQuery {
   pub page: Option<i32>,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct IssueListCommentReply {
+  pub url: String,
+  pub html_url: String,
+  pub issue_url: String,
+  pub id: u64,
+  pub node_id: String,
+  pub user: User,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub created_at: DateTime<Utc>,
+  #[serde(deserialize_with = "parse_flexible_timestamp")]
+  pub updated_at: DateTime<Utc>,
+  pub author_association: String,
+  pub body: String,
+  pub reactions: Reactions,
+}
+
 #[cfg(feature = "client")]
 pub mod client {
   use crate::octokit_request;
   use crate::request::{middleware::Unauthorized, proxy::RequestProxy};
 
-  use super::{IssueCreateCommentBody, IssueListCommentQuery};
+  use super::{IssueCreateCommentBody, IssueListCommentQuery, IssueListCommentReply};
 
   pub fn create_issue_comment(
     owner: &str,
     repo: &str,
     issue_number: u64,
     payload: IssueCreateCommentBody,
-  ) -> RequestProxy<(), Unauthorized> {
+  ) -> RequestProxy<IssueListCommentReply, Unauthorized> {
     let builder = octokit_request!(
       POST,
       "/repos/{owner}/{repo}/issues/{issue_number}/comments",
@@ -55,7 +76,8 @@ pub mod client {
     repo: &str,
     issue_number: u64,
     query: IssueListCommentQuery,
-  ) -> RequestProxy<(), Unauthorized> {
+  ) -> RequestProxy<Vec<IssueListCommentReply>, Unauthorized> {
+    // TODO: add paganation
     let query = serde_urlencoded::to_string(&query).unwrap_or_else(|_| String::new());
 
     let builder = octokit_request!(
@@ -65,6 +87,22 @@ pub mod client {
       repo = repo,
       issue_number = issue_number,
       query = query
+    );
+
+    RequestProxy::new(builder)
+  }
+
+  pub fn delete_issue_comment(
+    owner: &str,
+    repo: &str,
+    comment_id: u64,
+  ) -> RequestProxy<(), Unauthorized> {
+    let builder = octokit_request!(
+      DELETE,
+      "/repos/{owner}/{repo}/issues/comments/{comment_id}",
+      owner = owner,
+      repo = repo,
+      comment_id = comment_id
     );
 
     RequestProxy::new(builder)
