@@ -2,7 +2,9 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::str::FromStr;
 
+use faker_rand::lorem::Word;
 use itertools::Itertools;
+use rand::Rng;
 use tokio::{fs::File, io::AsyncWriteExt};
 
 use crate::error::ChangesetParseError;
@@ -38,6 +40,11 @@ impl<T> Changeset<T> {
     } else {
       value
     }
+  }
+
+  pub fn random_file_name() -> String {
+    let mut rng = rand::thread_rng();
+    format!("{}-{}.md", rng.gen::<Word>(), rng.gen::<Word>())
   }
 }
 

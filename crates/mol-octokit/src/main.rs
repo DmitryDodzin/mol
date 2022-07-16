@@ -1,14 +1,36 @@
 use async_trait::async_trait;
 
+use octokit_hyper::prelude::*;
 use octokit_ntex::{Octokit, OctokitConfig};
-use octokit_webhooks::*;
+use octokit_webhooks::Events;
+
+mod actions;
+mod events;
+
+use actions::UnwrapActions;
 
 struct MolOctokit;
 
 #[async_trait]
 impl Octokit for MolOctokit {
-  async fn on_event(&self, event: Events) {
-    println!("Got event {:?}", event.name());
+  async fn on_event(&self, event: Events) -> anyhow::Result<()> {
+    println!("Got: {:?}", event.name());
+    let client = Client::new();
+
+    let actions = match event {
+      Events::PullRequest(event) => event.unwrap_actions(&client).await?,
+      _ => vec![],
+    };
+
+    if actions.is_empty() {
+      println!("Doing: Nothing");
+    } else {
+      for action in actions {
+        action.execute(&client).await?;
+      }
+    }
+
+    Ok(())
   }
 }
 

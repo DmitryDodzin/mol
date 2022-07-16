@@ -1,6 +1,7 @@
 use serde::Deserialize;
 
-use crate::properties::*;
+use octokit_hyper::properties::*;
+
 use crate::util::WrappedSource;
 
 #[allow(clippy::large_enum_variant)]

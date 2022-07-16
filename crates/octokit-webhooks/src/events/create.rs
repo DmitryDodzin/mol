@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::properties::*;
+use octokit_hyper::properties::*;
 
 #[derive(Debug, Deserialize)]
 #[serde(tag = "action")]
@@ -22,7 +22,7 @@ pub struct CreateEvent {
   pub organization: Option<Organization>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, PartialEq, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum CreateEventRefType {
   Tag,

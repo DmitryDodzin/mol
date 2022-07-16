@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Team {
   /// Name of the team
   pub name: String,
@@ -21,7 +21,7 @@ pub struct Team {
   pub parent: Option<TeamParent>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TeamParent {
   /// Name of the team
   pub name: String,
@@ -41,7 +41,7 @@ pub struct TeamParent {
   pub permission: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum TeamPrivacy {
   Open,

@@ -5,8 +5,6 @@ use anyhow::Context;
 use async_trait::async_trait;
 use clap::Parser;
 use dialoguer::{console::Term, Input, MultiSelect, Select};
-use faker_rand::lorem::Word;
-use rand::Rng;
 
 use mol_core::prelude::*;
 
@@ -138,10 +136,9 @@ where
 
     if let Some(changeset) = self.get_changeset(context)? {
       let changeset_path = {
-        let mut rng = rand::thread_rng();
         let mut path = context.changesets.directory.clone();
 
-        path.push(format!("{}-{}.md", rng.gen::<Word>(), rng.gen::<Word>()));
+        path.push(Changeset::<V>::random_file_name());
 
         path
       };

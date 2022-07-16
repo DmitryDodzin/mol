@@ -27,6 +27,7 @@ macro_rules! impl_events_unwrapper {
         }
       }
 
+      #[cfg(feature = "json")]
       #[allow(clippy::redundant_closure, clippy::large_enum_variant)]
       impl<'a> std::convert::TryInto<$name> for ($crate::WebhookEvents, &'a [u8]) {
         type Error = $crate::error::EventsUnwrapError;

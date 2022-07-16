@@ -20,14 +20,14 @@ where
   std::env::set_var("RUST_LOG", "ntex=info");
   env_logger::init();
 
-  let octokit = web::types::Data::new(octokit);
-  let octokit_config = web::types::Data::new(config);
+  let octokit = web::types::State::new(octokit);
+  let octokit_config = web::types::State::new(config);
 
   HttpServer::new(move || {
     App::new()
       .wrap(middleware::Logger::default())
-      .app_data(octokit.clone())
-      .app_data(octokit_config.clone())
+      .app_state(octokit.clone())
+      .app_state(octokit_config.clone())
       .service(web::resource("/callback").route(web::post().to(octokit_route::<T>)))
       .service(no_params)
   })

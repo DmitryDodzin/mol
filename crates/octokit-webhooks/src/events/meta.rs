@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::properties::*;
+use octokit_hyper::properties::*;
 
 #[derive(Debug, Deserialize)]
 #[serde(tag = "action")]

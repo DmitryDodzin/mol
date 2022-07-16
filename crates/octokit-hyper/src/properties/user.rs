@@ -1,13 +1,13 @@
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum UserType {
   Bot,
   User,
   Organization,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct User {
   pub login: String,
   pub id: u64,
