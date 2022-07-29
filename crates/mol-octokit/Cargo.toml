@@ -13,6 +13,7 @@ octokit-webhooks = { path = "../octokit-webhooks", version = "0.0", default-feat
 
 async-trait = "0.1"
 anyhow = "1"
+clap = { version = "3", features = ["derive", "env"] }
 chrono = "0.4"
 ntex = { version = "0.5", features = ["tokio"] }
 serde = { version = "1", features = ["derive"] }

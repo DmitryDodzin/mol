@@ -42,8 +42,8 @@ pub struct IssueListCommentReply {
 
 #[cfg(feature = "client")]
 pub mod client {
-  use crate::octokit_request;
   use crate::request::{middleware::Unauthorized, proxy::RequestProxy};
+  use crate::{octokit_builder, octokit_request};
 
   use super::{IssueCreateCommentBody, IssueListCommentQuery, IssueListCommentReply};
 
@@ -53,7 +53,7 @@ pub mod client {
     issue_number: u64,
     payload: IssueCreateCommentBody,
   ) -> RequestProxy<IssueListCommentReply, Unauthorized> {
-    let builder = octokit_request!(
+    let builder = octokit_builder!(
       POST,
       "/repos/{owner}/{repo}/issues/{issue_number}/comments",
       owner = owner,
@@ -80,16 +80,14 @@ pub mod client {
     // TODO: add paganation
     let query = serde_urlencoded::to_string(&query).unwrap_or_else(|_| String::new());
 
-    let builder = octokit_request!(
+    octokit_request!(
       GET,
       "/repos/{owner}/{repo}/issues/{issue_number}/comments?{query}",
       owner = owner,
       repo = repo,
       issue_number = issue_number,
       query = query
-    );
-
-    RequestProxy::new(builder)
+    )
   }
 
   pub fn delete_issue_comment(
@@ -97,14 +95,12 @@ pub mod client {
     repo: &str,
     comment_id: u64,
   ) -> RequestProxy<(), Unauthorized> {
-    let builder = octokit_request!(
+    octokit_request!(
       DELETE,
       "/repos/{owner}/{repo}/issues/comments/{comment_id}",
       owner = owner,
       repo = repo,
       comment_id = comment_id
-    );
-
-    RequestProxy::new(builder)
+    )
   }
 }

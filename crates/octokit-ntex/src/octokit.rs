@@ -27,8 +27,7 @@ pub fn octokit_route_validate_signature(secret: &[u8], body: &[u8], req: &HttpRe
   req
     .headers()
     .get("X-Hub-Signature-256")
-    .map(|header| header.to_str().ok())
-    .flatten()
+    .and_then(|header| header.to_str().ok())
     .map(|value| signature.as_bytes().ct_eq(value.as_bytes()).unwrap_u8() == 1)
     .unwrap_or(false)
 }
@@ -49,10 +48,8 @@ where
   let action = req
     .headers()
     .get("X-Github-Event")
-    .map(|val| val.to_str().ok())
-    .flatten()
-    .map(|val| serde_plain::from_str::<WebhookEvents>(val).ok())
-    .flatten()
+    .and_then(|val| val.to_str().ok())
+    .and_then(|val| serde_plain::from_str::<WebhookEvents>(val).ok())
     .ok_or_else(|| error::ErrorBadRequest("invalid x-github-event".to_owned()))?;
 
   let mut bytes = BytesMut::new();

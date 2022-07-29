@@ -29,13 +29,6 @@ pub mod client {
     base: &str,
     head: &str,
   ) -> RequestProxy<CompareReply, Unauthorized> {
-    RequestProxy::new(octokit_request!(
-      GET,
-      "/repos/{}/{}/compare/{}...{}",
-      owner,
-      repo,
-      base,
-      head
-    ))
+    octokit_request!(GET, "/repos/{}/{}/compare/{}...{}", owner, repo, base, head)
   }
 }

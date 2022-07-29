@@ -39,19 +39,16 @@ impl Versioned for Semantic {
 
     let major = current
       .next()
-      .map(|val| val.parse::<i32>().ok())
-      .flatten()
+      .and_then(|val| val.parse::<i32>().ok())
       .ok_or(VersionBumpError)?;
     let minor = current
       .next()
-      .map(|val| val.parse::<i32>().ok())
-      .flatten()
+      .and_then(|val| val.parse::<i32>().ok())
       .ok_or(VersionBumpError)?;
     // TODO: Allow dev builds and not
     let patch = current
       .next()
-      .map(|val| val.parse::<i32>().ok())
-      .flatten()
+      .and_then(|val| val.parse::<i32>().ok())
       .ok_or(VersionBumpError)?;
 
     Ok(match self.r#type {

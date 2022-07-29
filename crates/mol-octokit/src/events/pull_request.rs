@@ -79,7 +79,7 @@ impl UnwrapActions for PullRequestEvent {
           .map(|comment| comment.id)
           .collect::<Vec<u64>>();
 
-          if comparison.files.len() == 0
+          if comparison.files.is_empty()
             || !comparison.files.iter().any(|file| {
               file.filename.starts_with(".changeset/")
                 && (file.status == "added" || file.status == "modified")

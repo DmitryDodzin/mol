@@ -11,6 +11,7 @@ use octokit_hyper::properties::{PullRequest, Repository};
 
 pub static MESSAGE_PREFIX: &str = "###  ⚠️  No Changeset found";
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub enum Action {
   CommentNoChangesets {

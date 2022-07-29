@@ -21,7 +21,7 @@ pub struct PullRequestCreateReviewBody {
 
 #[cfg(feature = "client")]
 pub mod client {
-  use crate::octokit_request;
+  use crate::octokit_builder;
   use crate::request::{middleware::Unauthorized, proxy::RequestProxy};
 
   use super::PullRequestCreateReviewBody;
@@ -32,7 +32,7 @@ pub mod client {
     pull_request: u64,
     payload: PullRequestCreateReviewBody,
   ) -> RequestProxy<(), Unauthorized> {
-    let builder = octokit_request!(
+    let builder = octokit_builder!(
       POST,
       "/repos/{}/{}/pulls/{}/reviews",
       owner,
