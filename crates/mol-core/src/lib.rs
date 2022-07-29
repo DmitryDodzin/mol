@@ -9,7 +9,6 @@ pub mod package_manager;
 pub mod plugin;
 pub mod prelude;
 pub mod semantic;
-pub mod util;
 pub mod version;
 
 lazy_static::lazy_static! {

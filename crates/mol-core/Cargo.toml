@@ -10,11 +10,9 @@ readme = "README.md"
 
 [features]
 default = []
-derive = ['mol-derive']
+
 
 [dependencies]
-mol-derive = { path = '../mol-derive', version = "0.1", optional = true}
-
 anyhow = "1"
 async-recursion = "0.3"
 async-trait = "0.1"
