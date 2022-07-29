@@ -78,4 +78,4 @@ jobs:
       - name: ⚡ Installs cargo-udeps
         run: cargo install cargo-udeps
       - name: ⚡ Run cargo udeps
-        run: cargo udeps
+        run: cargo udeps --workspace

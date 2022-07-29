@@ -224,6 +224,8 @@ impl PackageManager for Cargo {
       publish_args.iter().map(Deref::deref).collect()
     };
 
+    self.run_command("update", &crate_path, vec![]).await?;
+
     self.run_command("publish", crate_path, args).await
   }
 
