@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 use std::alloc::System;
 use std::fmt::Debug;
 use std::str::FromStr;
