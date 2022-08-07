@@ -2,7 +2,7 @@
 name = "mol"
 version = "0.3.0"
 authors = ["Dmitry Dodzin <d.dodzin@gmail.com>"]
-edition = "2018"
+edition = "2021"
 categories = ["development-tools::cargo-plugins"]
 license = "MIT"
 description = "Package versioning with ease"

@@ -2,7 +2,7 @@
 name = "mol-core"
 version = "0.3.0"
 authors = ["Dmitry Dodzin <d.dodzin@gmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "MIT"
 description = "Core Libraray for mol crate"
 repository = "https://github.com/DmitryDodzin/mol"
@@ -10,7 +10,6 @@ readme = "README.md"
 
 [features]
 default = []
-
 
 [dependencies]
 anyhow = "1"

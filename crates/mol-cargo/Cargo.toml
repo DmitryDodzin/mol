@@ -2,7 +2,7 @@
 name = "mol-cargo"
 version = "0.3.0"
 authors = ["Dmitry Dodzin <d.dodzin@gmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "MIT"
 description = "Cargo bindings for mol crate"
 repository = "https://github.com/DmitryDodzin/mol"
