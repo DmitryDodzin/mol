@@ -51,6 +51,10 @@ where
       .chain(&PathBuf::from(T::default_path()))
       .collect();
 
+    T::validate_package(&package_path)
+      .await
+      .with_context(|| format!("Validation error for package at dir {:?}", package_path))?;
+
     let packages = T::seek_packages(&package_path)
       .await
       .with_context(|| format!("Could not open read pacakges at dir {:?}", package_path))?;

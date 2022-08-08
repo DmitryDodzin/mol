@@ -8,10 +8,17 @@ use globset::{Glob, GlobSetBuilder};
 use hyper::{Client, Method, Request};
 use hyper_tls::HttpsConnector;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 use tokio::{fs, process::Command};
 use toml_edit::{value, Document};
 
 use mol_core::prelude::*;
+
+#[derive(Error, Debug)]
+enum CargoValidationError {
+  #[error("cargo workspace-inheritance is currently isn't supported")]
+  WorkspaceInheritanceIsntSupported,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 struct CratesError {
@@ -76,6 +83,20 @@ impl Cargo {
 impl PackageManager for Cargo {
   fn default_path() -> &'static str {
     "Cargo.toml"
+  }
+
+  async fn validate_package<T: AsRef<Path> + Send + Sync>(crate_path: T) -> anyhow::Result<()> {
+    let (_, document) = Self::load_document(crate_path).await?;
+
+    if document.contains_key("workspace") {
+      if let Some(workspace) = document["workspace"].as_table() {
+        if workspace.contains_key("package") || workspace.contains_key("dependencies") {
+          return Err(CargoValidationError::WorkspaceInheritanceIsntSupported.into());
+        }
+      }
+    }
+
+    Ok(())
   }
 
   async fn seek_packages<T: AsRef<Path> + Send + Sync, V: Versioned + Send + Sync + 'static>(
