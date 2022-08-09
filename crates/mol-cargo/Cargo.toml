@@ -2,7 +2,7 @@
 name = "mol-cargo"
 version = "0.3.0"
 authors = ["Dmitry Dodzin <d.dodzin@gmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "MIT"
 description = "Cargo bindings for mol crate"
 repository = "https://github.com/DmitryDodzin/mol"
@@ -13,7 +13,7 @@ mol-core = { path = '../mol-core', version = "0.3"}
 
 anyhow = "1"
 async-trait = "0.1"
-dashmap = "4"
+dashmap = "5"
 dunce = "1"
 hyper = { version = "0.14", features = ["client", "http1", "runtime", "tcp"] }
 hyper-tls = "0.5"
@@ -21,4 +21,5 @@ globset = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", default-features = false, features = ["fs", "process"] }
-toml_edit = "0.10"
+toml_edit = "0.13"
+thiserror = "1"

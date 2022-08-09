@@ -108,10 +108,10 @@ impl Changelog {
 
           let mut changelog = fs::File::create(&changelog_path).await?;
 
-          changelog.write(output.as_bytes()).await?;
+          changelog.write_all(output.as_bytes()).await?;
 
           changelog
-            .write(changelog_lines.join("\n").as_bytes())
+            .write_all(changelog_lines.join("\n").as_bytes())
             .await?;
         }
       }
