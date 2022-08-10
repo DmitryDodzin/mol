@@ -132,7 +132,6 @@ impl PackageManager for Cargo {
     let mut dependencies = Vec::new();
 
     if document.contains_key("dependencies") {
-      // TODO: support [dependencies.xyz] patterns
       if let Some(deps) = document["dependencies"].as_table() {
         for (key, value) in deps.iter() {
           if value.is_str() {
