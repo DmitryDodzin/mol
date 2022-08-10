@@ -34,7 +34,6 @@ multiple-versions = "deny"
 wildcards = "deny"
 highlight = "all"
 skip = [
-  { name = "itoa", version = "0.4.8" }, # from hyper
 ]
 
 [sources]

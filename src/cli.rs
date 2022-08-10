@@ -23,6 +23,7 @@ impl<T, V> IntoExecutableCommand<T, V> for Command
 where
   T: PackageManager + Send + Sync,
   V: VersionEditor + Send + Sync + 'static,
+  T::Metadata: Send + Sync,
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {
   fn as_executable(&self) -> Option<&dyn ExecutableCommand<T, V>> {

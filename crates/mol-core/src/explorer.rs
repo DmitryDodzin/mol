@@ -22,14 +22,17 @@ pub struct Explorer;
 
 impl Explorer {
   #[async_recursion]
-  async fn seek_packeges_in_dir_entry<
-    T: PackageManager + Send + Sync + 'static,
-    V: Versioned + Send + Sync + 'static,
-  >(
+  async fn seek_packeges_in_dir_entry<T, V>(
     exists: Arc<DashSet<PathBuf>>,
     globs: GlobSet,
     entry: fs::DirEntry,
-  ) -> anyhow::Result<Vec<Package<V>>> {
+    metadata: Arc<T::Metadata>,
+  ) -> anyhow::Result<Vec<Package<V>>>
+  where
+    T: PackageManager + Send + Sync + 'static,
+    V: Versioned + Send + Sync + 'static,
+    T::Metadata: Send + Sync,
+  {
     let mut result = Vec::new();
     let entry_path = remove_start_dot(entry.path());
 
@@ -49,6 +52,7 @@ impl Explorer {
           exists,
           globs,
           fs::read_dir(entry.path()).await?,
+          metadata,
         )
         .await;
       }
@@ -59,12 +63,13 @@ impl Explorer {
           exists,
           globs,
           fs::read_dir(&link_value).await?,
+          metadata,
         )
         .await;
       }
 
       if globs.is_match(entry_path) && file_type.is_file() && entry.file_name() == "Cargo.toml" {
-        result.extend(T::seek_packages(entry.path()).await?);
+        result.extend(T::seek_packages(entry.path(), &metadata).await?);
       }
     }
 
@@ -72,22 +77,27 @@ impl Explorer {
   }
 
   #[async_recursion]
-  pub async fn seek_packages_in_directory<
-    T: PackageManager + Send + Sync + 'static,
-    V: Versioned + Send + Sync + 'static,
-  >(
+  pub async fn seek_packages_in_directory<T, V>(
     exists: Arc<DashSet<PathBuf>>,
     globs: GlobSet,
     mut current_dir: fs::ReadDir,
-  ) -> anyhow::Result<Vec<Package<V>>> {
+    metadata: Arc<T::Metadata>,
+  ) -> anyhow::Result<Vec<Package<V>>>
+  where
+    T: PackageManager + Send + Sync + 'static,
+    V: Versioned + Send + Sync + 'static,
+    T::Metadata: Send + Sync,
+  {
     let mut handles = Vec::new();
 
     while let Some(entry) = current_dir.next_entry().await? {
       let globs = globs.clone();
+      let metadata = metadata.clone();
       handles.push(tokio::spawn(Explorer::seek_packeges_in_dir_entry::<T, V>(
         exists.clone(),
         globs,
         entry,
+        metadata,
       )));
     }
 

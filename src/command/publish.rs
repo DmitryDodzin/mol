@@ -18,8 +18,11 @@ pub struct Publish {
 }
 
 #[async_trait]
-impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync + 'static>
-  ExecutableCommand<T, V> for Publish
+impl<T, V> ExecutableCommand<T, V> for Publish
+where
+  T: PackageManager + Send + Sync,
+  V: VersionEditor + Send + Sync + 'static,
+  T::Metadata: Send + Sync,
 {
   async fn execute(
     &self,
@@ -44,11 +47,20 @@ impl<T: PackageManager + Send + Sync, V: VersionEditor + Send + Sync + 'static>
       if let Some(root_path) = package.path.parent() {
         context
           .package_manager
-          .run_publish(root_path, self.publish_args.clone(), context.dry_run)
+          .run_publish(
+            root_path,
+            self.publish_args.clone(),
+            context.dry_run,
+            &context.metadata,
+          )
           .await?;
 
         if !context.dry_run {
-          while !context.package_manager.check_version(package).await? {
+          while !context
+            .package_manager
+            .check_version(package, &context.metadata)
+            .await?
+          {
             println!("Package didn't upate yet");
 
             tokio::time::sleep(Duration::from_secs(1)).await;

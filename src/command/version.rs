@@ -68,6 +68,7 @@ impl<T, V> ExecutableCommand<T, V> for Version
 where
   T: PackageManager + Send + Sync,
   V: VersionEditor + Send + Sync + 'static,
+  T::Metadata: Send + Sync,
 {
   async fn execute(
     &self,
@@ -107,7 +108,7 @@ where
         } else {
           context
             .package_manager
-            .apply_version(&package.path, &next_version)
+            .apply_version(&package.path, &next_version, &context.metadata)
             .await?;
         }
 
@@ -128,7 +129,12 @@ where
           } else {
             context
               .package_manager
-              .apply_dependency_version(&package.path, name, V::mask(version, updated_version))
+              .apply_dependency_version(
+                &package.path,
+                name,
+                V::mask(version, updated_version),
+                &context.metadata,
+              )
               .await?;
           }
         }
@@ -160,7 +166,11 @@ where
     if !context.dry_run && !self.no_build {
       context
         .package_manager
-        .run_build(&context.root_dir, self.build_args.clone())
+        .run_build(
+          &context.root_dir,
+          self.build_args.clone(),
+          &context.metadata,
+        )
         .await?;
     }
 
