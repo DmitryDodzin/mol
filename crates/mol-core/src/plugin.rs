@@ -96,8 +96,21 @@ pub struct PluginDeclaration {
 }
 
 #[macro_export]
+macro_rules! declare_plugins {
+  [$($plugin_ctor:expr),+] => {
+    unsafe extern "C" fn plugin_register_fn(registar: &mut $crate::plugin::PluginRegistrar) {
+      $(
+        registar.register(Box::new($plugin_ctor));
+      )+
+    }
+
+    $crate::declare_plugin!(plugin_register_fn);
+  };
+}
+
+#[macro_export]
 macro_rules! declare_plugin {
-  ($register:expr) => {
+  ($register:ident) => {
     #[doc(hidden)]
     #[no_mangle]
     pub static plugin_declaration: $crate::plugin::PluginDeclaration =

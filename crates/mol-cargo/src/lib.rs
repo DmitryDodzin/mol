@@ -140,10 +140,13 @@ impl PackageManager for Cargo {
               value.as_str().unwrap_or_default().to_owned(),
             ));
           } else if value.is_table() || value.is_inline_table() {
-            dependencies.push((
-              key.to_owned(),
-              value["version"].as_str().unwrap_or_default().to_owned(),
-            ));
+            let version = if value.get("version").is_some() {
+              value["version"].as_str().unwrap_or_default().to_owned()
+            } else {
+              "*".to_owned()
+            };
+
+            dependencies.push((key.to_owned(), version));
           }
         }
       }
