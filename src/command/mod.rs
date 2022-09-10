@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use anyhow::Context;
 use async_trait::async_trait;
@@ -36,12 +36,25 @@ where
       root_dir: &self.root_dir,
     }
   }
+
+  pub fn as_command(&self) -> CommandContext<'_, T::Metadata> {
+    self.as_command_with_path(&self.root_dir)
+  }
+
+  pub fn as_command_with_path<'a>(&'a self, path: &'a Path) -> CommandContext<'a, T::Metadata> {
+    CommandContext {
+      dry_run: self.dry_run,
+      metadata: &self.metadata,
+      path,
+    }
+  }
 }
 
 impl<T, V> ExecutableContext<T, V>
 where
   T: PackageManager + Default + Send + Sync,
   V: VersionEditor + Send + Sync + 'static,
+  T::Validate: Send + Sync,
 {
   pub async fn new(root_dir: PathBuf, dry_run: bool) -> anyhow::Result<Self> {
     let package_manager = T::default();
@@ -53,22 +66,22 @@ where
 
     let metadata = T::load_metadata(&package_path).await?;
 
-    T::validate_package(&package_path, &metadata)
-      .await
-      .with_context(|| format!("Validation error for package at dir {:?}", package_path))?;
+    let packages = T::Loader::load(&package_path, &metadata).await?;
 
-    let packages = T::seek_packages(&package_path, &metadata)
-      .await
-      .with_context(|| format!("Could not open read pacakges at dir {:?}", package_path))?;
-
-    Ok(ExecutableContext {
+    let context = ExecutableContext {
       changesets: Changesets::default(),
       dry_run,
       package_manager,
       packages,
       root_dir,
       metadata,
-    })
+    };
+
+    T::Validate::execute(&context.as_command())
+      .await
+      .with_context(|| format!("Validation error for package at dir {:?}", package_path))?;
+
+    Ok(context)
   }
 }
 

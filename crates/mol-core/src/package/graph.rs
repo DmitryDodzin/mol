@@ -1,17 +1,9 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
 
 use itertools::Itertools;
 
-use crate::version::{Version, Versioned};
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Package<T: Versioned> {
-  pub path: PathBuf,
-  pub name: String,
-  pub version: Version<T>,
-  pub dependencies: Vec<(String, String)>,
-}
+use crate::package::Package;
+use crate::version::Versioned;
 
 pub trait AsPackageGraph<T: Versioned> {
   fn as_package_graph(&self) -> PackageGraph<'_, T>;
@@ -88,21 +80,24 @@ where
   }
 }
 
-impl<T> AsPackageGraph<T> for Vec<Package<T>>
+impl<V> AsPackageGraph<V> for Vec<Package<V>>
 where
-  T: Versioned,
+  V: Versioned,
 {
-  fn as_package_graph(&self) -> PackageGraph<'_, T> {
-    let nodes: Vec<&Package<T>> = self.iter().collect();
-    let edges: Vec<(&str, &Package<T>)> = self.iter().fold(vec![], |mut acc, package| {
-      acc.extend(
+  fn as_package_graph(&self) -> PackageGraph<'_, V> {
+    let mut nodes = Vec::with_capacity(self.len());
+    let mut edges = Vec::new();
+
+    for package in self.iter() {
+      nodes.push(package);
+
+      edges.extend(
         package
           .dependencies
           .iter()
           .map(|(dep, _)| (dep.as_str(), package)),
       );
-      acc
-    });
+    }
 
     PackageGraph { edges, nodes }
   }

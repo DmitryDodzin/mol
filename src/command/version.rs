@@ -23,6 +23,7 @@ where
   T: PackageManager + Send + Sync,
   V: VersionEditor + Send + Sync + 'static,
   T::Metadata: Send + Sync,
+  T::Build: Send + Sync,
 {
   async fn execute(
     &self,
@@ -117,14 +118,7 @@ where
     }
 
     if !context.dry_run && !self.no_build {
-      context
-        .package_manager
-        .run_build(
-          &context.root_dir,
-          self.build_args.clone(),
-          &context.metadata,
-        )
-        .await?;
+      T::Build::execute_with_args(&context.as_command(), self.build_args.clone()).await?;
     }
 
     for changeset_path in changeset_paths {

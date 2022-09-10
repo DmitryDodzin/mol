@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::changeset::Changeset;
-use crate::package::PackageGraph;
+use crate::package::graph::PackageGraph;
 use crate::version::{VersionEditor, VersionMod};
 
 #[derive(Debug, Default)]

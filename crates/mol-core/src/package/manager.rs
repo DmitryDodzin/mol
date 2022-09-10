@@ -2,12 +2,16 @@ use std::path::Path;
 
 use async_trait::async_trait;
 
-use crate::package::Package;
+use crate::package::{command::PackageManagerCommand, loader::PackageLoader, Package};
 use crate::version::Versioned;
 
 #[async_trait]
 pub trait PackageManager {
-  type Metadata: Clone;
+  type Metadata: Clone + Send + Sync;
+  type Loader: PackageLoader<Metadata = Self::Metadata> + Send + Sync;
+  type Build: PackageManagerCommand<Self::Metadata> + Send + Sync;
+  type Publish: PackageManagerCommand<Self::Metadata> + Send + Sync;
+  type Validate: PackageManagerCommand<Self::Metadata> + Send + Sync;
 
   fn default_path() -> &'static str;
 
@@ -15,36 +19,11 @@ pub trait PackageManager {
     crate_path: T,
   ) -> anyhow::Result<Self::Metadata>;
 
-  async fn validate_package<T: AsRef<Path> + Send + Sync>(
-    crate_path: T,
-    metadata: &Self::Metadata,
-  ) -> anyhow::Result<()>;
-
-  async fn seek_packages<T: AsRef<Path> + Send + Sync, V: Versioned + Send + Sync + 'static>(
-    crate_path: T,
-    metadata: &Self::Metadata,
-  ) -> anyhow::Result<Vec<Package<V>>>;
-
   async fn check_version<V: Versioned + Send + Sync + 'static>(
     &self,
     package: &Package<V>,
     metadata: &Self::Metadata,
   ) -> anyhow::Result<bool>;
-
-  async fn run_build<T: AsRef<Path> + Send + Sync>(
-    &self,
-    crate_path: T,
-    build_args: Vec<String>,
-    metadata: &Self::Metadata,
-  ) -> anyhow::Result<()>;
-
-  async fn run_publish<T: AsRef<Path> + Send + Sync>(
-    &self,
-    crate_path: T,
-    publish_args: Vec<String>,
-    dry_run: bool,
-    metadata: &Self::Metadata,
-  ) -> anyhow::Result<()>;
 
   async fn apply_version<T: AsRef<Path> + Send + Sync>(
     &self,

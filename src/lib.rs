@@ -54,7 +54,6 @@ pub async fn exec<T, V>() -> anyhow::Result<()>
 where
   T: PackageManager + Default + Send + Sync,
   V: VersionEditor + Send + Sync + 'static,
-  T::Metadata: Send + Sync,
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {
   let args: Vec<String> = std::env::args().collect();
@@ -64,7 +63,9 @@ where
     Opts::parse_from(args)
   };
 
-  let context = ExecutableContext::<T, V>::new(DEFAULT_PACKAGE_DIR.clone(), opts.dry_run).await?;
+  let context =
+    ExecutableContext::<T, V>::new(opts.work_dir.unwrap_or_else(|| ".".into()), opts.dry_run)
+      .await?;
 
   let mut plugin_manager = PluginManager::default();
 

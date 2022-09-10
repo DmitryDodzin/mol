@@ -6,8 +6,7 @@ use dashmap::DashSet;
 use globset::GlobSet;
 use tokio::fs;
 
-use crate::package::Package;
-use crate::package_manager::PackageManager;
+use crate::package::{loader::PackageLoader, Package};
 use crate::version::Versioned;
 
 fn remove_start_dot(dir: PathBuf) -> PathBuf {
@@ -22,16 +21,16 @@ pub struct Explorer;
 
 impl Explorer {
   #[async_recursion]
-  async fn seek_packeges_in_dir_entry<T, V>(
+  async fn seek_packeges_in_dir_entry<L, V>(
     exists: Arc<DashSet<PathBuf>>,
     globs: GlobSet,
     entry: fs::DirEntry,
-    metadata: Arc<T::Metadata>,
+    metadata: Arc<L::Metadata>,
   ) -> anyhow::Result<Vec<Package<V>>>
   where
-    T: PackageManager + Send + Sync + 'static,
+    L: PackageLoader + Send + Sync + 'static,
     V: Versioned + Send + Sync + 'static,
-    T::Metadata: Send + Sync,
+    L::Metadata: Send + Sync,
   {
     let mut result = Vec::new();
     let entry_path = remove_start_dot(entry.path());
@@ -48,7 +47,7 @@ impl Explorer {
 
     if let Ok(file_type) = entry.file_type().await {
       if file_type.is_dir() {
-        return Explorer::seek_packages_in_directory::<T, V>(
+        return Explorer::seek_packages_in_directory::<L, V>(
           exists,
           globs,
           fs::read_dir(entry.path()).await?,
@@ -59,7 +58,7 @@ impl Explorer {
 
       if file_type.is_symlink() {
         let link_value = fs::read_link(entry.path()).await?;
-        return Explorer::seek_packages_in_directory::<T, V>(
+        return Explorer::seek_packages_in_directory::<L, V>(
           exists,
           globs,
           fs::read_dir(&link_value).await?,
@@ -69,7 +68,7 @@ impl Explorer {
       }
 
       if globs.is_match(entry_path) && file_type.is_file() && entry.file_name() == "Cargo.toml" {
-        result.extend(T::seek_packages(entry.path(), &metadata).await?);
+        result.extend(L::load(entry.path(), &metadata).await?);
       }
     }
 
@@ -77,23 +76,23 @@ impl Explorer {
   }
 
   #[async_recursion]
-  pub async fn seek_packages_in_directory<T, V>(
+  pub async fn seek_packages_in_directory<L, V>(
     exists: Arc<DashSet<PathBuf>>,
     globs: GlobSet,
     mut current_dir: fs::ReadDir,
-    metadata: Arc<T::Metadata>,
+    metadata: Arc<L::Metadata>,
   ) -> anyhow::Result<Vec<Package<V>>>
   where
-    T: PackageManager + Send + Sync + 'static,
+    L: PackageLoader + Send + Sync + 'static,
     V: Versioned + Send + Sync + 'static,
-    T::Metadata: Send + Sync,
+    L::Metadata: Send + Sync,
   {
     let mut handles = Vec::new();
 
     while let Some(entry) = current_dir.next_entry().await? {
       let globs = globs.clone();
       let metadata = metadata.clone();
-      handles.push(tokio::spawn(Explorer::seek_packeges_in_dir_entry::<T, V>(
+      handles.push(tokio::spawn(Explorer::seek_packeges_in_dir_entry::<L, V>(
         exists.clone(),
         globs,
         entry,

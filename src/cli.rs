@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{path::PathBuf, str::FromStr};
 
 use crate::command::Publish;
 use clap::Parser;
@@ -24,6 +24,8 @@ where
   T: PackageManager + Send + Sync,
   V: VersionEditor + Send + Sync + 'static,
   T::Metadata: Send + Sync,
+  T::Build: Send + Sync,
+  T::Publish: Send + Sync,
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {
   fn as_executable(&self) -> Option<&dyn ExecutableCommand<T, V>> {
@@ -42,6 +44,9 @@ pub struct Opts {
   /// Command
   #[clap(subcommand)]
   pub cmd: Command,
+
+  #[clap(long)]
+  pub work_dir: Option<PathBuf>,
 
   /// Run with dry_run no files actually change
   #[clap(long)]

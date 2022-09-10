@@ -5,7 +5,7 @@ use tokio::fs;
 
 use crate::bump::Bump;
 use crate::changeset::Changeset;
-use crate::package::PackageGraph;
+use crate::package::graph::PackageGraph;
 use crate::version::VersionEditor;
 
 pub struct Changesets {

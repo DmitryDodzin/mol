@@ -22,6 +22,7 @@ where
   T: PackageManager + Send + Sync,
   V: VersionEditor + Send + Sync + 'static,
   T::Metadata: Send + Sync,
+  T::Publish: Send + Sync,
 {
   async fn execute(
     &self,
@@ -48,16 +49,12 @@ where
       };
 
       for package in &packages {
-        if let Some(root_path) = package.path.parent() {
-          context
-            .package_manager
-            .run_publish(
-              root_path,
-              self.publish_args.clone(),
-              context.dry_run,
-              &context.metadata,
-            )
-            .await?;
+        if let Some(package_dir) = package.path.parent() {
+          T::Publish::execute_with_args(
+            &context.as_command_with_path(package_dir),
+            self.publish_args.clone(),
+          )
+          .await?;
 
           if !context.dry_run {
             while !context
