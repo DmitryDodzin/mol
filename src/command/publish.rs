@@ -33,37 +33,43 @@ where
 
     let graph = context.packages.as_package_graph();
 
-    let packages = if self.packages.is_empty() {
-      graph.update_order()
+    let (changeset_files, _) = context.changesets.consume::<V>(&graph).await?;
+
+    if !changeset_files.is_empty() {
+      println!("Changesents found, skipping publish");
     } else {
-      graph
-        .update_order()
-        .into_iter()
-        .filter(|package| self.packages.contains(&package.name))
-        .collect()
-    };
+      let packages = if self.packages.is_empty() {
+        graph.update_order()
+      } else {
+        graph
+          .update_order()
+          .into_iter()
+          .filter(|package| self.packages.contains(&package.name))
+          .collect()
+      };
 
-    for package in &packages {
-      if let Some(root_path) = package.path.parent() {
-        context
-          .package_manager
-          .run_publish(
-            root_path,
-            self.publish_args.clone(),
-            context.dry_run,
-            &context.metadata,
-          )
-          .await?;
-
-        if !context.dry_run {
-          while !context
+      for package in &packages {
+        if let Some(root_path) = package.path.parent() {
+          context
             .package_manager
-            .check_version(package, &context.metadata)
-            .await?
-          {
-            println!("Package didn't upate yet");
+            .run_publish(
+              root_path,
+              self.publish_args.clone(),
+              context.dry_run,
+              &context.metadata,
+            )
+            .await?;
 
-            tokio::time::sleep(Duration::from_secs(1)).await;
+          if !context.dry_run {
+            while !context
+              .package_manager
+              .check_version(package, &context.metadata)
+              .await?
+            {
+              println!("Package didn't upate yet");
+
+              tokio::time::sleep(Duration::from_secs(1)).await;
+            }
           }
         }
       }
