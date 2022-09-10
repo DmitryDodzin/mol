@@ -7,5 +7,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-anyhow = "1"
 mol-core = { path = "../mol-core" }
+
+anyhow = "1"
+git2 = "0.15"

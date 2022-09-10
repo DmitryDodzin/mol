@@ -1,9 +1,7 @@
 #![doc = include_str!("../README.md")]
 
 use std::alloc::System;
-use std::fmt::Debug;
 use std::str::FromStr;
-use std::sync::Arc;
 
 use anyhow::Context;
 use clap::Parser;
@@ -39,16 +37,14 @@ lazy_static! {
 async fn handle_command<
   T: PackageManager,
   V: VersionEditor + 'static,
-  U: IntoExecutableCommand<T, V> + Debug,
+  U: IntoExecutableCommand<T, V>,
 >(
   context: &ExecutableContext<T, V>,
-  plugin_manager: Arc<PluginManager>,
+  plugin_manager: &PluginManager,
   command: U,
 ) -> anyhow::Result<()> {
   if let Some(exeutable) = command.as_executable() {
     exeutable.execute(context, plugin_manager).await?;
-  } else {
-    println!("{:?}", command);
   }
 
   Ok(())
@@ -80,16 +76,14 @@ where
     }
   }
 
-  let plugin_manager = Arc::new(plugin_manager);
-
   match opts.cmd {
-    Command::Init(_) => handle_command(&context, plugin_manager, opts.cmd).await?,
+    Command::Init(_) => handle_command(&context, &plugin_manager, opts.cmd).await?,
     command => {
       if !context.changesets.validate() {
         println!("{}", *INIT_REQ_PROMPT);
       }
 
-      handle_command(&context, plugin_manager, command).await?
+      handle_command(&context, &plugin_manager, command).await?
     }
   }
 

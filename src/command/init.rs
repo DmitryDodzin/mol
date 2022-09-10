@@ -1,5 +1,4 @@
 use std::fmt::Debug;
-use std::sync::Arc;
 
 use async_trait::async_trait;
 use clap::Parser;
@@ -20,7 +19,7 @@ where
   async fn execute(
     &self,
     context: &ExecutableContext<T, V>,
-    plugins: Arc<PluginManager>,
+    plugins: &PluginManager,
   ) -> anyhow::Result<()> {
     plugins.pre_command("init", &context.as_plugin())?;
 

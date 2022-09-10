@@ -1,5 +1,4 @@
 use std::str::FromStr;
-use std::sync::Arc;
 
 use anyhow::Context;
 use async_trait::async_trait;
@@ -130,7 +129,7 @@ where
   async fn execute(
     &self,
     context: &ExecutableContext<T, V>,
-    plugins: Arc<PluginManager>,
+    plugins: &PluginManager,
   ) -> anyhow::Result<()> {
     plugins.pre_command("add", &context.as_plugin())?;
 

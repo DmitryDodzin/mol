@@ -1,5 +1,4 @@
 use std::fmt::Debug;
-use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
@@ -27,7 +26,7 @@ where
   async fn execute(
     &self,
     context: &ExecutableContext<T, V>,
-    plugins: Arc<PluginManager>,
+    plugins: &PluginManager,
   ) -> anyhow::Result<()> {
     plugins.pre_command("publish", &context.as_plugin())?;
 

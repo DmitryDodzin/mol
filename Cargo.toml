@@ -41,5 +41,8 @@ members = [
   "crates/*"
 ]
 
+[profile.dev]
+panic = 'abort'
+
 [profile.release]
 opt-level = "s"

@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use std::sync::Arc;
 
 use anyhow::Context;
 use async_trait::async_trait;
@@ -82,7 +81,7 @@ pub trait ExecutableCommand<T: PackageManager, V: VersionEditor + 'static> {
   async fn execute(
     &self,
     context: &ExecutableContext<T, V>,
-    plugins: Arc<PluginManager>,
+    plugins: &PluginManager,
   ) -> anyhow::Result<()>;
 }
 

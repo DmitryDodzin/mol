@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use std::sync::Arc;
-
 use anyhow::Context;
 use async_trait::async_trait;
 use clap::Parser;
@@ -29,7 +27,7 @@ where
   async fn execute(
     &self,
     context: &ExecutableContext<T, V>,
-    plugins: Arc<PluginManager>,
+    plugins: &PluginManager,
   ) -> anyhow::Result<()> {
     plugins.pre_command("version", &context.as_plugin())?;
 
