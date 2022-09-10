@@ -28,10 +28,10 @@ mol-core = { path = 'crates/mol-core', version = "0.3" }
 
 anyhow = "1"
 async-trait = "0.1"
-clap = { version = "3.0.0-rc.0", features = ["derive"] }
-dialoguer = "0.9"
+clap = { version = "3", features = ["derive"] }
+dialoguer = "0.10"
 lazy_static = "1"
-tokio = { version = "1", default-features = false }
+tokio = { version = "1", default-features = false, features = ["time"] }
 
 [dev-dependencies]
 cargo-husky = { version = "1", features = ["run-cargo-fmt","run-cargo-clippy"] }

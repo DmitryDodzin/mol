@@ -22,6 +22,7 @@ pub struct ExecutableContext<T: PackageManager, V: VersionEditor> {
   pub package_manager: T,
   pub packages: Vec<Package<V>>,
   pub root_dir: PathBuf,
+  pub metadata: T::Metadata,
 }
 
 impl<T, V> ExecutableContext<T, V>
@@ -51,11 +52,13 @@ where
       .chain(&PathBuf::from(T::default_path()))
       .collect();
 
-    T::validate_package(&package_path)
+    let metadata = T::load_metadata(&package_path).await?;
+
+    T::validate_package(&package_path, &metadata)
       .await
       .with_context(|| format!("Validation error for package at dir {:?}", package_path))?;
 
-    let packages = T::seek_packages(&package_path)
+    let packages = T::seek_packages(&package_path, &metadata)
       .await
       .with_context(|| format!("Could not open read pacakges at dir {:?}", package_path))?;
 
@@ -65,6 +68,7 @@ where
       package_manager,
       packages,
       root_dir,
+      metadata,
     })
   }
 }

@@ -20,6 +20,9 @@ enum CargoValidationError {
   WorkspaceInheritanceIsntSupported,
 }
 
+#[derive(Clone)]
+pub struct CrateMetadata {}
+
 #[derive(Debug, Serialize, Deserialize)]
 struct CratesError {
   detail: String,
@@ -81,11 +84,22 @@ impl Cargo {
 
 #[async_trait]
 impl PackageManager for Cargo {
+  type Metadata = CrateMetadata;
+
   fn default_path() -> &'static str {
     "Cargo.toml"
   }
 
-  async fn validate_package<T: AsRef<Path> + Send + Sync>(crate_path: T) -> anyhow::Result<()> {
+  async fn load_metadata<T: AsRef<Path> + Send + Sync>(
+    _crate_path: T,
+  ) -> anyhow::Result<Self::Metadata> {
+    Ok(CrateMetadata {})
+  }
+
+  async fn validate_package<T: AsRef<Path> + Send + Sync>(
+    crate_path: T,
+    _: &Self::Metadata,
+  ) -> anyhow::Result<()> {
     let (_, document) = Self::load_document(crate_path).await?;
 
     if document.contains_key("workspace") {
@@ -101,6 +115,7 @@ impl PackageManager for Cargo {
 
   async fn seek_packages<T: AsRef<Path> + Send + Sync, V: Versioned + Send + Sync + 'static>(
     crate_path: T,
+    metadata: &Self::Metadata,
   ) -> anyhow::Result<Vec<Package<V>>> {
     let mut result = Vec::new();
     let (crate_path, document) = Self::load_document(crate_path).await?;
@@ -117,7 +132,6 @@ impl PackageManager for Cargo {
     let mut dependencies = Vec::new();
 
     if document.contains_key("dependencies") {
-      // TODO: support [dependencies.xyz] patterns
       if let Some(deps) = document["dependencies"].as_table() {
         for (key, value) in deps.iter() {
           if value.is_str() {
@@ -163,11 +177,14 @@ impl PackageManager for Cargo {
         builder.add(glob.clone());
       }
 
+      let metadata = Arc::new(metadata.clone());
+
       result.extend(
         Explorer::seek_packages_in_directory::<Self, V>(
           Arc::new(DashSet::new()),
           builder.build().expect("Globs did not set together"),
           fs::read_dir(crate_path.parent().unwrap_or(&crate_path)).await?,
+          metadata,
         )
         .await?,
       );
@@ -179,6 +196,7 @@ impl PackageManager for Cargo {
   async fn check_version<V: Versioned + Send + Sync + 'static>(
     &self,
     package: &Package<V>,
+    _: &Self::Metadata,
   ) -> anyhow::Result<bool> {
     let https = HttpsConnector::new();
     let client = Client::builder().build::<_, hyper::Body>(https);
@@ -220,6 +238,7 @@ impl PackageManager for Cargo {
     &self,
     crate_path: T,
     build_args: Vec<String>,
+    _: &Self::Metadata,
   ) -> anyhow::Result<()> {
     self
       .run_command(
@@ -235,6 +254,7 @@ impl PackageManager for Cargo {
     crate_path: T,
     publish_args: Vec<String>,
     dry_run: bool,
+    _: &Self::Metadata,
   ) -> anyhow::Result<()> {
     let args = if dry_run {
       vec!["--dry-run"]
@@ -254,6 +274,7 @@ impl PackageManager for Cargo {
     &self,
     crate_path: T,
     version: &str,
+    _: &Self::Metadata,
   ) -> anyhow::Result<()> {
     let (crate_path, mut document) = Self::load_document(crate_path).await?;
 
@@ -271,6 +292,7 @@ impl PackageManager for Cargo {
     crate_path: T,
     name: &str,
     version: &str,
+    _: &Self::Metadata,
   ) -> anyhow::Result<()> {
     let (crate_path, mut document) = Self::load_document(crate_path).await?;
 

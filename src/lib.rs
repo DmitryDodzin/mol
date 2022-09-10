@@ -54,11 +54,11 @@ async fn handle_command<
   Ok(())
 }
 
-pub async fn exec<
+pub async fn exec<T, V>() -> anyhow::Result<()>
+where
   T: PackageManager + Default + Send + Sync,
   V: VersionEditor + Send + Sync + 'static,
->() -> anyhow::Result<()>
-where
+  T::Metadata: Send + Sync,
   <V as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {
   let args: Vec<String> = std::env::args().collect();

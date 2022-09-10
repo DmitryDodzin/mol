@@ -16,6 +16,8 @@ cargo mol --help
 
 Most of the api is either cli wizard or very similar to [changesets](https://github.com/atlassian/changesets)
 
+![](./images/add-sample.gif)
+
 ### 101 Commands
 
 Create a new changeset to describe the change you are plannig to add
