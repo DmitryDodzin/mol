@@ -26,7 +26,7 @@ pub enum CargoValidationError {
 pub struct CargoBuild;
 
 #[async_trait]
-impl PackageManagerCommand<CrateMetadata> for CargoBuild {
+impl PackageManagerCommandWithArgs<CrateMetadata> for CargoBuild {
   type Error = std::io::Error;
 
   async fn execute_with_args(
@@ -45,7 +45,7 @@ impl PackageManagerCommand<CrateMetadata> for CargoBuild {
 pub struct CargoPublish;
 
 #[async_trait]
-impl PackageManagerCommand<CrateMetadata> for CargoPublish {
+impl PackageManagerCommandWithArgs<CrateMetadata> for CargoPublish {
   type Error = std::io::Error;
 
   async fn execute_with_args(

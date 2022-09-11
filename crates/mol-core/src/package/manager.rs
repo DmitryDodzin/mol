@@ -2,15 +2,19 @@ use std::path::Path;
 
 use async_trait::async_trait;
 
-use crate::package::{command::PackageManagerCommand, loader::PackageLoader, Package};
+use crate::package::{
+  command::{PackageManagerCommand, PackageManagerCommandWithArgs},
+  loader::PackageLoader,
+  Package,
+};
 use crate::version::Versioned;
 
 #[async_trait]
 pub trait PackageManager {
   type Metadata: Clone + Send + Sync;
   type Loader: PackageLoader<Metadata = Self::Metadata> + Send + Sync;
-  type Build: PackageManagerCommand<Self::Metadata> + Send + Sync;
-  type Publish: PackageManagerCommand<Self::Metadata> + Send + Sync;
+  type Build: PackageManagerCommandWithArgs<Self::Metadata> + Send + Sync;
+  type Publish: PackageManagerCommandWithArgs<Self::Metadata> + Send + Sync;
   type Validate: PackageManagerCommand<Self::Metadata> + Send + Sync;
 
   fn default_path() -> &'static str;

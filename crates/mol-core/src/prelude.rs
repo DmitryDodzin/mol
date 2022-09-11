@@ -5,7 +5,7 @@ pub use crate::changesets::Changesets;
 pub use crate::error::{ChangesetParseError, VersionParseError};
 pub use crate::explorer::Explorer;
 pub use crate::package::{
-  command::{CommandContext, PackageManagerCommand},
+  command::{CommandContext, PackageManagerCommand, PackageManagerCommandWithArgs},
   graph::{AsPackageGraph, PackageGraph},
   loader::PackageLoader,
   manager::PackageManager,
