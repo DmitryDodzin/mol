@@ -90,9 +90,19 @@ impl PackageManager for Cargo {
   }
 
   async fn validate_package<T: AsRef<Path> + Send + Sync>(
-    _crate_path: T,
+    crate_path: T,
     _: &Self::Metadata,
   ) -> anyhow::Result<()> {
+    let (_, document) = Self::load_document(crate_path).await?;
+
+    if document.contains_key("workspace") {
+      if let Some(workspace) = document["workspace"].as_table() {
+        if workspace.contains_key("package") || workspace.contains_key("dependencies") {
+          println!("Warn: workspace-inheritance isn't fully supported");
+        }
+      }
+    }
+
     Ok(())
   }
 
