@@ -1,5 +1,23 @@
 # mol
 
+## 0.4.0
+
+### Minor Changes
+
+- chore: update function names and use thiserror
+
+- feat: move internal mol-cargo functions to a mol-core struct
+
+### Patch Changes
+
+- chore: update dependencies to latest releases
+
+- chore: import README.md to mol docs
+
+- chore: remove code to focus on core functionality
+
+- chore: user friendly message when no packages were found
+
 ## 0.3.0
 
 ### Minor Changes

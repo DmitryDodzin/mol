@@ -1,5 +1,23 @@
 # mol-cargo
 
+## 0.4.0
+
+### Minor Changes
+
+- feat: move internal mol-cargo functions to a mol-core struct
+
+- feat: add metadata type to PackageManager trait to allow passing of context for commands
+
+- chore: update function names and use thiserror
+
+### Patch Changes
+
+- chore: remove code to focus on core functionality
+
+- chore: update dependencies to latest releases
+
+- feat: workaround for workspace inheritance
+
 ## 0.3.0
 
 ### Minor Changes

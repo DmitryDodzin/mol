@@ -1,5 +1,23 @@
 # mol-core
 
+## 0.4.0
+
+### Minor Changes
+
+- feat: add validate_package function to PackageManager trait
+
+- feat: move internal mol-cargo functions to a mol-core struct
+
+- chore: update function names and use thiserror
+
+- feat: add metadata type to PackageManager trait to allow passing of context for commands
+
+### Patch Changes
+
+- chore: remove code to focus on core functionality
+
+- chore: update dependencies to latest releases
+
 ## 0.3.0
 
 ### Minor Changes

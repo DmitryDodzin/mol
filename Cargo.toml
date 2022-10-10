@@ -1,6 +1,6 @@
 [package]
 name = "mol"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Dmitry Dodzin <d.dodzin@gmail.com>"]
 edition = "2021"
 categories = ["development-tools::cargo-plugins"]
