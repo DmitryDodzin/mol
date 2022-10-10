@@ -8,17 +8,10 @@ use globset::{Glob, GlobSetBuilder};
 use hyper::{Client, Method, Request};
 use hyper_tls::HttpsConnector;
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
 use tokio::{fs, process::Command};
 use toml_edit::{value, Document};
 
 use mol_core::prelude::*;
-
-#[derive(Error, Debug)]
-enum CargoValidationError {
-  #[error("cargo workspace-inheritance is currently isn't supported")]
-  WorkspaceInheritanceIsntSupported,
-}
 
 #[derive(Clone)]
 pub struct CrateMetadata {}
@@ -105,7 +98,7 @@ impl PackageManager for Cargo {
     if document.contains_key("workspace") {
       if let Some(workspace) = document["workspace"].as_table() {
         if workspace.contains_key("package") || workspace.contains_key("dependencies") {
-          return Err(CargoValidationError::WorkspaceInheritanceIsntSupported.into());
+          println!("Warn: workspace-inheritance isn't fully supported");
         }
       }
     }
@@ -140,10 +133,14 @@ impl PackageManager for Cargo {
               value.as_str().unwrap_or_default().to_owned(),
             ));
           } else if value.is_table() || value.is_inline_table() {
-            dependencies.push((
-              key.to_owned(),
-              value["version"].as_str().unwrap_or_default().to_owned(),
-            ));
+            if let Some(value) = value.as_table() {
+              if value.contains_key("version") {
+                dependencies.push((
+                  key.to_owned(),
+                  value["version"].as_str().unwrap_or_default().to_owned(),
+                ));
+              }
+            }
           }
         }
       }

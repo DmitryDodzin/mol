@@ -48,6 +48,12 @@ impl Add {
     &self,
     context: &ExecutableContext<T, V>,
   ) -> anyhow::Result<Vec<Package<V>>> {
+    if context.packages.is_empty() {
+      return Err(anyhow::Error::msg(
+        "No packages were found in current directory",
+      ));
+    }
+
     if !self.packages.is_empty() {
       let packages = context
         .packages
